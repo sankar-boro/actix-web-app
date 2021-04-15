@@ -53,9 +53,9 @@ fn create_user_token(user: &ReadRow, session: &Session) -> Result<String, LoonyE
     Ok(token)
 }
 
-fn run(request: &web::Form<LoginUserInfo>, app_data: &web::Data<App>, session: &Session) -> Result<HttpResponse, LoonyError> {
+fn try_login(request: &web::Form<LoginUserInfo>, app_data: &web::Data<App>, session: &Session) -> Result<HttpResponse, LoonyError> {
   let con = conn(&app_data)?;
-  let user = db::read(&request.email, &con)?;
+  let user = db::read_one_email(&request.email, &con)?;
   let password = encrypt_text(&request.password);
   if password == user.get_password() {
     let token = create_user_token(&user, session)?;
@@ -79,7 +79,7 @@ pub async fn login(request: web::Form<LoginUserInfo>, app_data: web::Data<App>, 
     HttpResponse::Ok().json(error);
   }
   
-  match run(&request, &app_data, &session) {
+  match try_login(&request, &app_data, &session) {
     Ok(res) => res,
     Err(err) => HttpResponse::Ok().json(err)
   }

@@ -8,26 +8,24 @@ async fn home() -> HttpResponse {
 
 pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/", web::get().to(home));
-  
   config
   .route("/login", web::post().to(user::login))
   .route("/signup", web::post().to(user::sign_up));
-
   config.service(
     web::scope("/user")
     .wrap(AuthService{})
-    .route("/get", web::get().to(user::read_rows))
-    .route("/get/{id}", web::get().to(user::read_row_by_id))
-    .route("/update/{id}", web::post().to(user::update_user))
+    .route("/get", web::get().to(user::get_all))
+    .route("/get/{id}", web::get().to(user::get_one))
+    .route("/update/{id}", web::post().to(user::update_one))
   );
   config.service(
     web::scope("/post")
     .wrap(AuthService{})
-    .route("/all", web::get().to(post::read_rows))
-    .route("/get/{id}", web::get().to(post::read_row_by_id))
-    .route("/create", web::post().to(post::create))
-    .route("/update/{id}", web::post().to(post::update_post))
-    .route("/delete/{id}", web::post().to(post::delete_post))
+    .route("/all", web::get().to(post::get_all))
+    .route("/get/{id}", web::get().to(post::get_one))
+    .route("/create", web::post().to(post::create_one))
+    .route("/update/{id}", web::post().to(post::update_one))
+    .route("/delete/{id}", web::post().to(post::delete_one))
   );
   config.service(
     web::scope("")

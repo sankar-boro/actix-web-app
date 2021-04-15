@@ -5,7 +5,7 @@ mod read;
 mod update;
 mod delete;
 
-pub use create::create;
-pub use read::{read_rows, read_row_by_id};
-pub use update::update_post;
-pub use delete::delete_post;
+pub use create::create_one;
+pub use read::{get_all, get_one};
+pub use update::update_one;
+pub use delete::delete_one;

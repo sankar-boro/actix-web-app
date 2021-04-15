@@ -8,6 +8,6 @@ mod logout;
 
 pub use signup::sign_up;
 pub use login::login;
-pub use read::{read_rows, read_row_by_id};
-pub use update::update_user;
+pub use read::{get_all, get_one};
+pub use update::update_one;
 pub use logout::logout_user;

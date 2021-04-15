@@ -6,10 +6,6 @@ use crate::App;
 
 use super::{db, schema::posts};
 
-trait Row {
-  fn into_row(&self) -> &Self;
-}
-
 #[derive(Deserialize, Debug, Insertable, Validate, Clone)]
 #[table_name = "posts"]
 pub struct CreatePost {
@@ -19,16 +15,10 @@ pub struct CreatePost {
   image: Option<String>
 }
 
-impl Row for CreatePost {
-  fn into_row(&self) -> &Self {
-    self
-  }
-}
-
-pub fn create(request: web::Form<CreatePost>, app_data: web::Data<App>) -> HttpResponse {
+pub fn create_one(request: web::Form<CreatePost>, app_data: web::Data<App>) -> HttpResponse {
   match conn(&app_data) {
     Ok(con) =>  {
-      match db::insert(request.into_row(), &con) {
+      match db::insert_one(&request.0, &con) {
         Ok(post) => HttpResponse::Ok().json(post),
         Err(n) => HttpResponse::Ok().json(n)
       }

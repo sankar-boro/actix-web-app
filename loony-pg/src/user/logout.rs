@@ -15,7 +15,7 @@ fn get_user_session(u_id: i32, session: &Session) -> Result<Option<String>, Loon
   Ok(session.get::<String>(&u_id.to_string())?)
 }
 
-fn run(u_id: i32, session: &Session) -> Result<JsonValue, LoonyError> {
+fn try_logout(u_id: i32, session: &Session) -> Result<JsonValue, LoonyError> {
   let session_id = get_user_session(u_id, session)?;
   if let Some(_) = session_id {
     session.remove(&u_id.to_string());
@@ -31,7 +31,7 @@ fn run(u_id: i32, session: &Session) -> Result<JsonValue, LoonyError> {
 }
 
 pub fn logout_user(info: web::Path<i32>, session: Session) -> HttpResponse {
-  match run(info.0, &session) {
+  match try_logout(info.0, &session) {
     Ok(d) => HttpResponse::Ok().json(d),
     Err(_) => HttpResponse::Ok().body("Failed.")
   }

@@ -1,10 +1,9 @@
 use serde::{Serialize, Deserialize};
 use validator::{Validate};
 use actix_web::{web, HttpResponse};
-use loony_service::{LoonyError};
-use super::{db, db::ReadRow};
 use crate::connection::conn;
 use chrono::{NaiveDateTime};
+use super::db;
 use crate::App;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,27 +30,27 @@ pub struct UserInfo {
   pub token: String,
 }
 
-fn run_read_rows(app_data: &web::Data<App>) -> Result<Vec<ReadRow>, LoonyError> {
-  let con = conn(&app_data)?;
-  Ok(db::read_rows(&con)?)
-}
-
-pub async fn read_rows(app_data: web::Data<App>) -> HttpResponse {
-  match run_read_rows(&app_data) {
-    Ok(res) => HttpResponse::Ok().json(res),
-    Err(err) => HttpResponse::Ok().json(err)
+pub async fn get_all(app_data: web::Data<App>) -> HttpResponse {
+  match conn(&app_data) {
+    Ok(con) => {
+      match db::get_all(&con) {
+        Ok(res) => HttpResponse::Ok().json(res),
+        Err(err) => HttpResponse::Ok().json(err)
+      }
+    }
+    Err(e) => HttpResponse::Ok().json(e)
   }
 }
 
-fn run_read_row_by_id(u_id: i32, app_data: &web::Data<App>) -> Result<ReadRow, LoonyError> {
-  let con = conn(&app_data)?;
-  Ok(db::read_row_by_id(u_id, &con)?)
-}
 
-pub async fn read_row_by_id(info: web::Path<i32>, app_data: web::Data<App>) -> HttpResponse {
-  let user_id = info.0;
-  match run_read_row_by_id(user_id, &app_data) {
-    Ok(res) => HttpResponse::Ok().json(res),
-    Err(err) => HttpResponse::Ok().json(err)
+pub async fn get_one(user_id: web::Path<i32>, app_data: web::Data<App>) -> HttpResponse {
+  match conn(&app_data) {
+    Ok(con) => {
+      match db::read_one(user_id.0, &con) {
+        Ok(res) => HttpResponse::Ok().json(res),
+        Err(err) => HttpResponse::Ok().json(err)
+      }
+    }
+    Err(e) => HttpResponse::Ok().json(e)
   }
 }

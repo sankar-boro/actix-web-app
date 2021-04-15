@@ -2,7 +2,8 @@ use diesel::prelude::*;
 use chrono::{NaiveDateTime};
 use diesel::{RunQueryDsl};
 use serde::Serialize;
-use loony_service::{LoonyError, PGPooledConnection};
+use loony_service::{LoonyError};
+use crate::connection::PGPooledConnection;
 use super::signup::SignupFormData;
 use super::update::UpdateUser;
 use super::schema::users::dsl::*;
@@ -26,7 +27,7 @@ impl ReadRow {
   }
 }
 
-pub fn insert(row: &SignupFormData, conn: &PGPooledConnection) -> Result<ReadRow, LoonyError> {
+pub fn insert_one(row: &SignupFormData, conn: &PGPooledConnection) -> Result<ReadRow, LoonyError> {
   Ok(diesel::insert_into(users)
     .values(row)
     .get_result::<ReadRow>(
@@ -34,21 +35,21 @@ pub fn insert(row: &SignupFormData, conn: &PGPooledConnection) -> Result<ReadRow
     )?)
 }
 
-pub fn read(user_email: &str, conn: &PGPooledConnection) -> Result<ReadRow, LoonyError> {
+pub fn read_one_email(user_email: &str, conn: &PGPooledConnection) -> Result<ReadRow, LoonyError> {
   Ok(users.filter(
     email.eq(user_email)
   ).first(conn)?)
 }
 
-pub fn read_rows(conn: &PGPooledConnection) -> Result<Vec<ReadRow>, LoonyError> {
+pub fn get_all(conn: &PGPooledConnection) -> Result<Vec<ReadRow>, LoonyError> {
   Ok(users.load::<ReadRow>(conn)?)
 }
 
-pub fn read_row_by_id(u_id: i32, conn: &PGPooledConnection) -> Result<ReadRow, LoonyError> {
+pub fn read_one(u_id: i32, conn: &PGPooledConnection) -> Result<ReadRow, LoonyError> {
   Ok(users.filter(user_id.eq(u_id)).first(conn)?)
 }
 
-pub fn update_row(u_id: i32, user: &UpdateUser, conn: &PGPooledConnection) -> Result<(), LoonyError> {
+pub fn update_one(u_id: i32, user: &UpdateUser, conn: &PGPooledConnection) -> Result<(), LoonyError> {
   diesel::update(
 users.filter(id.eq(u_id))
   ).set(user).execute(conn)?;

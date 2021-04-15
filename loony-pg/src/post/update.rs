@@ -1,7 +1,6 @@
 use actix_web::{HttpResponse, web};
 use validator::Validate;
 use super::schema::posts;
-use loony_service::{LoonyError};
 use serde::Deserialize;
 use super::db;
 use crate::connection::conn;
@@ -15,18 +14,19 @@ pub struct UpdatePost {
   body: Option<String>
 }
 
-pub fn run(u_id: i32, request: &web::Form<UpdatePost>, app_data: &web::Data<App>) -> Result<(), LoonyError> {
-  let con = conn(&app_data)?;
-  db::update_row(u_id, &request, &con)?;
-  Ok(())
-}
-
-pub async fn update_post(info: web::Path<i32>, request: web::Form<UpdatePost>, app_data: web::Data<App>) -> HttpResponse {
+pub async fn update_one(post_id: web::Path<i32>, request: web::Form<UpdatePost>, app_data: web::Data<App>) -> HttpResponse {
   if let Err(error) = request.validate() {
     HttpResponse::Ok().json(error);
   }
-  match run(info.0, &request, &app_data) {
-    Ok(_) => HttpResponse::Ok().body("Updated"), 
-    Err(err) => HttpResponse::Ok().json(err)
+
+  match conn(&app_data) {
+    Ok(con) => {
+      match db::update_one(post_id.0, &request, &con) {
+        Ok(_) => HttpResponse::Ok().body("Updated"), 
+        Err(err) => HttpResponse::Ok().json(err)
+      }
+    }
+    Err(e) => HttpResponse::Ok().json(e)
   }
+
 }
