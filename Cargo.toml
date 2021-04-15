@@ -1,0 +1,5 @@
+[workspace]
+
+members = [
+	"loony-server", "loony-pg", "loony-scylla", "loony-service", "loony-middleware"
+]
