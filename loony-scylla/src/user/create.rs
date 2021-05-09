@@ -1,10 +1,10 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize};
 use uuid::Uuid;
-// use scylla::transport::session::{IntoTypedRows};
 use crate::App;
 use validator::Validate;
 use loony_service::encrypt_text;
+
 
 #[derive(Deserialize, Validate)]
 pub struct SignupFormData {
@@ -21,7 +21,7 @@ pub async fn create_user(session: web::Data<App>, request: web::Form<SignupFormD
     let id: Uuid = Uuid::new_v4();
     let password = encrypt_text(&request.password);
     conn
-    .query("INSERT INTO sankar.users (id, email, fname, lname, password) VALUES(?,?,?,?,?)", (id, &request.email, &request.fname, &request.lname, password))
+    .query("INSERT INTO sankar.users (id, email, fname, lname, password, created_at, updated_at) VALUES(?,?,?,?,?,toTimeStamp(now()),toTimeStamp(now()))", (id, &request.email, &request.fname, &request.lname, password))
     .await.unwrap();
     HttpResponse::Ok().body("New user created!")
 }

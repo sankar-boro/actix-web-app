@@ -23,5 +23,7 @@ r2d2 = "0.8.9"
 validator = { version = "0.12", features = ["derive"] }
 serde = "1.0.117"
 serde_json = "1.0.59"
+chrono = "0.4.19"
+
 loony-middleware = { path = "../loony-middleware"}
 loony-service = { path = "../loony-service"}
