@@ -11,6 +11,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     web::scope("/user")
     .route("/create", web::post().to(user::create_user))
     .route("/get", web::get().to(user::get_one))
+    .route("/delete/{user_id}", web::post().to(user::delete_one))
   );
 }
 
