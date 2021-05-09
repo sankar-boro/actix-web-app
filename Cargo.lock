@@ -1903,13 +1903,18 @@ dependencies = [
  "async-std",
  "bigdecimal",
  "futures",
+ "loony-middleware",
+ "loony-service",
  "num-bigint 0.3.2",
  "r2d2",
  "scylla",
+ "serde",
+ "serde_json",
  "tokio 1.5.0",
  "tracing",
  "tracing-subscriber",
  "uuid",
+ "validator",
 ]
 
 [[package]]
