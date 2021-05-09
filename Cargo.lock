@@ -1904,6 +1904,7 @@ dependencies = [
  "bigdecimal",
  "futures",
  "num-bigint 0.3.2",
+ "r2d2",
  "scylla",
  "tokio 1.5.0",
  "tracing",
@@ -1915,20 +1916,9 @@ dependencies = [
 name = "loony-server"
 version = "0.1.0"
 dependencies = [
- "actix-cors",
  "actix-web 4.0.0-beta.6",
- "anyhow",
- "async-std",
- "bigdecimal",
- "futures",
  "loony-pg",
  "loony-scylla",
- "num-bigint 0.3.2",
- "scylla",
- "tokio 1.5.0",
- "tracing",
- "tracing-subscriber",
- "uuid",
 ]
 
 [[package]]
@@ -3409,6 +3399,10 @@ name = "uuid"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
+dependencies = [
+ "getrandom 0.2.2",
+ "serde",
+]
 
 [[package]]
 name = "validator"
