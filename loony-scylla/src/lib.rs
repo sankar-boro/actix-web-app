@@ -7,6 +7,7 @@ use anyhow::Result;
 use r2d2::{ManageConnection, Pool};
 use scylla::{Session, SessionBuilder};
 use actix_web::{App as ActixApp, HttpServer};
+// use actix_redis::RedisSession;
 
 #[derive(Clone)]
 pub struct App {
@@ -71,6 +72,7 @@ pub async fn start_scylla_app() -> Result<()> {
 
     HttpServer::new(move || {
         ActixApp::new()
+        // .wrap(RedisSession::new("127.0.0.1:6379", &[0; 32]))
             .data(app.clone())
             .configure(route::routes)
     })

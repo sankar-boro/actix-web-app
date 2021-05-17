@@ -1898,12 +1898,14 @@ name = "loony-scylla"
 version = "0.1.0"
 dependencies = [
  "actix-cors",
+ "actix-session",
  "actix-web 4.0.0-beta.6",
  "anyhow",
  "async-std",
  "bigdecimal",
  "chrono",
  "futures",
+ "jsonwebtoken",
  "loony-middleware",
  "loony-service",
  "num-bigint 0.3.2",

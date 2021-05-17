@@ -7,10 +7,12 @@ async fn home() -> HttpResponse {
 
 pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/", web::get().to(home));
+
   config.service(
     web::scope("/user")
     .route("/create", web::post().to(user::create_user))
-    .route("/get", web::get().to(user::get_one))
+    .route("/get/all", web::get().to(user::get_all))
+    .route("/get/{userId}", web::get().to(user::get_one))
     .route("/delete/{user_id}", web::post().to(user::delete_one))
     .route("/update/{user_id}", web::post().to(user::update_one))
   );
