@@ -7,7 +7,6 @@ use anyhow::Result;
 use r2d2::{ManageConnection, Pool};
 use scylla::{Session, SessionBuilder};
 use actix_web::{App as ActixApp, HttpServer};
-use scylla::transport::session::{IntoTypedRows};
 
 #[derive(Clone)]
 pub struct App {
