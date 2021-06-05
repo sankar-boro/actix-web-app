@@ -77,6 +77,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-cookie"
+version = "0.1.0"
+source = "git+https://github.com/sankar-boro/actix-extras?branch=sankar#aa5df50c742c3610dc43acdd2d8e65bca67d5aa0"
+dependencies = [
+ "actix-web 4.0.0-beta.6",
+]
+
+[[package]]
 name = "actix-cors"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -230,7 +238,7 @@ dependencies = [
  "actix-http 2.2.0",
  "actix-rt 1.1.1",
  "actix-service 1.0.6",
- "actix-session",
+ "actix-session 0.4.1",
  "actix-utils 2.0.0",
  "actix-web 3.3.2",
  "backoff",
@@ -353,6 +361,22 @@ dependencies = [
  "actix-web 3.3.2",
  "derive_more",
  "futures-util",
+ "serde",
+ "serde_json",
+ "time 0.2.26",
+]
+
+[[package]]
+name = "actix-session"
+version = "0.5.0-beta.2"
+source = "git+https://github.com/sankar-boro/actix-extras?branch=sankar#aa5df50c742c3610dc43acdd2d8e65bca67d5aa0"
+dependencies = [
+ "actix-cookie",
+ "actix-service 2.0.0",
+ "actix-web 4.0.0-beta.6",
+ "derive_more",
+ "futures-util",
+ "log",
  "serde",
  "serde_json",
  "time 0.2.26",
@@ -1100,7 +1124,14 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ffdf8865bac3d9a3bde5bde9088ca431b11f5d37c7a578b8086af77248b76627"
 dependencies = [
+ "aes-gcm",
+ "base64 0.13.0",
+ "hkdf",
+ "hmac",
  "percent-encoding 2.1.0",
+ "rand 0.8.3",
+ "sha2",
+ "subtle",
  "time 0.2.26",
  "version_check",
 ]
@@ -1854,7 +1885,7 @@ name = "loony-middleware"
 version = "0.1.0"
 dependencies = [
  "actix-service 1.0.6",
- "actix-session",
+ "actix-session 0.4.1",
  "actix-web 3.3.2",
  "actix-web-httpauth",
  "futures",
@@ -1871,7 +1902,7 @@ dependencies = [
  "actix-multipart",
  "actix-redis",
  "actix-service 1.0.6",
- "actix-session",
+ "actix-session 0.4.1",
  "actix-web 3.3.2",
  "actix-web-httpauth",
  "chrono",
@@ -1898,7 +1929,7 @@ name = "loony-scylla"
 version = "0.1.0"
 dependencies = [
  "actix-cors",
- "actix-session",
+ "actix-session 0.5.0-beta.2",
  "actix-web 4.0.0-beta.6",
  "anyhow",
  "async-std",

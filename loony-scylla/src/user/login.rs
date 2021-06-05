@@ -57,7 +57,7 @@ fn create_user_token(user: &GetUser, session: &Session) -> Result<String, LoonyE
     };
     let header = Header::new(Algorithm::HS512);
     let token = encode(&header, &claims, &EncodingKey::from_secret("secret".as_ref()))?;
-    session.set(&user.id.to_string(), token.clone())?;
+    session.insert(&user.id.to_string(), token.clone()).unwrap();
     Ok(token)
 }
 
