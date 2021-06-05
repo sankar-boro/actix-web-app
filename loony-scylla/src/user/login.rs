@@ -65,7 +65,7 @@ async fn try_login(request: &web::Form<LoginUserInfo>, app_data: &web::Data<App>
     let conn = app_data.session.get().unwrap();
 //   let user = db::read_one_email(&request.email, &con)?;
 let mut users = Vec::new();
-if let Some(rows) = conn.query(format!("SELECT id, email, password from sankar.userCredentials where email={}", &request.email), &[]).await.unwrap().rows {
+if let Some(rows) = conn.query(format!("SELECT id, email, password from sankar.userCredentials where email='{}'", &request.email), &[]).await.unwrap().rows {
         for row in rows.into_typed::<GetUser>() {
             let my_row: GetUser = row.unwrap();
             users.push(my_row);
