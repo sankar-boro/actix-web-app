@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-	"loony-server", "loony-pg", "loony-scylla", "loony-service", "loony-middleware",
-	"loony-test"
+	"lily-server", "lily-pg", "lily-scylla", "lily-service", "lily-middleware",
+	"lily-test"
 ]
