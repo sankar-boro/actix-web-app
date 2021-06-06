@@ -7,13 +7,14 @@ use actix_web::http::HeaderValue;
 use serde::{Deserialize, Serialize};
 use {serde_json, serde_json::{Value as JsonValue}};
 use jsonwebtoken::{decode, Algorithm};
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
-  id: i32,
+  id: String,
   email: String,
-  exp: usize,
-  iat: usize,
+  exp: i64,
+  iat: i64,
 }
 
 

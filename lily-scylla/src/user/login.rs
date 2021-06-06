@@ -49,10 +49,10 @@ fn create_user_token(user: &GetUser, session: &Session) -> Result<String, WebRes
         .timestamp();
 
     let claims = Claims {
-      id: user.id.to_string(),
-      email: user.email.clone(),
-      exp: expiration,
-      iat: Utc::now().timestamp()
+		id: user.id.to_string(),
+		email: user.email.clone(),
+		exp: expiration,
+		iat: Utc::now().timestamp()
     };
 
     let header = Header::new(Algorithm::HS512);
