@@ -1,14 +1,17 @@
 mod route;
 mod user;
+mod helpers;
 mod middleware;
+mod post;
 
 use std::sync::Arc;
 
 use anyhow::Result;
-use r2d2::{ManageConnection, Pool};
+use r2d2::{ManageConnection, Pool, PooledConnection};
 use scylla::{Session, SessionBuilder};
 use actix_web::{App as ActixApp, HttpServer};
 use actix_redis::RedisSession;
+use helpers::error::Error as RequestError;
 
 #[derive(Clone)]
 pub struct App {
@@ -21,6 +24,10 @@ impl App {
             session,
         }
     }
+
+    pub fn conn(&self) -> Result<PooledConnection<ScyllaConnectionManager>, r2d2::Error> {
+        Ok(self.session.get()?)
+    }
 }
 
 async fn session() -> Session {
@@ -28,7 +35,7 @@ async fn session() -> Session {
     SessionBuilder::new().known_node(uri).build().await.unwrap()
 }
 
-struct ScyllaConnectionManager{
+pub struct ScyllaConnectionManager {
     session: Arc<Session>,
 }
 

@@ -1,4 +1,6 @@
 use crate::user;
+use crate::post;
+
 use actix_web::{web, HttpResponse};
 use crate::middleware::Authentication;
 
@@ -18,15 +20,15 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/get/{id}", web::get().to(user::get_one))
     .route("/update/{id}", web::post().to(user::update_one))
   );
-  // config.service(
-  //   web::scope("/post")
-  //   .wrap(AuthService{})
-  //   .route("/all", web::get().to(post::get_all))
-  //   .route("/get/{id}", web::get().to(post::get_one))
-  //   .route("/create", web::post().to(post::create_one))
-  //   .route("/update/{id}", web::post().to(post::update_one))
-  //   .route("/delete/{id}", web::post().to(post::delete_one))
-  // );
+  config.service(
+    web::scope("/post")
+    .wrap(Authentication{})
+    .route("/all", web::get().to(post::get_all))
+    .route("/get/{id}", web::get().to(post::get_one))
+    .route("/create", web::post().to(post::create_one))
+    // .route("/update/{id}", web::post().to(post::update_one))
+    // .route("/delete/{id}", web::post().to(post::delete_one))
+  );
   config.service(
     web::scope("")
     .wrap(Authentication{})
