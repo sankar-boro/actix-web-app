@@ -1,6 +1,6 @@
 use crate::user;
 use actix_web::{web, HttpResponse};
-// use lily_middleware::authentication::AuthService;
+use crate::middleware::Authentication;
 
 async fn home() -> HttpResponse {
   HttpResponse::Ok().body("Home!")
@@ -13,7 +13,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
 
   config.service(
     web::scope("/user")
-    // .wrap(AuthService{})
+    .wrap(Authentication{})
     .route("/get", web::get().to(user::get_all))
     .route("/get/{id}", web::get().to(user::get_one))
     .route("/update/{id}", web::post().to(user::update_one))
@@ -29,7 +29,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
   // );
   config.service(
     web::scope("")
-    // .wrap(AuthService{})
+    .wrap(Authentication{})
     .route("/logout/{id}", web::post().to(user::logout_user))
   );
 }
