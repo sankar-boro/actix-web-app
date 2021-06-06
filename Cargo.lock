@@ -1842,6 +1842,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "789da6d93f1b866ffe175afc5322a4d76c038605a1c3319bb57b06967ca98a36"
 
 [[package]]
+name = "lily"
+version = "0.1.0"
+dependencies = [
+ "actix-web 4.0.0-beta.6",
+ "lily-pg",
+ "lily-scylla",
+]
+
+[[package]]
 name = "lily-middleware"
 version = "0.1.0"
 dependencies = [
@@ -1914,15 +1923,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lily-server"
-version = "0.1.0"
-dependencies = [
- "actix-web 4.0.0-beta.6",
- "lily-pg",
- "lily-scylla",
-]
-
-[[package]]
 name = "lily-service"
 version = "0.1.0"
 dependencies = [
@@ -1936,14 +1936,6 @@ dependencies = [
  "serde",
  "serde_json",
  "validator",
-]
-
-[[package]]
-name = "lily-test"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "uuid",
 ]
 
 [[package]]

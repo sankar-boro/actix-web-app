@@ -1,7 +1,7 @@
 use diesel::{RunQueryDsl, insert_into};
 use super::{create::CreatePost, update::UpdatePost};
 use crate::post::schema::posts::dsl::{posts, id as post_id};
-use lily_service::{lilyError};
+use lily_service::{WebResponseError};
 use chrono::NaiveDateTime;
 use serde::{Serialize};
 use diesel::prelude::*;
@@ -18,7 +18,7 @@ pub struct ReadRow {
   updated_at: NaiveDateTime,
 }
 
-pub fn insert_one(row: &CreatePost, conn: &PGPooledConnection) -> Result<ReadRow, lilyError> {
+pub fn insert_one(row: &CreatePost, conn: &PGPooledConnection) -> Result<ReadRow, WebResponseError> {
   Ok(insert_into(posts)
     .values(row)
     .get_result::<ReadRow>(
@@ -26,22 +26,22 @@ pub fn insert_one(row: &CreatePost, conn: &PGPooledConnection) -> Result<ReadRow
     )?)
 }
 
-pub fn get_all(conn: &PGPooledConnection) -> Result<Vec<ReadRow>, lilyError> {
+pub fn get_all(conn: &PGPooledConnection) -> Result<Vec<ReadRow>, WebResponseError> {
   Ok(posts.load::<ReadRow>(conn)?)
 }
 
-pub fn get_one(p_id: i32, conn: &PGPooledConnection) -> Result<ReadRow, lilyError> {
+pub fn get_one(p_id: i32, conn: &PGPooledConnection) -> Result<ReadRow, WebResponseError> {
   Ok(posts.filter(post_id.eq(p_id)).first(conn)?)
 }
 
-pub fn update_one(p_id: i32, post: &UpdatePost, conn: &PGPooledConnection) -> Result<(), lilyError> {
+pub fn update_one(p_id: i32, post: &UpdatePost, conn: &PGPooledConnection) -> Result<(), WebResponseError> {
   diesel::update(
 posts.filter(post_id.eq(p_id))
   ).set(post).execute(conn)?;
   Ok(())
 }
 
-pub fn delete_one(p_id: i32, conn: &PGPooledConnection) -> Result<(), lilyError> {
+pub fn delete_one(p_id: i32, conn: &PGPooledConnection) -> Result<(), WebResponseError> {
   diesel::delete(
 posts.filter(post_id.eq(p_id))
   ).execute(conn)?;

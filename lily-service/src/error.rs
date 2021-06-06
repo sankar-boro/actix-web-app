@@ -5,61 +5,65 @@ use actix_web::error::Error as ActixWebError;
 use {serde_json, serde_json::{Value as JsonValue}};
 
 #[derive(Debug, Serialize)]
-pub enum lilyError {
+pub enum WebResponseError {
   InternalServerError(JsonValue),
   ParseError(JsonValue),
   ServiceError(JsonValue),
   ActixWebError(JsonValue),
   JSONWebTokenError(JsonValue),
+  NotFoundError(JsonValue),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct lilyResponse {
+pub struct WebResponse {
   pub status_code: Option<String>,
   pub message: String, 
 }
 
-impl From<lilyResponse> for serde_json::Value {
-  fn from(res: lilyResponse) -> Self {
+impl From<WebResponse> for serde_json::Value {
+  fn from(res: WebResponse) -> Self {
     res.into()
   }
 }
 
-impl Display for lilyError {
+impl Display for WebResponseError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
-      lilyError::InternalServerError(res) => {
+      WebResponseError::InternalServerError(res) => {
         return write!(f, "{}", res)
       }
-      lilyError::ParseError(res) => {
+      WebResponseError::ParseError(res) => {
         return write!(f, "{}", res)
       }
-      lilyError::ServiceError(res) => {
+      WebResponseError::ServiceError(res) => {
         return write!(f, "{}", res)
       }
-      lilyError::ActixWebError(res) => {
+      WebResponseError::ActixWebError(res) => {
         return write!(f, "{}", res)
       }
-      lilyError::JSONWebTokenError(res) => {
+      WebResponseError::JSONWebTokenError(res) => {
+        return write!(f, "{}", res)
+      }
+      WebResponseError::NotFoundError(res) => {
         return write!(f, "{}", res)
       }
     }
   }
 }
 
-impl From<r2d2::Error> for lilyError {
+impl From<r2d2::Error> for WebResponseError {
   fn from(err: r2d2::Error) -> Self {
-    let res = lilyResponse {
+    let res = WebResponse {
       status_code: None,
       message: err.to_string(), 
     };
     let str_err = serde_json::to_string(&res).unwrap();
     let v: JsonValue = serde_json::from_str(&str_err).unwrap();
-    lilyError::InternalServerError(v)
+    WebResponseError::InternalServerError(v)
   }
 }
 
-impl From<diesel::result::Error> for lilyError {
+impl From<diesel::result::Error> for WebResponseError {
   fn from(err: diesel::result::Error) -> Self {
     let match_err = match err {
         diesel::result::Error::InvalidCString(null_err) => null_err.to_string(),
@@ -78,72 +82,84 @@ impl From<diesel::result::Error> for lilyError {
         diesel::result::Error::AlreadyInTransaction => "Aldready Error".to_string(),
         diesel::result::Error::__Nonexhaustive => "Non Exhaustive Error".to_string(),
     };
-    let res = lilyResponse {
+    let res = WebResponse {
       status_code: None,
       message: match_err.to_string(), 
     };
     let res_str = serde_json::to_string(&res).unwrap();
     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    lilyError::InternalServerError(json_value)
+    WebResponseError::InternalServerError(json_value)
   }
 }
 
-impl From<std::num::ParseIntError> for lilyError {
+impl From<std::num::ParseIntError> for WebResponseError {
   fn from(err:std::num::ParseIntError) -> Self {
-    let res = lilyResponse {
+    let res = WebResponse {
       status_code: None,
       message: err.to_string(), 
     };
     let res_str = serde_json::to_string(&res).unwrap();
     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    lilyError::InternalServerError(json_value)
+    WebResponseError::InternalServerError(json_value)
   }
 }
 
-impl From<redis::Connection> for lilyError {
+impl From<redis::Connection> for WebResponseError {
   fn from(_:redis::Connection) -> Self {
-    let res = lilyResponse {
+    let res = WebResponse {
       status_code: None,
       message: "redis connection error".to_string(), 
     };
     let res_str = serde_json::to_string(&res).unwrap();
     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    lilyError::InternalServerError(json_value)
+    WebResponseError::InternalServerError(json_value)
   }
 }
 
-impl From<String> for lilyError {
+impl From<String> for WebResponseError {
   fn from(err:String) -> Self {
-    let res = lilyResponse {
+    let res = WebResponse {
       status_code: None,
       message: err.to_string(), 
     };
     let res_str = serde_json::to_string(&res).unwrap();
     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    lilyError::InternalServerError(json_value)
+    WebResponseError::InternalServerError(json_value)
   }
 }
 
-impl From<ActixWebError> for lilyError {
+impl From<ActixWebError> for WebResponseError {
   fn from(err: ActixWebError) -> Self {
-    let res = lilyResponse {
+    let res = WebResponse {
       status_code: None,
       message: err.to_string(), 
     };
     let res_str = serde_json::to_string(&res).unwrap();
     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    lilyError::ActixWebError(json_value)
+    WebResponseError::ActixWebError(json_value)
   }
 }
 
-impl From<jsonwebtoken::errors::Error> for lilyError {
+impl From<jsonwebtoken::errors::Error> for WebResponseError {
   fn from(err: jsonwebtoken::errors::Error) -> Self {
-    let res = lilyResponse {
+    let res = WebResponse {
       status_code: None,
       message: err.to_string(), 
     };
     let res_str = serde_json::to_string(&res).unwrap();
     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    lilyError::JSONWebTokenError(json_value) 
+    WebResponseError::JSONWebTokenError(json_value) 
   }
 }
+
+// impl From<jsonwebtoken::errors::Error> for WebResponseError {
+//   fn from(err: jsonwebtoken::errors::Error) -> Self {
+//     let res = WebResponse {
+//       status_code: None,
+//       message: err.to_string(), 
+//     };
+//     let res_str = serde_json::to_string(&res).unwrap();
+//     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
+//     WebResponseError::JSONWebTokenError(json_value) 
+//   }
+// }

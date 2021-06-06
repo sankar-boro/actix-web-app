@@ -1,7 +1,10 @@
+use std::ops::Deref;
+
 use actix_web::{HttpResponse, web};
 use actix_session::Session;
 use lily_service::WebResponseError;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use {serde_json, serde_json::{Value as JsonValue}};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,7 +15,15 @@ struct Claims {
 }
 
 fn get_user_session(u_id: i32, session: &Session) -> Result<Option<String>, WebResponseError> {
-  Ok(session.get::<String>(&u_id.to_string())?)
+
+    session.get::<String>(&u_id.to_string())
+	.map_err(|err| {
+		let thiserror = json!({
+			"status_code": "?",
+			"message": err.to_string()
+		});
+		WebResponseError::InternalServerError(thiserror)
+	})
 }
 
 fn try_logout(u_id: i32, session: &Session) -> Result<JsonValue, WebResponseError> {
@@ -31,7 +42,7 @@ fn try_logout(u_id: i32, session: &Session) -> Result<JsonValue, WebResponseErro
 }
 
 pub fn logout_user(info: web::Path<i32>, session: Session) -> HttpResponse {
-  match try_logout(info.0, &session) {
+  match try_logout(info.deref().clone(), &session) {
     Ok(d) => HttpResponse::Ok().json(d),
     Err(_) => HttpResponse::Ok().body("Failed.")
   }

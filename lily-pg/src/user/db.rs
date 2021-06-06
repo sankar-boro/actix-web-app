@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use chrono::{NaiveDateTime};
 use diesel::{RunQueryDsl};
 use serde::Serialize;
-use lily_service::{lilyError};
+use lily_service::{WebResponseError};
 use crate::connection::PGPooledConnection;
 use super::signup::SignupFormData;
 use super::update::UpdateUser;
@@ -27,7 +27,7 @@ impl ReadRow {
   }
 }
 
-pub fn insert_one(row: &SignupFormData, conn: &PGPooledConnection) -> Result<ReadRow, lilyError> {
+pub fn insert_one(row: &SignupFormData, conn: &PGPooledConnection) -> Result<ReadRow, WebResponseError> {
   Ok(diesel::insert_into(users)
     .values(row)
     .get_result::<ReadRow>(
@@ -35,21 +35,21 @@ pub fn insert_one(row: &SignupFormData, conn: &PGPooledConnection) -> Result<Rea
     )?)
 }
 
-pub fn read_one_email(user_email: &str, conn: &PGPooledConnection) -> Result<ReadRow, lilyError> {
+pub fn read_one_email(user_email: &str, conn: &PGPooledConnection) -> Result<ReadRow, WebResponseError> {
   Ok(users.filter(
     email.eq(user_email)
   ).first(conn)?)
 }
 
-pub fn get_all(conn: &PGPooledConnection) -> Result<Vec<ReadRow>, lilyError> {
+pub fn get_all(conn: &PGPooledConnection) -> Result<Vec<ReadRow>, WebResponseError> {
   Ok(users.load::<ReadRow>(conn)?)
 }
 
-pub fn read_one(u_id: i32, conn: &PGPooledConnection) -> Result<ReadRow, lilyError> {
+pub fn read_one(u_id: i32, conn: &PGPooledConnection) -> Result<ReadRow, WebResponseError> {
   Ok(users.filter(user_id.eq(u_id)).first(conn)?)
 }
 
-pub fn update_one(u_id: i32, user: &UpdateUser, conn: &PGPooledConnection) -> Result<(), lilyError> {
+pub fn update_one(u_id: i32, user: &UpdateUser, conn: &PGPooledConnection) -> Result<(), WebResponseError> {
   diesel::update(
 users.filter(id.eq(u_id))
   ).set(user).execute(conn)?;

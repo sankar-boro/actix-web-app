@@ -10,12 +10,12 @@ use diesel::{
 };
 
 use crate::App;
-use lily_service::{lilyError};
+use lily_service::{WebResponseError};
 
 pub type PGPool = r2d2::Pool<ConnectionManager<diesel::pg::PgConnection>>;
 pub type PGPooledConnection = PooledConnection<ConnectionManager<PgConnection>>;
 
-pub fn conn(app_data: &web::Data<App>) -> Result<PGPooledConnection, lilyError> {
+pub fn conn(app_data: &web::Data<App>) -> Result<PGPooledConnection, WebResponseError> {
   Ok(app_data.conn.get()?)
 }
 

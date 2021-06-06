@@ -15,4 +15,4 @@ pub fn encrypt_text_bytes(user_password: &Vec<u8>) -> String {
 }
 
 
-pub use error::{lilyError, lilyResponse};
+pub use error::{WebResponse, WebResponseError};

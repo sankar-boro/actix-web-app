@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use validator::{Validate};
 use actix_web::{web, HttpResponse};
-use lily_service::{encrypt_text, lilyError};
+use lily_service::{encrypt_text, WebResponseError};
 use super::{db, db::ReadRow};
 use crate::connection::conn;
 use actix_session::Session;
@@ -36,7 +36,7 @@ pub struct UserInfo {
   pub token: String,
 }
 
-fn create_user_token(user: &ReadRow, session: &Session) -> Result<String, lilyError> {
+fn create_user_token(user: &ReadRow, session: &Session) -> Result<String, WebResponseError> {
     let expiration = Utc::now()
         .checked_add_signed(chrono::Duration::seconds(1800))
         .expect("valid timestamp")
@@ -53,7 +53,7 @@ fn create_user_token(user: &ReadRow, session: &Session) -> Result<String, lilyEr
     Ok(token)
 }
 
-fn try_login(request: &web::Form<LoginUserInfo>, app_data: &web::Data<App>, session: &Session) -> Result<HttpResponse, lilyError> {
+fn try_login(request: &web::Form<LoginUserInfo>, app_data: &web::Data<App>, session: &Session) -> Result<HttpResponse, WebResponseError> {
   let con = conn(&app_data)?;
   let user = db::read_one_email(&request.email, &con)?;
   let password = encrypt_text(&request.password);
