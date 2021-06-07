@@ -1,6 +1,5 @@
 use actix_web::get;
 use actix_web::{HttpResponse,web};
-use scylla::frame::response::result::Row;
 use crate::App;
 use uuid::Uuid;
 use serde::Serialize;
@@ -9,7 +8,6 @@ use scylla::IntoTypedRows;
 use scylla::macros::FromRow;
 use scylla::frame::response::cql_to_rust::FromRow;
 use crate::RequestError;
-use crate::service::WebResponseError;
 
 #[derive(FromRow, Serialize)]
 #[allow(non_snake_case)]
@@ -36,8 +34,8 @@ fn res_err(err: &str) -> HttpResponse {
 }
 
 #[get("/all")]
-pub async fn get_all(session: web::Data<App>) -> HttpResponse {
-    let conn = match session.as_ref().conn() {
+pub async fn get_all(_app: web::Data<App>) -> HttpResponse {
+    let conn = match _app.as_ref().conn() {
         Ok(conn) => conn,
         Err(err) => return res_err(&err.to_string()),
     };

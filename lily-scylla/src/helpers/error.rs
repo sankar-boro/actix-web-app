@@ -23,4 +23,12 @@ impl<'a> Error<'a> {
             data: None,
         }
     }
+
+    pub fn bad_request(message: &'a str) -> Self {
+        Self {
+            status: "BAD_REQUEST",
+            message,
+            data: None,
+        }
+    }
 }
