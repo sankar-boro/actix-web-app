@@ -2018,6 +2018,7 @@ dependencies = [
  "async-std",
  "bigdecimal",
  "chrono",
+ "derive_more",
  "futures",
  "jsonwebtoken",
  "lily-middleware",

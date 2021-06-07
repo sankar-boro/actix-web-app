@@ -1,8 +1,15 @@
+use std::fmt::Write;
+
 use crate::App;
+use crate::ScyllaConnectionManager;
 use crate::service::Error;
 
+use actix_web::http::header;
+use r2d2::PooledConnection;
+use scylla::QueryResult;
 use scylla::macros::FromRow;
 
+use scylla::transport::errors::QueryError;
 use uuid::Uuid;
 use chrono::{Utc};
 use jsonwebtoken::encode;
@@ -26,7 +33,6 @@ struct SessionClaims {
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct LoginForm {
-	#[validate(email)]
 	email: String,
 	password: String,
 }
@@ -62,89 +68,117 @@ fn create_session_token(user: &GetUser) -> Result<String, jsonwebtoken::errors::
 	encode(&header, &claims, &EncodingKey::from_secret("secret".as_ref()))
 }
 
+type Conn = PooledConnection<ScyllaConnectionManager>;
+type ConnRes = Result<Conn, actix_web::Error>;
+trait ConnOrRes {
+	fn conn(&self) -> ConnRes;
+}
+
+impl actix_web::ResponseError for Error {
+    fn status_code(&self) -> StatusCode {
+        self.status_code()
+    }
+
+    fn error_response(&self) -> actix_web::BaseHttpResponse<actix_web::body::Body> {
+        let mut resp = actix_web::BaseHttpResponse::new(self.status_code());
+        let mut buf = web::BytesMut::new();
+		buf.write_str(self.get_message().as_str());
+        let _ = write!(&mut buf, "{}", self);
+        resp.headers_mut().insert(
+            header::CONTENT_TYPE,
+            header::HeaderValue::from_static("text/plain; charset=utf-8"),
+        );
+        resp.set_body(actix_web::body::Body::from(buf))
+    }
+}
+
+impl ConnOrRes for web::Data<App> {
+
+	fn conn(&self) -> ConnRes {
+		self.as_ref()
+		.conn()
+		.map_err(|err| {
+			Error::from(err).into()
+		})
+	}
+}
 
 // TODO: 
 // login is only working for x-www-form-url-encoded
-pub async fn login(request: web::Form<LoginForm>, _app: web::Data<App>, session: Session) -> HttpResponse {
-	if let Err(err) = request.validate() {
-		return HttpResponse::build(StatusCode::BAD_REQUEST)
-		.json(Error::from(err));
-	}
+pub async fn login(request: web::Form<LoginForm>, _app: web::Data<App>, session: Session) -> Result<HttpResponse, actix_web::Error> {
 
-	let conn = match _app.as_ref().conn() {
-        Ok(conn) => conn,
-        Err(err) => {
-			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-			.json(Error::from(err))
-		},
-    };
+	let a = _app.conn()?;
+	todo!();
+	// let conn = match _app.conn() {
+    //     Ok(conn) => conn,
+    //     Err(err) => return err,
+    // };
 	
-	// Query
-	let mut query = String::new();
-	query.push_str("SELECT id, email, password from sankar.userCredentials where email=");
-	let email = format!("'{}'", &request.email);
-	query.push_str(&email);
-	query.push_str("LIMIT 1");
-	// 
+	// // Query
+	// let mut query = String::new();
+	// query.push_str("SELECT id, email, password from sankar.userCredentials where email='");
+	// query.push_str(&request.email);
+	// query.push_str("'LIMIT 1");
+	// // 
 
-	let users = match conn.query(query, &[]).await {
-		Ok(rows) => rows,
-		Err(err) =>	{
-			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-			.json(Error::from(err))
-		}
-	};
+	// let users = match conn.query(query, &[]).await {
+	// 	Ok(rows) => rows,
+	// 	Err(err) =>	{
+	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+	// 		.json(Error::from(err))
+	// 	}
+	// };
 
-	// TODO: should recover from unwrap()
-    let users = match users.rows {
-        Some(users) => {
-			users.into_typed::<GetUser>()
-			.map(|a| a.unwrap())
-			.collect::<Vec<GetUser>>()
-		},
-        None => {
-            return HttpResponse::build(StatusCode::NOT_FOUND)
-			.json(Error::from(format!("User with email: {} not found.", &request.email)));
-        },
-    };
+	// // TODO: should recover from unwrap()
+    // let users = match users.rows {
+    //     Some(users) => {
+	// 		users.into_typed::<GetUser>()
+	// 		.map(|a| a.unwrap())
+	// 		.collect::<Vec<GetUser>>()
+	// 	},
+    //     None => {
+    //         return HttpResponse::build(StatusCode::NOT_FOUND)
+	// 		.json(Error::from(format!("User not found with email {}", &request.email)));
+    //     },
+    // };
 
-	if users.len() == 0 {
-        return HttpResponse::build(StatusCode::NOT_FOUND)
-		.json(Error::from(format!("User with email: {} not found.", &request.email)));
-	}
+	// if users.len() == 0 {
+    //     return HttpResponse::build(StatusCode::NOT_FOUND)
+	// 	.json(Error::from(format!("User not found with email {}", &request.email)));
+	// }
 
-	let password = match encrypt_text(&request.password) {
-		Ok(p) => p,
-		Err(err) => {
-			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-			.json(Error::from(err))
-		}
-	};
+	// let password = match encrypt_text(&request.password) {
+	// 	Ok(p) => p,
+	// 	Err(err) => {
+	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+	// 		.json(Error::from(err))
+	// 	}
+	// };
 
-	let user = &users[0];
+	// let user = &users[0];
 	
-	if password.as_bytes() != user.password {
-		return HttpResponse::build(StatusCode::BAD_REQUEST)
-		.json(Error::from("Invalid credentials".to_string()));
-	} 
+	// if password.as_bytes() != user.password {
+	// 	return HttpResponse::build(StatusCode::BAD_REQUEST)
+	// 	.json(Error::from("Invalid credentials".to_string()));
+	// } 
 	
-	let token = match create_session_token(&user) {
-		Ok(token) => token,
-		Err(err) => {
-			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-			.json(Error::from(err))
-		}
-	};
+	// let token = match create_session_token(&user) {
+	// 	Ok(token) => token,
+	// 	Err(err) => {
+	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+	// 		.json(Error::from(err))
+	// 	}
+	// };
 
-	match session.insert(user.id.to_string(), &token) {
-		Ok(_) => HttpResponse::Ok().json(UserInfo {
-			id: user.id.to_string(),
-			email: user.email.clone(),
-			token,
-		}),
-		Err(err) =>  {
-			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-			.json(Error::from(err))
-		}
-	}
+	// match session.insert(user.id.to_string(), &token) {
+	// 	Ok(_) => HttpResponse::Ok().json(UserInfo {
+	// 		id: user.id.to_string(),
+	// 		email: user.email.clone(),
+	// 		token,
+	// 	}),
+	// 	Err(err) =>  {
+	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+	// 		.json(Error::from(err))
+	// 	}
+	// }
 }
