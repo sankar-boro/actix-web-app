@@ -13,6 +13,7 @@ pub struct NewDocument {
 }
 
 static INSERT_DOCUMENT_INTO__DOCUMENTS: &str = "INSERT INTO sankar.documents (documentId,title,tags, body) VALUES(?,?,?,?)";
+
 pub async fn create_one(_app: web::Data<App>, request: web::Form<NewDocument>) -> HttpResponse {
 
     let conn = _app.get_ref().conn();

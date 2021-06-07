@@ -3,6 +3,7 @@ mod user;
 mod helpers;
 mod middleware;
 mod post;
+mod service;
 
 use std::sync::Arc;
 

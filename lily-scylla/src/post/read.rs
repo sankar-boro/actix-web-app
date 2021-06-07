@@ -1,4 +1,6 @@
+use actix_web::get;
 use actix_web::{HttpResponse,web};
+use scylla::frame::response::result::Row;
 use crate::App;
 use uuid::Uuid;
 use serde::Serialize;
@@ -7,6 +9,7 @@ use scylla::IntoTypedRows;
 use scylla::macros::FromRow;
 use scylla::frame::response::cql_to_rust::FromRow;
 use crate::RequestError;
+use crate::service::WebResponseError;
 
 #[derive(FromRow, Serialize)]
 #[allow(non_snake_case)]
@@ -25,38 +28,62 @@ pub struct NewDocument {
     updatedAt: Uuid,
 }
 
-static GET_ALL: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents";
-static GET_ONE: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents WHERE documentId={} LIMIT 1";
+static GET_ALL_DOCUMENTS: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents";
+static GET_DOCUMENT: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents WHERE documentId={} LIMIT 1";
 
+fn res_err(err: &str) -> HttpResponse {
+    HttpResponse::InternalServerError().json(RequestError::db_error(&err.to_string()))
+}
+
+#[get("/all")]
 pub async fn get_all(session: web::Data<App>) -> HttpResponse {
-    let conn = session.as_ref().conn();
+    let conn = match session.as_ref().conn() {
+        Ok(conn) => conn,
+        Err(err) => return res_err(&err.to_string()),
+    };
 
-    if let Ok(conn) = conn {
-        if let Some(rows) = conn.query(GET_ALL, &[]).await.unwrap().rows {
-            let mut documents = Vec::new();
-            for row in rows.into_typed::<NewDocument>() {
-                let new_document: NewDocument = row.unwrap();
-                documents.push(new_document);
-            }
-            return HttpResponse::Ok().json(documents);
-        }
-        let error = RequestError::not_found("User not found.");
-        return HttpResponse::Ok().json(error);
-    }
-    let error = RequestError::db_error("Something went wrong with DB.");
-    HttpResponse::Ok().json(error)
+    let documents = match conn.query(GET_ALL_DOCUMENTS, &[]).await {
+        Ok(docs) => docs,
+        Err(err) => return res_err(&err.to_string()),
+    };
+
+    // TODO: should recover from unwrap()
+    let documents = match documents.rows {
+        Some(docs) => docs.into_typed::<NewDocument>().map(|a| a.unwrap()).collect::<Vec<NewDocument>>(),
+        None => {
+            let res: Vec<NewDocument> = Vec::new();
+            return HttpResponse::Ok().json(res);
+        },
+    };
+
+    HttpResponse::Ok().json(documents)
 }
 
 pub async fn get_one(session: web::Data<App>, id: web::Path<String>,) -> HttpResponse {
-    let conn = session.session.get().unwrap();
-    let document_id =  Uuid::parse_str(&id).unwrap();
-    if let Some(rows) = conn.query(format!("{} {}", GET_ONE, document_id), &[]).await.unwrap().rows {
-        let mut documents = Vec::new();
-        for row in rows.into_typed::<NewDocument>() {
-            let new_document: NewDocument = row.unwrap();
-            documents.push(new_document);
-        }
-        return HttpResponse::Ok().json(documents);
-    }
-    HttpResponse::Ok().body("Failed to get document")
+    let conn = match session.as_ref().conn() {
+        Ok(conn) => conn,
+        Err(err) => return res_err(&err.to_string()),
+    };
+
+    let document_id =  match Uuid::parse_str(&id) {
+        Ok(id) => id,
+        Err(err) => return res_err(&err.to_string()) 
+    };
+    
+
+    let documents = match conn.query(format!("{} {}", GET_DOCUMENT, document_id), &[]).await {
+        Ok(docs) => docs,
+        Err(err) => return res_err(&err.to_string()),
+    };
+
+    // TODO: should recover from unwrap()
+    let documents = match documents.rows {
+        Some(docs) => docs.into_typed::<NewDocument>().map(|a| a.unwrap()).collect::<Vec<NewDocument>>(),
+        None => {
+            let res: Vec<NewDocument> = Vec::new();
+            return HttpResponse::Ok().json(res);
+        },
+    };
+
+    HttpResponse::Ok().json(documents)
 }
