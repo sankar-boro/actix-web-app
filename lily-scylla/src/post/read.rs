@@ -9,6 +9,7 @@ use scylla::frame::response::cql_to_rust::FromRow;
 use crate::RequestError;
 
 #[derive(FromRow, Serialize)]
+#[allow(non_snake_case)]
 pub struct NewDocument {
     documentId: Uuid,
     title: String,

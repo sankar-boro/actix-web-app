@@ -12,25 +12,15 @@ pub struct NewDocument {
     body: String
 }
 
+static INSERT_DOCUMENT_INTO__DOCUMENTS: &str = "INSERT INTO sankar.documents (documentId,title,tags, body) VALUES(?,?,?,?)";
 pub async fn create_one(_app: web::Data<App>, request: web::Form<NewDocument>) -> HttpResponse {
 
     let conn = _app.get_ref().conn();
     if let Ok(conn) = conn {
         let doc_id = time_uuid();
         conn
-            .query(
-                "INSERT INTO sankar.documents (
-                    documentId,
-                    title,
-                    tags, 
-                    body
-                ) VALUES(?,?,?,?)", 
-                (
-                    doc_id, 
-                    &request.title, 
-                    &request.tags, 
-                    &request.body
-                )
+            .query(INSERT_DOCUMENT_INTO__DOCUMENTS, 
+                (doc_id, &request.title, &request.tags,&request.body)
             ).await.unwrap();
     }
     HttpResponse::Ok().body("New document created!")
