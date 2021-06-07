@@ -1,121 +1,73 @@
-use jsonwebtoken;
-use std::fmt::Display;
-use serde::{Serialize, Deserialize};
-use actix_web::error::Error as AppError;
-use {serde_json, serde_json::{Value as JsonValue}};
+use actix_web::http::StatusCode;
+use serde::Serialize;
+use argon2;
 
-#[derive(Debug, Serialize)]
-pub enum WebResponseError {
-  InternalServerError(JsonValue),
-  ParseError(JsonValue),
-  NotFoundError(JsonValue),
-  QueryError(JsonValue),
-  AppError(JsonValue)
+#[derive(Serialize)]
+pub struct Error {
+    status: u16,
+    message: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct WebResponse {
-  pub status_code: Option<String>,
-  pub message: String, 
-}
-
-impl From<WebResponse> for serde_json::Value {
-  fn from(res: WebResponse) -> Self {
-    res.into()
-  }
-}
-
-impl Display for WebResponseError {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      WebResponseError::InternalServerError(res) => {
-        return write!(f, "{}", res)
-      }
-      WebResponseError::ParseError(res) => {
-        return write!(f, "{}", res)
-      }
-      WebResponseError::NotFoundError(res) => {
-        return write!(f, "{}", res)
-      }
-      WebResponseError::QueryError(res) => {
-        return write!(f, "{}", res)
-      }
-      WebResponseError::AppError(res) => {
-        return write!(f, "{}", res)
-      }
+impl From<r2d2::Error> for Error {
+    fn from(e: r2d2::Error) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            message: e.to_string(),
+        }
     }
-  }
 }
 
-impl From<r2d2::Error> for WebResponseError {
-  fn from(err: r2d2::Error) -> Self {
-    let res = WebResponse {
-      status_code: None,
-      message: err.to_string(), 
-    };
-    let str_err = serde_json::to_string(&res).unwrap();
-    let v: JsonValue = serde_json::from_str(&str_err).unwrap();
-    WebResponseError::InternalServerError(v)
-  }
+impl From<argon2::Error> for Error {
+    fn from(e: argon2::Error) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            message: e.to_string(),
+        }
+    }
 }
 
-impl From<std::num::ParseIntError> for WebResponseError {
-  fn from(err:std::num::ParseIntError) -> Self {
-    let res = WebResponse {
-      status_code: None,
-      message: err.to_string(), 
-    };
-    let res_str = serde_json::to_string(&res).unwrap();
-    let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    WebResponseError::InternalServerError(json_value)
-  }
+impl From<scylla::transport::errors::QueryError> for Error {
+    fn from(e: scylla::transport::errors::QueryError) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            message: e.to_string(),
+        }
+    }
 }
 
-// TODO: check redis connection error
-// impl From<redis::Connection> for WebResponseError {
-//   fn from(_:redis::Connection) -> Self {
-//     let res = WebResponse {
-//       status_code: None,
-//       message: "redis connection error".to_string(), 
-//     };
-//     let res_str = serde_json::to_string(&res).unwrap();
-//     let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-//     WebResponseError::InternalServerError(json_value)
-//   }
-// }
-
-impl From<String> for WebResponseError {
-  fn from(err:String) -> Self {
-    let res = WebResponse {
-      status_code: None,
-      message: err.to_string(), 
-    };
-    let res_str = serde_json::to_string(&res).unwrap();
-    let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    WebResponseError::InternalServerError(json_value)
-  }
+impl From<validator::ValidationErrors> for Error {
+    fn from(e: validator::ValidationErrors) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            message: e.to_string(),
+        }
+    }
 }
 
-impl From<AppError> for WebResponseError {
-  fn from(err: AppError) -> Self {
-    let res = WebResponse {
-      status_code: None,
-      message: err.to_string(), 
-    };
-    let res_str = serde_json::to_string(&res).unwrap();
-    let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    WebResponseError::AppError(json_value)
-  }
+//
+impl From<String> for Error {
+    fn from(e: String) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            message: e,
+        }
+    }
 }
 
-impl From<jsonwebtoken::errors::Error> for WebResponseError {
-  fn from(err: jsonwebtoken::errors::Error) -> Self {
-    let res = WebResponse {
-      status_code: None,
-      message: err.to_string(), 
-    };
-    let res_str = serde_json::to_string(&res).unwrap();
-    let json_value: JsonValue = serde_json::from_str(&res_str).unwrap();
-    WebResponseError::InternalServerError(json_value) 
-  }
+impl From<jsonwebtoken::errors::Error> for Error {
+    fn from(e: jsonwebtoken::errors::Error) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            message: e.to_string(),
+        }
+    }
+}
+
+impl From<actix_web::Error> for Error {
+    fn from(e: actix_web::Error) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            message: e.to_string(),
+        }
+    }
 }

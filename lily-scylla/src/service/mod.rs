@@ -1,3 +1,3 @@
 mod error;
 
-pub use error::WebResponseError;
+pub use error::Error;

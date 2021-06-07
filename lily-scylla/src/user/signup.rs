@@ -1,20 +1,18 @@
-use actix_web::{HttpResponse, http::StatusCode, web};
-use serde::{Deserialize};
 use crate::App;
-use validator::Validate;
-use lily_service::encrypt_text;
-use lily_utils::time_uuid;
-use crate::RequestError;
-use scylla::batch::Batch;
-use serde::Serialize;
-use argon2;
+use crate::service::Error;
 
+use serde::{Deserialize};
+use validator::Validate;
+use lily_utils::time_uuid;
+use scylla::batch::Batch;
+use lily_service::encrypt_text;
+use actix_web::{HttpResponse, http::StatusCode, web};
 
 static INSERT_TABLE__USERS: &str = "INSERT INTO sankar.users (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
 static INSERT__TABLE__CREDENTIALS: &str = "INSERT INTO sankar.userCredentials (id, email,password) VALUES(?,?,?)";
 
 #[derive(Deserialize, Validate)]
-pub struct SignupFormData {
+pub struct SignupForm {
     fname: String,
     lname: String,
     #[validate(email)]
@@ -23,49 +21,9 @@ pub struct SignupFormData {
     password: String,
 }
 
-#[derive(Serialize)]
-struct Error {
-    status: u16,
-    message: String,
-}
-
-impl From<r2d2::Error> for Error {
-    fn from(e: r2d2::Error) -> Self {
-        Error {
-            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-            message: e.to_string(),
-        }
-    }
-}
-
-impl From<argon2::Error> for Error {
-    fn from(e: argon2::Error) -> Self {
-        Error {
-            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-            message: e.to_string(),
-        }
-    }
-}
-
-impl From<scylla::transport::errors::QueryError> for Error {
-    fn from(e: scylla::transport::errors::QueryError) -> Self {
-        Error {
-            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-            message: e.to_string(),
-        }
-    }
-}
-
-impl From<validator::ValidationErrors> for Error {
-    fn from(e: validator::ValidationErrors) -> Self {
-        Error {
-            status: StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
-            message: e.to_string(),
-        }
-    }
-}
-
-pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupFormData>) -> HttpResponse {
+// TODO: 
+// return HttpResponse is too verbal
+pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -> HttpResponse {
     if let Err(err) = request.validate() {
 		return HttpResponse::build(StatusCode::BAD_REQUEST).json(Error::from(err));
 	}

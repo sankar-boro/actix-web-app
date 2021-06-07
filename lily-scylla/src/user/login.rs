@@ -1,28 +1,31 @@
-use serde::{Serialize, Deserialize};
-use validator::{Validate};
-use actix_web::{web, HttpResponse};
-use lily_service::{encrypt_text};
-use actix_session::Session;
+use crate::App;
+use crate::service::Error;
+
+use scylla::macros::FromRow;
+
+use uuid::Uuid;
 use chrono::{Utc};
 use jsonwebtoken::encode;
 use jsonwebtoken::Header;
-use jsonwebtoken::{EncodingKey, Algorithm};
-use crate::App;
+use validator::{Validate};
 use scylla::IntoTypedRows;
-use scylla::macros::FromRow;
+use actix_session::Session;
+use lily_service::{encrypt_text};
+use serde::{Serialize, Deserialize};
+use jsonwebtoken::{EncodingKey, Algorithm};
 use scylla::frame::response::cql_to_rust::FromRow;
-use uuid::Uuid;
-use crate::RequestError;
+use actix_web::{web, HttpResponse, http::StatusCode};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Claims {
+struct SessionClaims {
 	id: String,
 	email: String,
 	exp: i64,
 	iat: i64,
 }
+
 #[derive(Deserialize, Debug, Validate)]
-pub struct LoginUserInfo {
+pub struct LoginForm {
 	#[validate(email)]
 	email: String,
 	password: String,
@@ -42,21 +45,13 @@ struct GetUser {
 	password: Vec<u8>,
 }
 
-fn res_err(err: &str) -> HttpResponse {
-    HttpResponse::InternalServerError().json(RequestError::db_error(&err.to_string()))
-}
-
-fn bad_req(err: &str) -> HttpResponse {
-    HttpResponse::BadRequest().json(RequestError::bad_request(&err.to_string()))
-}
-
 fn create_session_token(user: &GetUser) -> Result<String, jsonwebtoken::errors::Error> {
 	let expiration = Utc::now()
 				.checked_add_signed(chrono::Duration::seconds(1800))
 				.expect("valid timestamp")
 				.timestamp();
 
-	let claims = Claims {
+	let claims = SessionClaims {
 		id: user.id.to_string(),
 		email: user.email.clone(),
 		exp: expiration,
@@ -70,14 +65,18 @@ fn create_session_token(user: &GetUser) -> Result<String, jsonwebtoken::errors::
 
 // TODO: 
 // login is only working for x-www-form-url-encoded
-pub async fn login(request: web::Form<LoginUserInfo>, _app: web::Data<App>, session: Session) -> HttpResponse {
-	if let Err(error) = request.validate() {
-		HttpResponse::BadRequest().json(error);
+pub async fn login(request: web::Form<LoginForm>, _app: web::Data<App>, session: Session) -> HttpResponse {
+	if let Err(err) = request.validate() {
+		return HttpResponse::build(StatusCode::BAD_REQUEST)
+		.json(Error::from(err));
 	}
 
 	let conn = match _app.as_ref().conn() {
         Ok(conn) => conn,
-        Err(err) => return res_err(&err.to_string()),
+        Err(err) => {
+			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+			.json(Error::from(err))
+		},
     };
 	
 	// Query
@@ -90,36 +89,51 @@ pub async fn login(request: web::Form<LoginUserInfo>, _app: web::Data<App>, sess
 
 	let users = match conn.query(query, &[]).await {
 		Ok(rows) => rows,
-		Err(err) => return res_err(&err.to_string())
+		Err(err) =>	{
+			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+			.json(Error::from(err))
+		}
 	};
 
 	// TODO: should recover from unwrap()
     let users = match users.rows {
-        Some(users) => users.into_typed::<GetUser>().map(|a| a.unwrap()).collect::<Vec<GetUser>>(),
+        Some(users) => {
+			users.into_typed::<GetUser>()
+			.map(|a| a.unwrap())
+			.collect::<Vec<GetUser>>()
+		},
         None => {
-			println!("None not working");
-            return res_err(&format!("User with email {} not found.", &request.email));
+            return HttpResponse::build(StatusCode::NOT_FOUND)
+			.json(Error::from(format!("User with email: {} not found.", &request.email)));
         },
     };
 
 	if users.len() == 0 {
-        return res_err(&format!("User with email {} not found.", &request.email));
+        return HttpResponse::build(StatusCode::NOT_FOUND)
+		.json(Error::from(format!("User with email: {} not found.", &request.email)));
 	}
 
 	let password = match encrypt_text(&request.password) {
 		Ok(p) => p,
-		Err(err) => return res_err(&err.to_string())
+		Err(err) => {
+			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+			.json(Error::from(err))
+		}
 	};
 
 	let user = &users[0];
 	
 	if password.as_bytes() != user.password {
-		return bad_req("Bad credentials.");
+		return HttpResponse::build(StatusCode::BAD_REQUEST)
+		.json(Error::from("Invalid credentials".to_string()));
 	} 
 	
 	let token = match create_session_token(&user) {
 		Ok(token) => token,
-		Err(err) => return res_err(&err.to_string())
+		Err(err) => {
+			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+			.json(Error::from(err))
+		}
 	};
 
 	match session.insert(user.id.to_string(), &token) {
@@ -128,6 +142,9 @@ pub async fn login(request: web::Form<LoginUserInfo>, _app: web::Data<App>, sess
 			email: user.email.clone(),
 			token,
 		}),
-		Err(err) =>  res_err(&err.to_string())
+		Err(err) =>  {
+			return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
+			.json(Error::from(err))
+		}
 	}
 }
