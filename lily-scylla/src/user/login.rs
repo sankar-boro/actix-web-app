@@ -97,12 +97,22 @@ pub async fn login(request: web::Form<LoginUserInfo>, _app: web::Data<App>, sess
     let users = match users.rows {
         Some(users) => users.into_typed::<GetUser>().map(|a| a.unwrap()).collect::<Vec<GetUser>>(),
         None => {
+			println!("None not working");
             return res_err(&format!("User with email {} not found.", &request.email));
         },
     };
 
-	let password = encrypt_text(&request.password);
+	if users.len() == 0 {
+        return res_err(&format!("User with email {} not found.", &request.email));
+	}
+
+	let password = match encrypt_text(&request.password) {
+		Ok(p) => p,
+		Err(err) => return res_err(&err.to_string())
+	};
+
 	let user = &users[0];
+	
 	if password.as_bytes() != user.password {
 		return bad_req("Bad credentials.");
 	} 

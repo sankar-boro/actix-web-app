@@ -23,7 +23,7 @@ pub struct SignupFormData {
 
 impl EncryptedRow for SignupFormData {
   fn enc_row(&self) -> Self {
-    let password = encrypt_text(&self.password);
+    let password = encrypt_text(&self.password).unwrap();
     SignupFormData {
       name: self.name.clone(),
       email: self.email.clone(),

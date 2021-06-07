@@ -56,7 +56,7 @@ fn create_user_token(user: &ReadRow, session: &Session) -> Result<String, WebRes
 fn try_login(request: &web::Form<LoginUserInfo>, app_data: &web::Data<App>, session: &Session) -> Result<HttpResponse, WebResponseError> {
   let con = conn(&app_data)?;
   let user = db::read_one_email(&request.email, &con)?;
-  let password = encrypt_text(&request.password);
+  let password = encrypt_text(&request.password).unwrap();
   if password == user.get_password() {
     let token = create_user_token(&user, session)?;
     return Ok(HttpResponse::Ok().json(UserInfo {

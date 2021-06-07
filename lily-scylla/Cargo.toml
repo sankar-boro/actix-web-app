@@ -34,6 +34,7 @@ chrono = "0.4.19"
 # rand = "0.8.3"
 pin-project = "1.0.7"
 sanitize-filename = "0.3.0"
+rust-argon2 = "0.8.3"
 
 lily-middleware = { path = "../lily-middleware"}
 lily-service = { path = "../lily-service"}
