@@ -24,11 +24,14 @@ pub struct NewDocument {
     updatedAt: Uuid,
 }
 
+static GET_ALL: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents";
+static GET_ONE: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents WHERE documentId={} LIMIT 1";
+
 pub async fn get_all(session: web::Data<App>) -> HttpResponse {
     let conn = session.as_ref().conn();
 
     if let Ok(conn) = conn {
-        if let Some(rows) = conn.query("SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents", &[]).await.unwrap().rows {
+        if let Some(rows) = conn.query(GET_ALL, &[]).await.unwrap().rows {
             let mut documents = Vec::new();
             for row in rows.into_typed::<NewDocument>() {
                 let new_document: NewDocument = row.unwrap();
@@ -46,7 +49,7 @@ pub async fn get_all(session: web::Data<App>) -> HttpResponse {
 pub async fn get_one(session: web::Data<App>, id: web::Path<String>,) -> HttpResponse {
     let conn = session.session.get().unwrap();
     let document_id =  Uuid::parse_str(&id).unwrap();
-    if let Some(rows) = conn.query(format!("SELECT userId, fname, lname, email from sankar.users where userId={} LIMIT 1", document_id), &[]).await.unwrap().rows {
+    if let Some(rows) = conn.query(format!("{} {}", GET_ONE, document_id), &[]).await.unwrap().rows {
         let mut documents = Vec::new();
         for row in rows.into_typed::<NewDocument>() {
             let new_document: NewDocument = row.unwrap();

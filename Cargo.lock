@@ -1957,6 +1957,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web 4.0.0-beta.6",
  "lily-scylla",
+ "lily-utils",
 ]
 
 [[package]]
@@ -2021,10 +2022,10 @@ dependencies = [
  "jsonwebtoken",
  "lily-middleware",
  "lily-service",
+ "lily-utils",
  "num-bigint 0.3.2",
  "pin-project 1.0.7",
  "r2d2",
- "rand 0.8.3",
  "sanitize-filename",
  "scylla",
  "serde",
@@ -2050,6 +2051,15 @@ dependencies = [
  "serde",
  "serde_json",
  "validator",
+]
+
+[[package]]
+name = "lily-utils"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "rand 0.8.3",
+ "uuid",
 ]
 
 [[package]]

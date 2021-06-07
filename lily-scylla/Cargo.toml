@@ -31,9 +31,10 @@ tokio = "1.5.0"
 r2d2 = "0.8.9"
 validator = { version = "0.12", features = ["derive"] }
 chrono = "0.4.19"
-rand = "0.8.3"
+# rand = "0.8.3"
 pin-project = "1.0.7"
 sanitize-filename = "0.3.0"
 
 lily-middleware = { path = "../lily-middleware"}
 lily-service = { path = "../lily-service"}
+lily-utils = { path = "../lily-utils"}
