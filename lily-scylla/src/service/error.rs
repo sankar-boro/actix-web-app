@@ -1,6 +1,8 @@
-use actix_web::http::StatusCode;
-use serde::Serialize;
 use argon2;
+use std::fmt::Write;
+use actix_web::http::StatusCode;
+use actix_web::{web::BytesMut};
+use actix_web::http::header;
 use derive_more::{Display};
 
 #[derive(Display, Debug)]
@@ -81,5 +83,24 @@ impl From<actix_web::Error> for Error {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message: e.to_string(),
         }
+    }
+}
+
+
+impl actix_web::ResponseError for Error {
+    fn status_code(&self) -> StatusCode {
+        self.status_code()
+    }
+
+    fn error_response(&self) -> actix_web::BaseHttpResponse<actix_web::body::Body> {
+        let mut resp = actix_web::BaseHttpResponse::new(self.status_code());
+        let mut buf = BytesMut::new();
+		buf.write_str(self.get_message().as_str());
+        let _ = write!(&mut buf, "{}", self);
+        resp.headers_mut().insert(
+            header::CONTENT_TYPE,
+            header::HeaderValue::from_static("text/plain; charset=utf-8"),
+        );
+        resp.set_body(actix_web::body::Body::from(buf))
     }
 }

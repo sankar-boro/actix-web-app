@@ -1,10 +1,7 @@
-use std::fmt::Write;
-
 use crate::App;
 use crate::ScyllaConnectionManager;
 use crate::service::Error;
 
-use actix_web::http::header;
 use r2d2::PooledConnection;
 use scylla::QueryResult;
 use scylla::macros::FromRow;
@@ -68,33 +65,13 @@ fn create_session_token(user: &GetUser) -> Result<String, jsonwebtoken::errors::
 	encode(&header, &claims, &EncodingKey::from_secret("secret".as_ref()))
 }
 
-type Conn = PooledConnection<ScyllaConnectionManager>;
-type ConnRes = Result<Conn, actix_web::Error>;
-trait ConnOrRes {
-	fn conn(&self) -> ConnRes;
+trait ConnectionResult {
+	fn conn_result(&self) -> Result<PooledConnection<ScyllaConnectionManager>, actix_web::Error>;
 }
 
-impl actix_web::ResponseError for Error {
-    fn status_code(&self) -> StatusCode {
-        self.status_code()
-    }
+impl ConnectionResult for web::Data<App> {
 
-    fn error_response(&self) -> actix_web::BaseHttpResponse<actix_web::body::Body> {
-        let mut resp = actix_web::BaseHttpResponse::new(self.status_code());
-        let mut buf = web::BytesMut::new();
-		buf.write_str(self.get_message().as_str());
-        let _ = write!(&mut buf, "{}", self);
-        resp.headers_mut().insert(
-            header::CONTENT_TYPE,
-            header::HeaderValue::from_static("text/plain; charset=utf-8"),
-        );
-        resp.set_body(actix_web::body::Body::from(buf))
-    }
-}
-
-impl ConnOrRes for web::Data<App> {
-
-	fn conn(&self) -> ConnRes {
+	fn conn_result(&self) -> Result<PooledConnection<ScyllaConnectionManager>, actix_web::Error> {
 		self.as_ref()
 		.conn()
 		.map_err(|err| {
@@ -103,31 +80,39 @@ impl ConnOrRes for web::Data<App> {
 	}
 }
 
+trait GetQueryResult {
+	fn get_query_result(&self) -> Result<Vec<GetUser>, actix_web::Error>;
+}
+
+impl GetQueryResult for Result<QueryResult, QueryError> {
+    fn get_query_result(&self) -> Result<Vec<GetUser>, actix_web::Error> {
+		self
+		.map_err(|err| Error::from(err).into())
+		.map(|res| {
+			if let Some(rows) = res.rows {
+				return rows.into_typed::<GetUser>()
+					.map(|a| a.unwrap())
+					.collect::<Vec<GetUser>>();
+			}
+			let mt: Vec<GetUser> = Vec::new();
+			return mt;
+		})
+    }
+}
+
 // TODO: 
 // login is only working for x-www-form-url-encoded
-pub async fn login(request: web::Form<LoginForm>, _app: web::Data<App>, session: Session) -> Result<HttpResponse, actix_web::Error> {
-
-	let a = _app.conn()?;
+pub async fn login(request: web::Form<LoginForm>, app: web::Data<App>, session: Session) -> Result<HttpResponse, actix_web::Error> {
+	let conn = app.conn_result()?;
+	let query = String::new();
+	let rows = conn.query(query, &[]).await.get_query_result()?;
 	todo!();
-	// let conn = match _app.conn() {
-    //     Ok(conn) => conn,
-    //     Err(err) => return err,
-    // };
 	
 	// // Query
-	// let mut query = String::new();
 	// query.push_str("SELECT id, email, password from sankar.userCredentials where email='");
 	// query.push_str(&request.email);
 	// query.push_str("'LIMIT 1");
 	// // 
-
-	// let users = match conn.query(query, &[]).await {
-	// 	Ok(rows) => rows,
-	// 	Err(err) =>	{
-	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-	// 		.json(Error::from(err))
-	// 	}
-	// };
 
 	// // TODO: should recover from unwrap()
     // let users = match users.rows {
