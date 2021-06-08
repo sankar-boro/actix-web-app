@@ -7,6 +7,7 @@ use actix_web::http::header;
 use derive_more::{Display};
 use serde_json::json;
 
+
 #[derive(Display, Debug)]
 #[display(fmt = "status: {}", status)]
 pub struct Error {
@@ -91,6 +92,15 @@ impl From<jsonwebtoken::errors::Error> for Error {
 
 impl From<actix_web::Error> for Error {
     fn from(e: actix_web::Error) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+
+impl From<uuid::Error> for Error {
+    fn from(e: uuid::Error) -> Self {
         Error {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message: e.to_string(),

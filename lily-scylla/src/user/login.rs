@@ -13,7 +13,6 @@ use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{EncodingKey, Algorithm};
 use scylla::frame::response::cql_to_rust::FromRow;
-
 use crate::utils::{
 	validate_user_credentials, 
 	GetQueryResult, 
@@ -83,7 +82,7 @@ pub async fn login(request: web::Form<LoginForm>, app: web::Data<App>, session: 
 		return Err(AppError::from("Invalid credentials.").into());
 	}
 	let conn = app.conn_result()?;
-	let rows = 
+	let rows: Option<Vec<GetUser>> = 
 		conn.query(get_user_query(&request.email), &[])
 		.await
 		.get_query_result()?;
