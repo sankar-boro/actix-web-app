@@ -1,9 +1,11 @@
 use argon2;
 use std::fmt::Write;
 use actix_web::http::StatusCode;
+use actix_web::HttpResponse;
 use actix_web::{web::BytesMut};
 use actix_web::http::header;
 use derive_more::{Display};
+use serde_json::json;
 
 #[derive(Display, Debug)]
 #[display(fmt = "status: {}", status)]
@@ -103,12 +105,12 @@ impl actix_web::ResponseError for Error {
 
     fn error_response(&self) -> actix_web::BaseHttpResponse<actix_web::body::Body> {
         let mut resp = actix_web::BaseHttpResponse::new(self.status_code());
+        let err_json = json!({ "status": self.status_code().as_u16(), "message": self.get_message() });
         let mut buf = BytesMut::new();
-		buf.write_str(self.get_message());
-        let _ = write!(&mut buf, "{}", self);
+		buf.write_str(err_json.to_string().as_str()).unwrap();
         resp.headers_mut().insert(
             header::CONTENT_TYPE,
-            header::HeaderValue::from_static("text/plain; charset=utf-8"),
+            header::HeaderValue::from_static("application/json"),
         );
         resp.set_body(actix_web::body::Body::from(buf))
     }
