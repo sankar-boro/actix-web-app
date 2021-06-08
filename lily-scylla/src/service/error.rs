@@ -17,8 +17,8 @@ impl Error {
         self.status
     }
 
-    pub fn get_message(&self) -> String {
-        self.message
+    pub fn get_message(&self) -> &str {
+        &self.message
     }
 }
 
@@ -68,6 +68,15 @@ impl From<String> for Error {
     }
 }
 
+impl From<&str> for Error {
+    fn from(e: &str) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+
 impl From<jsonwebtoken::errors::Error> for Error {
     fn from(e: jsonwebtoken::errors::Error) -> Self {
         Error {
@@ -89,13 +98,13 @@ impl From<actix_web::Error> for Error {
 
 impl actix_web::ResponseError for Error {
     fn status_code(&self) -> StatusCode {
-        self.status_code()
+        self.get_status()
     }
 
     fn error_response(&self) -> actix_web::BaseHttpResponse<actix_web::body::Body> {
         let mut resp = actix_web::BaseHttpResponse::new(self.status_code());
         let mut buf = BytesMut::new();
-		buf.write_str(self.get_message().as_str());
+		buf.write_str(self.get_message());
         let _ = write!(&mut buf, "{}", self);
         resp.headers_mut().insert(
             header::CONTENT_TYPE,

@@ -81,22 +81,29 @@ impl ConnectionResult for web::Data<App> {
 }
 
 trait GetQueryResult {
-	fn get_query_result(&self) -> Result<Vec<GetUser>, actix_web::Error>;
+	type Request;
+	fn get_query_result(self) -> Result<Option<Vec<Self::Request>>, actix_web::Error>;
 }
 
+
 impl GetQueryResult for Result<QueryResult, QueryError> {
-    fn get_query_result(&self) -> Result<Vec<GetUser>, actix_web::Error> {
+    type Request = GetUser;
+	fn get_query_result(self) -> Result<Option<Vec<Self::Request>>, actix_web::Error> {
 		self
 		.map_err(|err| Error::from(err).into())
 		.map(|res| {
-			if let Some(rows) = res.rows {
-				return rows.into_typed::<GetUser>()
+			res.rows.map(|d| {
+				d.into_typed::<Self::Request>()
 					.map(|a| a.unwrap())
-					.collect::<Vec<GetUser>>();
-			}
-			let mt: Vec<GetUser> = Vec::new();
-			return mt;
+					.collect::<Vec<Self::Request>>()
+			})
 		})
+    }
+}
+
+impl<'a> From<&'a Vec<GetUser>> for &'a GetUser {
+    fn from(users: &'a Vec<GetUser>) -> Self {
+		&users[0]
     }
 }
 
@@ -104,66 +111,44 @@ impl GetQueryResult for Result<QueryResult, QueryError> {
 // login is only working for x-www-form-url-encoded
 pub async fn login(request: web::Form<LoginForm>, app: web::Data<App>, session: Session) -> Result<HttpResponse, actix_web::Error> {
 	let conn = app.conn_result()?;
-	let query = String::new();
-	let rows = conn.query(query, &[]).await.get_query_result()?;
-	todo!();
 	
-	// // Query
-	// query.push_str("SELECT id, email, password from sankar.userCredentials where email='");
-	// query.push_str(&request.email);
-	// query.push_str("'LIMIT 1");
-	// // 
-
-	// // TODO: should recover from unwrap()
-    // let users = match users.rows {
-    //     Some(users) => {
-	// 		users.into_typed::<GetUser>()
-	// 		.map(|a| a.unwrap())
-	// 		.collect::<Vec<GetUser>>()
-	// 	},
-    //     None => {
-    //         return HttpResponse::build(StatusCode::NOT_FOUND)
-	// 		.json(Error::from(format!("User not found with email {}", &request.email)));
-    //     },
-    // };
-
-	// if users.len() == 0 {
-    //     return HttpResponse::build(StatusCode::NOT_FOUND)
-	// 	.json(Error::from(format!("User not found with email {}", &request.email)));
-	// }
-
-	// let password = match encrypt_text(&request.password) {
-	// 	Ok(p) => p,
-	// 	Err(err) => {
-	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-	// 		.json(Error::from(err))
-	// 	}
-	// };
-
-	// let user = &users[0];
+	let mut query = String::new();
+	query.push_str("SELECT id, email, password from sankar.userCredentials where email='");
+	query.push_str(&request.email);
+	query.push_str("'LIMIT 1");
 	
-	// if password.as_bytes() != user.password {
-	// 	return HttpResponse::build(StatusCode::BAD_REQUEST)
-	// 	.json(Error::from("Invalid credentials".to_string()));
-	// } 
-	
-	// let token = match create_session_token(&user) {
-	// 	Ok(token) => token,
-	// 	Err(err) => {
-	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-	// 		.json(Error::from(err))
-	// 	}
-	// };
+	let rows = 
+		conn.query(query, &[])
+		.await
+		.get_query_result()?;
+	let user: &GetUser = match &rows {
+		Some(users) => {
+			let user = users.first();
+			match user {
+				Some(user) => user,
+				None => return Err(Error::from("User not found").into())
+			}
+		},
+		None => return Err(Error::from("User not found").into())
+	};
+	let password = match encrypt_text(&request.password) {
+		Ok(p) => p,
+		Err(err) => return Err(Error::from(err).into())
+	};
+	if password.as_bytes() != user.password {
+		return Err(Error::from("Invalid credentials").into());
+	} 
+	let token = match create_session_token(&user) {
+		Ok(token) => token,
+		Err(err) => return Err(Error::from(err).into())
+	};
+	match session.insert(user.id.to_string(), &token) {
+		Ok(_) => Ok(HttpResponse::Ok().json(UserInfo {
+			id: user.id.to_string(),
+			email: user.email.clone(),
+			token,
+		})),
+		Err(err) => Err(Error::from(err).into())
+	}
 
-	// match session.insert(user.id.to_string(), &token) {
-	// 	Ok(_) => HttpResponse::Ok().json(UserInfo {
-	// 		id: user.id.to_string(),
-	// 		email: user.email.clone(),
-	// 		token,
-	// 	}),
-	// 	Err(err) =>  {
-	// 		return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR)
-	// 		.json(Error::from(err))
-	// 	}
-	// }
 }

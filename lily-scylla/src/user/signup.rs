@@ -23,19 +23,19 @@ pub struct SignupForm {
 
 // TODO: 
 // return HttpResponse is too verbal
-pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -> HttpResponse {
+pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
     if let Err(err) = request.validate() {
-		return HttpResponse::build(StatusCode::BAD_REQUEST).json(Error::from(err));
+		return Err(Error::from(err).into());
 	}
 
     let conn = match _app.as_ref().conn() {
         Ok(conn) => conn,
-        Err(err) => return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR).json(Error::from(err)),
+        Err(err) => return Err(Error::from(err).into()),
     };
 
     let password = match encrypt_text(&request.password) {
         Ok(pass) => pass,
-        Err(err) => return HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR).json(Error::from(err))
+        Err(err) => return Err(Error::from(err).into())
     };
     
     let id = time_uuid();
@@ -48,7 +48,7 @@ pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -
     );
 
     match conn.batch(&batch, batch_values).await {
-        Ok(_) => HttpResponse::Ok().body("New user created!"),
-        Err(err) => HttpResponse::build(StatusCode::INTERNAL_SERVER_ERROR).json(Error::from(err))
+        Ok(_) => Ok(HttpResponse::Ok().body("New user created!")),
+        Err(err) => Err(Error::from(err).into())
     }
 }
