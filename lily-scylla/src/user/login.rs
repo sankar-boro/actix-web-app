@@ -6,19 +6,20 @@ use r2d2::PooledConnection;
 use scylla::QueryResult;
 use scylla::macros::FromRow;
 
-use scylla::transport::errors::QueryError;
 use uuid::Uuid;
 use chrono::{Utc};
+use argon2::{Config};
 use jsonwebtoken::encode;
 use jsonwebtoken::Header;
 use validator::{Validate};
 use scylla::IntoTypedRows;
 use actix_session::Session;
-use lily_service::{encrypt_text};
 use serde::{Serialize, Deserialize};
+use scylla::transport::errors::QueryError;
 use jsonwebtoken::{EncodingKey, Algorithm};
 use scylla::frame::response::cql_to_rust::FromRow;
 use actix_web::{web, HttpResponse, http::StatusCode};
+// use crate::service::{validate_password};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct SessionClaims {
@@ -30,6 +31,7 @@ struct SessionClaims {
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct LoginForm {
+    #[validate(email)]
 	email: String,
 	password: String,
 }
@@ -48,7 +50,7 @@ struct GetUser {
 	password: Vec<u8>,
 }
 
-fn create_session_token(user: &GetUser) -> Result<String, jsonwebtoken::errors::Error> {
+fn create_session_token(user: &GetUser) -> Result<String, actix_web::Error> {
 	let expiration = Utc::now()
 				.checked_add_signed(chrono::Duration::seconds(1800))
 				.expect("valid timestamp")
@@ -62,7 +64,10 @@ fn create_session_token(user: &GetUser) -> Result<String, jsonwebtoken::errors::
 	};
 
 	let header = Header::new(Algorithm::HS512);
-	encode(&header, &claims, &EncodingKey::from_secret("secret".as_ref()))
+	match encode(&header, &claims, &EncodingKey::from_secret("secret".as_ref())) {
+		Ok(a) => Ok(a),
+		Err(err) => Err(Error::from(err).into())
+	}
 }
 
 trait ConnectionResult {
@@ -92,8 +97,8 @@ impl GetQueryResult for Result<QueryResult, QueryError> {
 		self
 		.map_err(|err| Error::from(err).into())
 		.map(|res| {
-			res.rows.map(|d| {
-				d.into_typed::<Self::Request>()
+			res.rows.map(|rows| {
+				rows.into_typed::<Self::Request>()
 					.map(|a| a.unwrap())
 					.collect::<Vec<Self::Request>>()
 			})
@@ -110,6 +115,9 @@ impl<'a> From<&'a Vec<GetUser>> for &'a GetUser {
 // TODO: 
 // login is only working for x-www-form-url-encoded
 pub async fn login(request: web::Form<LoginForm>, app: web::Data<App>, session: Session) -> Result<HttpResponse, actix_web::Error> {
+	if let Err(_) = request.validate() {
+		return Err(Error::from("Invalid credentials.").into());
+	}
 	let conn = app.conn_result()?;
 	
 	let mut query = String::new();
@@ -121,27 +129,22 @@ pub async fn login(request: web::Form<LoginForm>, app: web::Data<App>, session: 
 		conn.query(query, &[])
 		.await
 		.get_query_result()?;
+
+
 	let user: &GetUser = match &rows {
 		Some(users) => {
-			let user = users.first();
-			match user {
+			match users.first() {
 				Some(user) => user,
 				None => return Err(Error::from("User not found").into())
 			}
 		},
 		None => return Err(Error::from("User not found").into())
 	};
-	let password = match encrypt_text(&request.password) {
-		Ok(p) => p,
-		Err(err) => return Err(Error::from(err).into())
-	};
-	if password.as_bytes() != user.password {
-		return Err(Error::from("Invalid credentials").into());
-	} 
-	let token = match create_session_token(&user) {
-		Ok(token) => token,
-		Err(err) => return Err(Error::from(err).into())
-	};
+	
+	validate_password(&request.password, &user.password)?;
+
+	let token = create_session_token(&user)?;
+
 	match session.insert(user.id.to_string(), &token) {
 		Ok(_) => Ok(HttpResponse::Ok().json(UserInfo {
 			id: user.id.to_string(),
@@ -150,5 +153,19 @@ pub async fn login(request: web::Form<LoginForm>, app: web::Data<App>, session: 
 		})),
 		Err(err) => Err(Error::from(err).into())
 	}
+}
 
+pub fn validate_password(req_pass: &str, db_pass: &[u8]) -> Result<(), actix_web::Error> {
+    let salt = b"sankar_boro";
+    let config = Config::default();
+    let req_pass = req_pass.as_bytes();
+    match argon2::hash_encoded(req_pass, salt, &config) {
+      	Ok(data) => {
+          	if data.as_bytes() != db_pass {
+              	return Err(Error::from("Invalid credentials").into());
+          	}
+          	Ok(())
+      	},
+      	Err(err) => Err(Error::from(err).into())
+    }
 }

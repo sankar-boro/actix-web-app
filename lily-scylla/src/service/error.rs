@@ -42,6 +42,7 @@ impl From<argon2::Error> for Error {
     }
 }
 
+
 impl From<scylla::transport::errors::QueryError> for Error {
     fn from(e: scylla::transport::errors::QueryError) -> Self {
         Error {
