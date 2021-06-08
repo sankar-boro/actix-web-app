@@ -9,12 +9,14 @@ mod error;
 use std::sync::Arc;
 
 use anyhow::Result;
-use r2d2::{ManageConnection, Pool, PooledConnection};
-use scylla::{Session, SessionBuilder};
-use actix_web::{App as ActixApp, HttpServer};
-use actix_redis::RedisSession;
-use helpers::error::Error as RequestError;
 use error::Error as AppError;
+use actix_redis::RedisSession;
+use crate::utils::ConnectionResult;
+use scylla::{Session, SessionBuilder};
+use helpers::error::Error as RequestError;
+use actix_web::{App as ActixApp, HttpServer};
+use r2d2::{ManageConnection, Pool, PooledConnection};
+use actix_web::web;
 
 #[derive(Clone)]
 pub struct App {
@@ -91,4 +93,15 @@ pub async fn start_scylla_app() -> Result<()> {
     .run()
     .await?;
     Ok(())
+}
+
+impl ConnectionResult for web::Data<App> {
+
+	fn conn_result(&self) -> Result<PooledConnection<ScyllaConnectionManager>, actix_web::Error> {
+		self.as_ref()
+		.conn()
+		.map_err(|err| {
+			AppError::from(err).into()
+		})
+	}
 }

@@ -6,13 +6,6 @@ use chrono::{NaiveDateTime};
 use super::db;
 use crate::App;
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-  id: i32,
-  email: String,
-  exp: i64,
-  iat: i64,
-}
 #[derive(Deserialize, Debug, Validate)]
 pub struct LoginUserInfo {
   #[validate(email)]

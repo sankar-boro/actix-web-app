@@ -1,21 +1,12 @@
 use std::fmt::Display;
 use actix_session::Session;
-// use actix_session::Session; #Could require this statement in future;
 use jsonwebtoken::Validation;
 use jsonwebtoken::DecodingKey;
+use crate::utils::SessionClaims;
 use actix_web::http::HeaderValue;
 use serde::{Deserialize, Serialize};
-use {serde_json, serde_json::{Value as JsonValue}};
 use jsonwebtoken::{decode, Algorithm};
-use uuid::Uuid;
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-  id: String,
-  email: String,
-  exp: i64,
-  iat: i64,
-}
+use {serde_json, serde_json::{Value as JsonValue}};
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -95,13 +86,13 @@ impl<'a> ValidationHandler<'a> {
       return match bearer.to_str() {
         Ok(bearer) => {
           let token = &bearer[7..];
-            let claims = decode::<Claims>(
+            let claims = decode::<SessionClaims>(
               token,
           &DecodingKey::from_secret("secret".as_bytes()),
               &Validation::new(Algorithm::HS512),
             )?;
 
-            match session.get::<String>(&claims.claims.id.to_string()) {
+            match session.get::<String>(&claims.claims.get_id()) {
               Ok(d) => {
                 match d {
                   Some(d) => {

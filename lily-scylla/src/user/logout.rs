@@ -7,13 +7,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use {serde_json, serde_json::{Value as JsonValue}};
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-  id: i32,
-  email: String,
-  exp: usize,
-}
-
 fn get_user_session(u_id: i32, session: &Session) -> Result<Option<String>, WebResponseError> {
 
     session.get::<String>(&u_id.to_string())

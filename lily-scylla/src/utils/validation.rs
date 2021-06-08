@@ -1,7 +1,32 @@
 use argon2::{Config};
 use crate::AppError;
+use uuid::Uuid;
+use serde::{Serialize, Deserialize};
 
-pub fn validate_password(req_pass: &str, db_pass: &[u8]) -> Result<(), actix_web::Error> {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SessionClaims {
+	id: String,
+	email: String,
+	exp: i64,
+	iat: i64,
+}
+
+impl SessionClaims {
+	pub fn new(id: Uuid, email: String, exp: i64, iat: i64) -> Self {
+		SessionClaims {
+			id: id.to_string(),
+			email,
+			exp,
+			iat,
+		}
+	}
+
+	pub fn get_id(&self) -> &str {
+		&self.id
+	}
+}
+
+pub fn validate_user_credentials(req_pass: &str, db_pass: &[u8]) -> Result<(), actix_web::Error> {
     let salt = b"sankar_boro";
     let config = Config::default();
     let req_pass = req_pass.as_bytes();
