@@ -1,12 +1,12 @@
 use crate::App;
-use crate::service::Error;
+use crate::AppError;
 
 use serde::{Deserialize};
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::batch::Batch;
 use lily_service::encrypt_text;
-use actix_web::{HttpResponse, http::StatusCode, web};
+use actix_web::{HttpResponse, web};
 
 static INSERT_TABLE__USERS: &str = "INSERT INTO sankar.users (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
 static INSERT__TABLE__CREDENTIALS: &str = "INSERT INTO sankar.userCredentials (id, email,password) VALUES(?,?,?)";
@@ -25,17 +25,17 @@ pub struct SignupForm {
 // return HttpResponse is too verbal
 pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
     if let Err(err) = request.validate() {
-		return Err(Error::from(err).into());
+		return Err(AppError::from(err).into());
 	}
 
     let conn = match _app.as_ref().conn() {
         Ok(conn) => conn,
-        Err(err) => return Err(Error::from(err).into()),
+        Err(err) => return Err(AppError::from(err).into()),
     };
 
     let password = match encrypt_text(&request.password) {
         Ok(pass) => pass,
-        Err(err) => return Err(Error::from(err).into())
+        Err(err) => return Err(AppError::from(err).into())
     };
     
     let id = time_uuid();
@@ -49,6 +49,6 @@ pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -
 
     match conn.batch(&batch, batch_values).await {
         Ok(_) => Ok(HttpResponse::Ok().body("New user created!")),
-        Err(err) => Err(Error::from(err).into())
+        Err(err) => Err(AppError::from(err).into())
     }
 }

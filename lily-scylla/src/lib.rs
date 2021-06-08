@@ -3,7 +3,8 @@ mod user;
 mod helpers;
 mod middleware;
 mod post;
-mod service;
+mod utils;
+mod error;
 
 use std::sync::Arc;
 
@@ -13,6 +14,7 @@ use scylla::{Session, SessionBuilder};
 use actix_web::{App as ActixApp, HttpServer};
 use actix_redis::RedisSession;
 use helpers::error::Error as RequestError;
+use error::Error as AppError;
 
 #[derive(Clone)]
 pub struct App {
