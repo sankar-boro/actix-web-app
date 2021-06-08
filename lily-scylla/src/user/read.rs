@@ -37,9 +37,6 @@ pub async fn get_all(session: web::Data<App>)
     }
 }
 
-
-
-// Section //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 fn get_user_query(user_id: &str) 
 -> Result<String, actix_web::Error> {
     match Uuid::parse_str(user_id) {

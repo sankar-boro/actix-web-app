@@ -30,3 +30,46 @@ impl<T: FromRow> GetQueryResult<T> for Result<QueryResult, QueryError> {
 		})
     }
 }
+
+pub struct Update {
+	query: String,
+}
+impl Update {
+	pub fn from(table: &str) -> Self {
+		let mut q = String::from("UPDATE");
+		q.push_str(" ");
+		q.push_str(table);
+		q.push_str(" ");
+		q.push_str("SET");
+		q.push_str(" ");
+
+		Self {
+			query: q,
+		}
+	}
+
+	pub fn set(mut self, key: &str, value: &str) -> Self {
+		self.query.push_str(key);
+		self.query.push_str("=");
+		self.query.push_str("'");
+		self.query.push_str(value);
+		self.query.push_str("'");
+		self.query.push_str(" ");
+		self
+	}
+
+	pub fn where_in(mut self, key: &str, value: &str) -> Self {
+		self.query.push_str("WHERE");
+		self.query.push_str(" ");
+		self.query.push_str(key);
+		self.query.push_str("=");
+		self.query.push_str(value);
+		self
+	}
+
+	pub fn query(self) -> String {
+		self.query.clone()
+	} 
+
+
+}
