@@ -3,7 +3,6 @@ use crate::AppError;
 use crate::ScyllaConnectionManager;
 
 use r2d2::PooledConnection;
-use scylla::QueryResult;
 use scylla::macros::FromRow;
 
 use uuid::Uuid;
@@ -11,11 +10,9 @@ use chrono::{Utc};
 use jsonwebtoken::encode;
 use jsonwebtoken::Header;
 use validator::{Validate};
-use scylla::IntoTypedRows;
 use actix_session::Session;
 use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
-use scylla::transport::errors::QueryError;
 use jsonwebtoken::{EncodingKey, Algorithm};
 use scylla::frame::response::cql_to_rust::FromRow;
 use crate::utils::{validate_password, GetQueryResult, ConnectionResult};
@@ -78,21 +75,6 @@ impl ConnectionResult for web::Data<App> {
 			AppError::from(err).into()
 		})
 	}
-}
-
-impl GetQueryResult for Result<QueryResult, QueryError> {
-    type Request = GetUser;
-	fn get_query_result(self) -> Result<Option<Vec<Self::Request>>, actix_web::Error> {
-		self
-		.map_err(|err| AppError::from(err).into())
-		.map(|res| {
-			res.rows.map(|rows| {
-				rows.into_typed::<Self::Request>()
-					.map(|a| a.unwrap())
-					.collect::<Vec<Self::Request>>()
-			})
-		})
-    }
 }
 
 // TODO: 
