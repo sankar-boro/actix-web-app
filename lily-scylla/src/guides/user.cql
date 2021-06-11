@@ -12,9 +12,16 @@ CREATE TABLE users (
     PRIMARY KEY (userId)
 );
 
-CREATE TABLE userCredentials(
-    id timeuuid,
+CREATE TABLE userCredentials (
+    userId timeuuid,
+    fname varchar,
+    lname varchar,
+    smUserImageUrl varchar,
+    mdUserImageUrl varchar,
+    lgUserImageUrl varchar,
     email varchar,
-    password blob, 
+    password blob,
+    createdAt timeuuid,
+    updatedAt timeuuid,
     PRIMARY KEY (email)
 );

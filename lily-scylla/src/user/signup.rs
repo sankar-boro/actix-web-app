@@ -9,7 +9,7 @@ use lily_service::encrypt_text;
 use actix_web::{HttpResponse, web};
 
 static INSERT_TABLE__USERS: &str = "INSERT INTO sankar.users (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
-static INSERT__TABLE__CREDENTIALS: &str = "INSERT INTO sankar.userCredentials (id, email,password) VALUES(?,?,?)";
+static INSERT_TABLE__USERCREDENTIALS: &str = "INSERT INTO sankar.userCredentials (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
 
 #[derive(Deserialize, Validate)]
 pub struct SignupForm {
@@ -23,7 +23,7 @@ pub struct SignupForm {
 
 // TODO: 
 // return HttpResponse is too verbal
-pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
+pub async fn create_user(_app: web::Data<App>, request: web::Json<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
     if let Err(err) = request.validate() {
 		return Err(AppError::from(err).into());
 	}
@@ -41,10 +41,16 @@ pub async fn create_user(_app: web::Data<App>, request: web::Form<SignupForm>) -
     let id = time_uuid();
     let mut batch: Batch = Default::default();
     batch.append_statement(INSERT_TABLE__USERS);
-    batch.append_statement(INSERT__TABLE__CREDENTIALS);
+    batch.append_statement(INSERT_TABLE__USERCREDENTIALS);
+
+    let fname = &request.fname;
+    let lname = &request.lname;
+    let email = &request.email;
+    let password = password.as_bytes().to_vec();
+
     let batch_values = (
-        (id, &request.fname, &request.lname, &request.email, password.as_bytes().to_vec(),id,id),                
-        (id, &request.email, password.as_bytes().to_vec())
+        (id, fname, &lname, &email, password.clone(),id,id),                
+        (id, fname, &lname, &email, password,id,id)
     );
 
     match conn.batch(&batch, batch_values).await {

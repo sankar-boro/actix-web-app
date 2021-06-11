@@ -38,6 +38,8 @@ pub struct GetUser {
 	id: Uuid,
 	email: String,
 	password: Vec<u8>,
+	fname: String,
+	lname: String,
 }
 
 fn create_session_token(user: &GetUser) 
@@ -68,14 +70,12 @@ fn create_session_token(user: &GetUser)
 fn get_user_query(email: &str) 
 -> String {
 	let mut query = String::new();
-	query.push_str("SELECT id, email, password from sankar.userCredentials where email='");
+	query.push_str("SELECT userId, email, password, fname, lname from sankar.userCredentials where email='");
 	query.push_str(email);
 	query.push_str("'LIMIT 1");
 	query
 }
 
-// TODO: 
-// login is only working for x-www-form-url-encoded
 pub async fn login(request: web::Json<LoginForm>, app: web::Data<App>, session: Session) 
 -> Result<HttpResponse, actix_web::Error> {
 	if let Err(_) = request.validate() {
