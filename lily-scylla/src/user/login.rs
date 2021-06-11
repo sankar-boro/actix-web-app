@@ -76,7 +76,7 @@ fn get_user_query(email: &str)
 
 // TODO: 
 // login is only working for x-www-form-url-encoded
-pub async fn login(request: web::Form<LoginForm>, app: web::Data<App>, session: Session) 
+pub async fn login(request: web::Json<LoginForm>, app: web::Data<App>, session: Session) 
 -> Result<HttpResponse, actix_web::Error> {
 	if let Err(_) = request.validate() {
 		return Err(AppError::from("Invalid credentials.").into());

@@ -14,9 +14,10 @@ use actix_redis::RedisSession;
 use crate::utils::ConnectionResult;
 use scylla::{Session, SessionBuilder};
 use helpers::error::Error as RequestError;
-use actix_web::{App as ActixApp, HttpServer};
+use actix_web::{App as ActixApp, HttpServer, http};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use actix_web::web;
+use actix_cors::Cors;
 
 #[derive(Clone)]
 pub struct App {
@@ -84,7 +85,21 @@ pub async fn start_scylla_app() -> Result<()> {
     let app = App::new(session);
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+              .allowed_origin("http://localhost:3000")
+              .allowed_methods(vec!["GET", "POST"])
+              .allowed_headers(vec![
+                  http::header::AUTHORIZATION, 
+                  http::header::ACCEPT, 
+                  http::header::ACCESS_CONTROL_ALLOW_ORIGIN,
+                  http::header::ACCESS_CONTROL_ALLOW_HEADERS,
+                  http::header::ACCESS_CONTROL_ALLOW_METHODS,
+                ])
+              .allowed_header(http::header::CONTENT_TYPE)
+              .max_age(3600);
+
         ActixApp::new()
+            .wrap(cors)
             .wrap(RedisSession::new("127.0.0.1:6379", &[0; 32]))
             .data(app.clone())
             .configure(route::routes)
