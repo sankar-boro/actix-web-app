@@ -94,6 +94,7 @@ impl<'a> ValidationHandler<'a> {
 
             match session.get::<String>(&claims.claims.get_id()) {
               Ok(d) => {
+                println!("Session token: {:?}", d);
                 match d {
                   Some(d) => {
                     if token == d {

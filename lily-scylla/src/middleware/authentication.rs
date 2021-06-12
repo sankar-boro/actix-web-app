@@ -6,6 +6,8 @@ use actix_web::{dev::ServiceRequest, dev::ServiceResponse, HttpResponse, Error};
 use futures::future::{ok, Ready};
 use futures::Future;
 use actix_session::UserSession;
+use crate::App;
+
 use super::validation::ValidationHandler;
 
 
@@ -53,7 +55,7 @@ where
         Box::pin(async move {
             if auth.is_err()
             {
-                Ok(req.into_response(HttpResponse::Unauthorized().body("UnAuthorized Request").into_body()))
+                Ok(req.into_response(HttpResponse::Unauthorized().body("UnAuthorized Error").into_body()))
             } else {
                 let res_fut = srv.call(req);
                 res_fut.await

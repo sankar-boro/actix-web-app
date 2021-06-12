@@ -1,5 +1,6 @@
 use crate::App;
 use crate::AppError;
+use crate::session;
 use scylla::macros::FromRow;
 
 use uuid::Uuid;
@@ -26,14 +27,17 @@ pub struct LoginForm {
 	password: String,
 }
 
+// TODO: check if this needs to be pub
 #[derive(Serialize, Debug)]
 pub struct UserInfo {
 	pub id: String,
 	pub email: String,
+	pub fname: String,
+	pub lname: String,
 	pub token: String,
 }
 
-#[derive(FromRow, Serialize)]
+#[derive(FromRow, Serialize, Debug)]
 pub struct GetUser {
 	id: Uuid,
 	email: String,
@@ -52,7 +56,9 @@ fn create_session_token(user: &GetUser)
 	let claims = 
 		SessionClaims::new(
 			user.id, 
-			user.email.clone(), 
+			user.email.clone(),
+			user.fname.clone(),
+			user.lname.clone(), 
 			exp, 
 			Utc::now().timestamp()
 		);
@@ -97,15 +103,13 @@ pub async fn login(request: web::Json<LoginForm>, app: web::Data<App>, session: 
 	};
 	validate_user_credentials(&request.password, &user.password)?;
 	let token = create_session_token(&user)?;
-	match session.insert(
-		user.id.to_string(), 
-		&token
-	) {
-		Ok(_) => Ok(HttpResponse::Ok().json(UserInfo {
-			id: user.id.to_string(),
-			email: user.email.clone(),
-			token,
-		})),
-		Err(err) => Err(AppError::from(err).into())
-	}
+	session.insert(&user.id.to_string(), &token)?;
+    session.renew();
+	Ok(HttpResponse::Ok().json(UserInfo {
+		id: user.id.to_string(),
+		email: user.email.clone(),
+		token,
+		fname: user.fname.clone(),
+		lname: user.lname.clone(),
+	}))
 }

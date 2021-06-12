@@ -8,6 +8,11 @@ use scylla::IntoTypedRows;
 use scylla::macros::FromRow;
 use scylla::frame::response::cql_to_rust::FromRow;
 use crate::RequestError;
+use crate::utils::{
+	GetQueryResult, 
+	ConnectionResult
+};
+use crate::AppError;
 
 #[derive(FromRow, Serialize)]
 #[allow(non_snake_case)]
@@ -16,72 +21,72 @@ pub struct NewDocument {
     title: String,
     tags: String,
     body: String,
-    smDocumentImageUrl: Option<String>,
-    mdDocumentImageUrl: Option<String>,
-    lgDocumentImageUrl: Option<String>,
+    // smDocumentImageUrl: Option<String>,
+    // mdDocumentImageUrl: Option<String>,
+    // lgDocumentImageUrl: Option<String>,
+    // authorId: Uuid,
+    // authorName: Option<String>,
+    // authorImageUrl: Option<String>,
+    // createdAt: Uuid,
+    // updatedAt: Uuid,
+}
+
+#[derive(FromRow, Serialize)]
+#[allow(non_snake_case)]
+pub struct DocumentResponse {
+    documentId: Uuid,
+    title: String,
+    tags: String,
+    body: String,
     authorId: Uuid,
-    authorName: Option<String>,
-    authorImageUrl: Option<String>,
-    createdAt: Uuid,
-    updatedAt: Uuid,
 }
 
-static GET_ALL_DOCUMENTS: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents";
-static GET_DOCUMENT: &'static str = "SELECT documentId, title, tags, body, authorId, createdAt, updatedAt from sankar.documents WHERE documentId={} LIMIT 1";
+static GET_ALL_DOCUMENTS: &'static str = "SELECT documentId, title, tags, body, authorId from sankar.documents";
+static GET_DOCUMENT: &'static str = "SELECT documentId, title, tags, body, authorId from sankar.documents WHERE documentId={} LIMIT 1";
 
-fn res_err(err: &str) -> HttpResponse {
-    HttpResponse::InternalServerError().json(RequestError::db_error(&err.to_string()))
+pub async fn get_all(_app: web::Data<App>) 
+-> Result<HttpResponse, actix_web::Error> {
+    let conn = _app.conn_result()?;
+
+    let documents: Option<Vec<DocumentResponse>> = 
+		conn.query(GET_ALL_DOCUMENTS, &[])
+		.await
+		.get_query_result()?;
+
+    match documents {
+        Some(docs) => Ok(HttpResponse::Ok().json(docs)),
+        None => {
+            let mt: Vec<DocumentResponse> = Vec::new();
+            Ok(HttpResponse::Ok().json(mt))
+        },
+    }
 }
 
-#[get("/all")]
-pub async fn get_all(_app: web::Data<App>) -> HttpResponse {
-    let conn = match _app.as_ref().conn() {
-        Ok(conn) => conn,
-        Err(err) => return res_err(&err.to_string()),
-    };
+fn get_document_query(document_id: &str) 
+-> Result<String, actix_web::Error> {
+    match Uuid::parse_str(document_id) {
+        Ok(document_id) => {
+            Ok(format!("{} {}", GET_DOCUMENT, document_id))
+        }
+        Err(err) => Err(AppError::from(err).into())
+    }
+}
 
-    let documents = match conn.query(GET_ALL_DOCUMENTS, &[]).await {
-        Ok(docs) => docs,
-        Err(err) => return res_err(&err.to_string()),
-    };
+pub async fn get_one(session: web::Data<App>, document_id: web::Path<String>,) 
+-> Result<HttpResponse, actix_web::Error> {
+    let conn = session.conn_result()?;
+
+    let documents: Option<Vec<DocumentResponse>> = 
+		conn.query(get_document_query(&document_id)?, &[])
+		.await
+		.get_query_result()?;
 
     // TODO: should recover from unwrap()
-    let documents = match documents.rows {
-        Some(docs) => docs.into_typed::<NewDocument>().map(|a| a.unwrap()).collect::<Vec<NewDocument>>(),
+    match documents {
+        Some(docs) => Ok(HttpResponse::Ok().json(docs)),
         None => {
-            let res: Vec<NewDocument> = Vec::new();
-            return HttpResponse::Ok().json(res);
+            let mt: Vec<DocumentResponse> = Vec::new();
+            Ok(HttpResponse::Ok().json(mt))
         },
-    };
-
-    HttpResponse::Ok().json(documents)
-}
-
-pub async fn get_one(session: web::Data<App>, id: web::Path<String>,) -> HttpResponse {
-    let conn = match session.as_ref().conn() {
-        Ok(conn) => conn,
-        Err(err) => return res_err(&err.to_string()),
-    };
-
-    let document_id =  match Uuid::parse_str(&id) {
-        Ok(id) => id,
-        Err(err) => return res_err(&err.to_string()) 
-    };
-    
-
-    let documents = match conn.query(format!("{} {}", GET_DOCUMENT, document_id), &[]).await {
-        Ok(docs) => docs,
-        Err(err) => return res_err(&err.to_string()),
-    };
-
-    // TODO: should recover from unwrap()
-    let documents = match documents.rows {
-        Some(docs) => docs.into_typed::<NewDocument>().map(|a| a.unwrap()).collect::<Vec<NewDocument>>(),
-        None => {
-            let res: Vec<NewDocument> = Vec::new();
-            return HttpResponse::Ok().json(res);
-        },
-    };
-
-    HttpResponse::Ok().json(documents)
+    }
 }

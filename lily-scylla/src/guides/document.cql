@@ -3,6 +3,7 @@ CREATE TABLE documents (
     title varchar,
     tags varchar,
     body varchar,
+    authorId timeuuid,
     PRIMARY KEY (documentId)
 );
 
@@ -10,7 +11,6 @@ CREATE TABLE documents (
     -- smDocumentImageUrl text,
     -- mdDocumentImageUrl text,
     -- lgDocumentImageUrl text,
-    -- authorId timeuuid,
     -- authorName varchar,
     -- authorImageUrl text,  
     -- createdAt timeuuid,

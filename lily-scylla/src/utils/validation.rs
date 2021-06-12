@@ -7,17 +7,21 @@ use serde::{Serialize, Deserialize};
 pub struct SessionClaims {
 	id: String,
 	email: String,
+	fname: String,
+	lname: String,
 	exp: i64,
 	iat: i64,
 }
 
 impl SessionClaims {
-	pub fn new(id: Uuid, email: String, exp: i64, iat: i64) -> Self {
+	pub fn new(id: Uuid, email: String, fname: String, lname: String, exp: i64, iat: i64) -> Self {
 		SessionClaims {
 			id: id.to_string(),
 			email,
+			fname,
+			lname,
 			exp,
-			iat,
+			iat
 		}
 	}
 

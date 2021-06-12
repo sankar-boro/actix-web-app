@@ -8,6 +8,7 @@ mod error;
 
 use std::sync::Arc;
 
+use actix_session::CookieSession;
 use anyhow::Result;
 use error::Error as AppError;
 use actix_redis::RedisSession;
@@ -86,16 +87,10 @@ pub async fn start_scylla_app() -> Result<()> {
 
     HttpServer::new(move || {
         let cors = Cors::default()
-              .allowed_origin("http://localhost:3000")
-              .allowed_methods(vec!["GET", "POST"])
-              .allowed_headers(vec![
-                  http::header::AUTHORIZATION, 
-                  http::header::ACCEPT, 
-                  http::header::ACCESS_CONTROL_ALLOW_ORIGIN,
-                  http::header::ACCESS_CONTROL_ALLOW_HEADERS,
-                  http::header::ACCESS_CONTROL_ALLOW_METHODS,
-                ])
-              .allowed_header(http::header::CONTENT_TYPE)
+              .allow_any_origin()
+              .allow_any_method()
+              .allow_any_header()
+              .supports_credentials()
               .max_age(3600);
 
         ActixApp::new()

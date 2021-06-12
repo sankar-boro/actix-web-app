@@ -1971,6 +1971,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web 4.0.0-beta.6",
  "lily-scylla",
+ "lily-test",
  "lily-utils",
 ]
 
@@ -2067,6 +2068,16 @@ dependencies = [
  "serde",
  "serde_json",
  "validator",
+]
+
+[[package]]
+name = "lily-test"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "jsonwebtoken",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
