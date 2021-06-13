@@ -77,13 +77,13 @@ where
                 &DecodingKey::from_secret("secret".as_bytes()),
                 &Validation::new(Algorithm::HS512),
             );
-            let token_claims = match token_claims {
+            match token_claims {
                 Ok(t) => t,
                 Err(_) => {
                     return Ok(req.into_response(HttpResponse::Unauthorized()));
                 }
             };
-            let session_token = match session.get::<String>(&token_claims.claims.get_id()) { 
+            let session_token = match session.get::<String>("session") { 
                 Ok(s) => {
                     if s.is_none() {
                         return Err(AppError::from("Server error. Token not found.").into()); 

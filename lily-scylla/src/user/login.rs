@@ -103,8 +103,7 @@ pub async fn login(request: web::Json<LoginForm>, app: web::Data<App>, session: 
 	};
 	validate_user_credentials(&request.password, &user.password)?;
 	let token = create_session_token(&user)?;
-	session.insert(&user.id.to_string(), &token)?;
-    session.renew();
+	session.insert("session", &token)?;
 	Ok(HttpResponse::Ok().json(UserInfo {
 		id: user.id.to_string(),
 		email: user.email.clone(),
