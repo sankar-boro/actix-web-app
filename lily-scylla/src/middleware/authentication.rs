@@ -2,14 +2,18 @@ use std::pin::Pin;
 use std::cell::RefCell;
 use std::rc::Rc;
 use actix_service::{Service, Transform};
+// use actix_web::web::json;
 use actix_web::{dev::ServiceRequest, dev::ServiceResponse, HttpResponse, Error};
 use futures::future::{ok, Ready};
 use futures::Future;
 use actix_session::UserSession;
-use crate::App;
+use crate::AppError;
 
-use super::validation::ValidationHandler;
-
+use jsonwebtoken::Validation;
+use jsonwebtoken::DecodingKey;
+use crate::utils::SessionClaims;
+use jsonwebtoken::{decode, Algorithm};
+use log::{info};
 
 
 #[derive(Debug, Clone)]
@@ -48,19 +52,56 @@ where
 
     #[allow(clippy::borrow_interior_mutable_const)]
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let session = req.get_session();
         let srv = self.service.clone();
-        let bearer = req.headers().get("Authorization");
-        let auth = ValidationHandler::new(bearer).verify_token(&session);
         Box::pin(async move {
-            if auth.is_err()
-            {
-                Ok(req.into_response(HttpResponse::Unauthorized().body("UnAuthorized Error").into_body()))
+            let session = req.get_session();
+            let bearer = match req.headers().get("Authorization") {
+                Some(b) => b.to_str(),
+                None => {
+                    return Err(AppError::from("Header not found: Authorization").into()); 
+                }
+            };
+            let bearer = match bearer {
+                Ok(b) => b,
+                Err(err) => {
+                    return Err(AppError::from(err.to_string()).into()); 
+                }
+            };
+            let bearer = if bearer.len() < 8 {
+                return Err(AppError::from("Invalid token from length.").into()); 
             } else {
-                let res_fut = srv.call(req);
-                res_fut.await
+                &bearer[7..]
+            };
+            let token_claims = decode::<SessionClaims>(
+                bearer,
+                &DecodingKey::from_secret("secret".as_bytes()),
+                &Validation::new(Algorithm::HS512),
+            );
+            let token_claims = match token_claims {
+                Ok(t) => t,
+                Err(_) => {
+                    return Ok(req.into_response(HttpResponse::Unauthorized()));
+                }
+            };
+            let session_token = match session.get::<String>(&token_claims.claims.get_id()) { 
+                Ok(s) => {
+                    if s.is_none() {
+                        return Err(AppError::from("Server error. Token not found.").into()); 
+                    }
+                    s.unwrap()
+                },
+                Err(err) => {
+                    return Err(AppError::from(err).into()); 
+                }
+            };
+            if session_token != bearer {
+                return Ok(req.into_response(HttpResponse::Unauthorized().body("Somone fuckin touched the token.").into_body()));
             }
+            
+            session.renew();
+            info!("Auth request");
+            let res_fut = srv.call(req);
+            res_fut.await
         })
     }
 }
-

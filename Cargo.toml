@@ -12,6 +12,8 @@ members = [
 
 [dependencies]
 actix-web = "4.0.0-beta.6"
+log = "0.4"
+env_logger = "0.8"
 # lily-pg = { path = "./lily-pg"}
 lily-scylla = { path = "./lily-scylla"}
 lily-utils = { path = "./lily-utils"}
