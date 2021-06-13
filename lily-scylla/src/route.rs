@@ -35,10 +35,10 @@ pub fn routes(config: &mut web::ServiceConfig) {
   //   .route("/image", web::post().to(post::upload_image))
   // );
   config.service(web::resource("/upload/image").route(web::post().to(post::upload_image)));
-  // config.service(
-  //   web::scope("")
-  //   .wrap(Authentication{})
-  //   .route("/logout/{id}", web::post().to(user::logout_user))
-  // );
+  config.service(
+    web::scope("")
+    .wrap(Authentication{})
+    .route("/logout", web::post().to(user::logout_user))
+  );
 }
 
