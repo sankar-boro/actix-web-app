@@ -55,34 +55,6 @@ where
         let srv = self.service.clone();
         Box::pin(async move {
             let session = req.get_session();
-            let bearer = match req.headers().get("Authorization") {
-                Some(b) => b.to_str(),
-                None => {
-                    return Err(AppError::from("Header not found: Authorization").into()); 
-                }
-            };
-            let bearer = match bearer {
-                Ok(b) => b,
-                Err(err) => {
-                    return Err(AppError::from(err.to_string()).into()); 
-                }
-            };
-            let bearer = if bearer.len() < 8 {
-                return Err(AppError::from("Invalid token from length.").into()); 
-            } else {
-                &bearer[7..]
-            };
-            let token_claims = decode::<SessionClaims>(
-                bearer,
-                &DecodingKey::from_secret("secret".as_bytes()),
-                &Validation::new(Algorithm::HS512),
-            );
-            match token_claims {
-                Ok(t) => t,
-                Err(_) => {
-                    return Ok(req.into_response(HttpResponse::Unauthorized()));
-                }
-            };
             let session_token = match session.get::<String>("session") { 
                 Ok(s) => {
                     if s.is_none() {
@@ -94,9 +66,18 @@ where
                     return Err(AppError::from(err).into()); 
                 }
             };
-            if session_token != bearer {
-                return Ok(req.into_response(HttpResponse::Unauthorized().body("Somone fuckin touched the token.").into_body()));
-            }
+            
+            let token_claims = decode::<SessionClaims>(
+                &session_token,
+                &DecodingKey::from_secret("secret".as_bytes()),
+                &Validation::new(Algorithm::HS512),
+            );
+            match token_claims {
+                Ok(t) => t,
+                Err(_) => {
+                    return Ok(req.into_response(HttpResponse::Unauthorized()));
+                }
+            };
             
             session.renew();
             info!("Auth request");
