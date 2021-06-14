@@ -12,13 +12,16 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/", web::get().to(home));
   config.route("/login", web::post().to(user::login));
   config.route("/signup", web::post().to(user::create_user));
-
+  config.service(
+    web::scope("/user")
+    .route("/session", web::get().to(user::user_session))
+  );
   config.service(
     web::scope("/user")
     .wrap(Authentication{})
-    .route("/get", web::get().to(user::get_all))
-    .route("/get/{id}", web::get().to(user::get_one))
-    .route("/update/{id}", web::post().to(user::update_one))
+    .route("/get/all", web::get().to(user::get_all))
+    .route("/get/authuser", web::get().to(user::get_one))
+    .route("/update/authuser", web::post().to(user::update_one))
   );
   config.service(
     web::scope("/post")

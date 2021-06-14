@@ -1,4 +1,6 @@
+use actix_session::Session;
 use actix_web::{HttpResponse,web};
+use serde_json::json;
 use crate::App;
 use crate::utils::ConnectionResult;
 use uuid::Uuid;
@@ -46,11 +48,11 @@ fn get_user_query(user_id: &str)
         Err(err) => Err(AppError::from(err).into())
     }
 }
-pub async fn get_one(session: web::Data<App>, user_id: web::Path<String>,) 
+pub async fn get_one(conn: web::Data<App>, get_user_id: web::Path<String>) 
 -> Result<HttpResponse, actix_web::Error> {
-    let conn = session.conn_result()?;
+    let conn = conn.conn_result()?;
     let rows: Option<Vec<GetUser>> = 
-		conn.query(get_user_query(&user_id)?, &[])
+		conn.query(get_user_query(&get_user_id)?, &[])
 		.await
 		.get_query_result()?;
     match rows {
@@ -61,5 +63,16 @@ pub async fn get_one(session: web::Data<App>, user_id: web::Path<String>,)
             let mt: Vec<GetUser> = Vec::new();
             Ok(HttpResponse::Ok().json(mt))
         }
+    }
+}
+
+pub async fn user_session(session: Session) 
+-> Result<HttpResponse, actix_web::Error> {
+    let auth_user_session = session.get::<String>("AUTH_USER")?;
+    match auth_user_session {
+        Some(session) => {
+            Ok(HttpResponse::Ok().body(session))
+        }
+        None => Err(AppError::from("REQUEST_LOGIN").into())   
     }
 }

@@ -19,6 +19,7 @@ use crate::utils::{
 	GetQueryResult, 
 	ConnectionResult
 };
+use serde_json::json;
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct LoginForm {
@@ -29,23 +30,25 @@ pub struct LoginForm {
 
 // TODO: check if this needs to be pub
 #[derive(Serialize, Debug)]
+#[allow(non_snake_case)]
 pub struct UserInfo {
-	pub id: String,
+	pub userId: String,
 	pub email: String,
 	pub fname: String,
 	pub lname: String,
-	pub token: String,
 }
 
 #[derive(FromRow, Serialize, Debug)]
+#[allow(non_snake_case)]
 pub struct GetUser {
-	id: Uuid,
+	userId: Uuid,
 	email: String,
 	password: Vec<u8>,
 	fname: String,
 	lname: String,
 }
 
+#[allow(unused)]
 fn create_session_token(user: &GetUser) 
 -> Result<String, actix_web::Error> {
 	let exp = 
@@ -55,7 +58,7 @@ fn create_session_token(user: &GetUser)
 		.timestamp();
 	let claims = 
 		SessionClaims::new(
-			user.id, 
+			user.userId, 
 			user.email.clone(),
 			user.fname.clone(),
 			user.lname.clone(), 
@@ -82,33 +85,41 @@ fn get_user_query(email: &str)
 	query
 }
 
-pub async fn login(request: web::Json<LoginForm>, app: web::Data<App>, session: Session) 
--> Result<HttpResponse, actix_web::Error> {
+pub async fn login(
+	request: web::Json<LoginForm>, 
+	app: web::Data<App>, 
+	session: Session
+) 
+-> Result<HttpResponse, actix_web::Error> 
+{
 	if let Err(_) = request.validate() {
-		return Err(AppError::from("Invalid credentials.").into());
+		return Err(AppError::from("INVALID_CREDENTIALS").into());
 	}
 	let conn = app.conn_result()?;
 	let rows: Option<Vec<GetUser>> = 
 		conn.query(get_user_query(&request.email), &[])
 		.await
 		.get_query_result()?;
-	let user: &GetUser = match &rows {
+	let auth_user: &GetUser = match &rows {
 		Some(users) => {
 			match users.first() {
 				Some(user) => user,
-				None => return Err(AppError::from("User not found").into())
+				None => return Err(AppError::from("USER_NOT_FOUND").into())
 			}
 		},
-		None => return Err(AppError::from("User not found").into())
+		None => return Err(AppError::from("USER_NOT_FOUND").into())
 	};
-	validate_user_credentials(&request.password, &user.password)?;
-	let token = create_session_token(&user)?;
-	session.insert("session", &token)?;
-	Ok(HttpResponse::Ok().json(UserInfo {
-		id: user.id.to_string(),
-		email: user.email.clone(),
-		token,
-		fname: user.fname.clone(),
-		lname: user.lname.clone(),
-	}))
+	validate_user_credentials(&request.password, &auth_user.password)?;
+
+	// let token = create_session_token(&user)?;
+	
+	let auth_user_session = json!({
+		"userId": auth_user.userId.to_string(),
+		"email": auth_user.email.clone(),
+		"fname": auth_user.fname.clone(),
+		"lname": auth_user.lname.clone(),
+	});
+	session.insert("AUTH_USER", auth_user_session.clone().to_string())?;
+	session.insert("AUTH_ID", &auth_user.userId)?;
+	Ok(HttpResponse::Ok().json(auth_user_session))
 }

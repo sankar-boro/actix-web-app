@@ -52,35 +52,20 @@ where
 
     #[allow(clippy::borrow_interior_mutable_const)]
     fn call(&self, req: ServiceRequest) -> Self::Future {
+        info!("AUTH_REQUEST");
         let srv = self.service.clone();
         Box::pin(async move {
             let session = req.get_session();
-            let session_token = match session.get::<String>("session") { 
-                Ok(s) => {
-                    if s.is_none() {
-                        return Err(AppError::from("Server error. Token not found.").into()); 
-                    }
-                    s.unwrap()
-                },
+            let user_id = match session.get::<String>("AUTH_ID") { 
+                Ok(s) => s,
                 Err(err) => {
                     return Err(AppError::from(err).into()); 
                 }
             };
-            
-            let token_claims = decode::<SessionClaims>(
-                &session_token,
-                &DecodingKey::from_secret("secret".as_bytes()),
-                &Validation::new(Algorithm::HS512),
-            );
-            match token_claims {
-                Ok(t) => t,
-                Err(_) => {
-                    return Ok(req.into_response(HttpResponse::Unauthorized()));
-                }
-            };
-            
-            session.renew();
-            info!("Auth request");
+            match user_id {
+                Some(_) => {},
+                None => return Err(AppError::from("UN_AUTHENTICATED_USER").into())
+            }
             let res_fut = srv.call(req);
             res_fut.await
         })

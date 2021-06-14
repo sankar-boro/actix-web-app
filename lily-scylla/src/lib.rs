@@ -19,6 +19,7 @@ use actix_web::{App as ActixApp, HttpServer, http};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use actix_web::web;
 use actix_cors::Cors;
+use time::Duration;
 
 #[derive(Clone)]
 pub struct App {
@@ -90,12 +91,15 @@ pub async fn start_scylla_app() -> Result<()> {
               .allow_any_origin()
               .allow_any_method()
               .allow_any_header()
-              .supports_credentials()
-              .max_age(3600);
+              .supports_credentials();
 
         ActixApp::new()
             .wrap(cors)
-            .wrap(RedisSession::new("127.0.0.1:6379", &[0; 32]))
+            .wrap(
+                RedisSession::new("127.0.0.1:6379", &[0; 32])
+                .cookie_name("lily-session")
+                .cookie_max_age(Some(Duration::days(1)))
+            )
             .data(app.clone())
             .configure(route::routes)
     })
