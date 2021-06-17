@@ -29,7 +29,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/all", web::get().to(post::get_all))
     .route("/get/{id}", web::get().to(post::get_one))
     .route("/create", web::post().to(post::create_one))
-    // .route("/update/{id}", web::post().to(post::update_one))
+    .route("/update/{id}", web::post().to(post::update_one))
     // .route("/delete/{id}", web::post().to(post::delete_one))
   );
   // config.service(

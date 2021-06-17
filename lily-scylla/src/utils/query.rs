@@ -33,6 +33,7 @@ impl<T: FromRow> GetQueryResult<T> for Result<QueryResult, QueryError> {
 
 pub struct Update {
 	query: String,
+	sets: usize,
 }
 impl Update {
 	pub fn from(table: &str) -> Self {
@@ -41,20 +42,27 @@ impl Update {
 		q.push_str(table);
 		q.push_str(" ");
 		q.push_str("SET");
-		q.push_str(" ");
 
 		Self {
 			query: q,
+			sets: 0,
 		}
 	}
 
 	pub fn set(mut self, key: &str, value: &str) -> Self {
+		if self.sets > 0 {
+			self.query.push_str(",");
+			self.query.push_str(" ");
+		} else {
+			self.query.push_str(" ");	
+		}
 		self.query.push_str(key);
 		self.query.push_str("=");
 		self.query.push_str("'");
 		self.query.push_str(value);
 		self.query.push_str("'");
 		self.query.push_str(" ");
+		self.sets += 1;
 		self
 	}
 
