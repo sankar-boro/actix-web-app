@@ -1,5 +1,5 @@
 use crate::user;
-use crate::post;
+use crate::book;
 
 use actix_web::{web, HttpResponse};
 use crate::middleware::Authentication;
@@ -24,20 +24,21 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/update/authuser", web::post().to(user::update_one))
   );
   config.service(
-    web::scope("/post")
+    web::scope("/book")
     .wrap(Authentication{})
-    .route("/all", web::get().to(post::get_all))
-    .route("/get/{id}", web::get().to(post::get_one))
-    .route("/create", web::post().to(post::create_one))
-    .route("/update/{id}", web::post().to(post::update_one))
-    .route("/delete/{id}", web::post().to(post::delete_one))
+    .route("/all", web::get().to(book::get_all))
+    .route("/get/{id}", web::get().to(book::get_one))
+    .route("/getall/{id}", web::get().to(book::get_all_from_id))
+    .route("/create", web::post().to(book::create_one))
+    .route("/update/{id}", web::post().to(book::update_one))
+    .route("/delete/{id}", web::post().to(book::delete_one))
   );
   // config.service(
   //   web::scope("/upload")
   //   .wrap(Authentication{})
   //   .route("/image", web::post().to(post::upload_image))
   // );
-  config.service(web::resource("/upload/image").route(web::post().to(post::upload_image)));
+  config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.service(
     web::scope("")
     .wrap(Authentication{})

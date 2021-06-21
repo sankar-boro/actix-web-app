@@ -8,6 +8,6 @@ mod image;
 
 pub use image::upload_image;
 pub use create::{create_one};
-pub use read::{get_all, get_one};
+pub use read::{get_all, get_one, get_all_from_id};
 pub use update::update_one;
 pub use delete::delete_one;

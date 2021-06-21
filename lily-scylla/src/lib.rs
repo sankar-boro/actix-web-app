@@ -2,7 +2,7 @@ mod route;
 mod user;
 mod helpers;
 mod middleware;
-mod post;
+mod book;
 mod utils;
 mod error;
 
