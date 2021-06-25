@@ -1,11 +1,10 @@
 CREATE TABLE blog (
     blogId timeuuid,
-    title varchar,
-    tags varchar,
-    summary text,
-    body text,
     authorId timeuuid,
+    authorName varchar,
+    title varchar,
+    body text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (blogId, createdAt)
+    PRIMARY KEY (blogId)
 );

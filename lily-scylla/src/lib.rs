@@ -5,6 +5,7 @@ mod middleware;
 mod book;
 mod utils;
 mod error;
+mod query;
 
 use std::sync::Arc;
 

@@ -29,7 +29,10 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/all", web::get().to(book::get_all))
     .route("/get/{id}", web::get().to(book::get_one))
     .route("/getall/{id}", web::get().to(book::get_all_from_id))
-    .route("/create", web::post().to(book::create_one))
+    .route("/create/new/book", web::post().to(book::create_new_book))
+    .route("/create/new/page", web::post().to(book::create_new_page))
+    .route("/create/new/section", web::post().to(book::create_new_section))
+    .route("/create/new/chapter", web::post().to(book::create_new_chapter))
     .route("/update/{id}", web::post().to(book::update_one))
     .route("/delete/{id}", web::post().to(book::delete_one))
   );

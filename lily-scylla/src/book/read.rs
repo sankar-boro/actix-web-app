@@ -36,8 +36,10 @@ pub struct NewDocument {
 pub struct Book {
     bookId: Uuid,
     title: String,
-    authorId: Uuid,
-    description: String,
+    body: String,
+    parentId: Uuid,
+    uniqueId: Uuid,
+    identity: i16,
     // createdAt: Uuid,
     // updatedAt: Uuid,
 }
@@ -55,8 +57,8 @@ pub struct BookSibs {
     // updatedAt: Uuid,
 }
 
-static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, title, authorId, description from sankar.books";
-static GET_DOCUMENT: &'static str = "SELECT * from sankar.books WHERE bookId={} LIMIT 1";
+static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, title, body, parentId, uniqueId, authorId, identity from sankar.book";
+static GET_DOCUMENT: &'static str = "SELECT * from sankar.book WHERE bookId={} LIMIT 1";
 
 pub async fn get_all(_app: web::Data<App>) 
 -> Result<HttpResponse, actix_web::Error> {
