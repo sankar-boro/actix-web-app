@@ -78,6 +78,19 @@ impl Update {
 	pub fn query(self) -> String {
 		self.query.clone()
 	} 
-
-
 }
+
+static CREATE_NEW_BOOK: &str = "INSERT INTO sankar.book (
+	bookId, uniqueId, authorId, authorName, title, body, identity, createdAt, updatedAt
+) VALUES";
+static CREATE_NEW_PAGE: &str = "INSERT INTO sankar.book (
+    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
+) VALUES";
+static CREATE_NEW_CHAPTER: &str = "INSERT INTO sankar.book (
+    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
+) VALUES";
+static CREATE_NEW_SECTION: &str = "INSERT INTO sankar.book (
+    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
+) VALUES(
+    ?,?,?,?,?,?,?,?,?,?
+)";

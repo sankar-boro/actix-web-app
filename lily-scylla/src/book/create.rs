@@ -15,45 +15,122 @@ use crate::utils::{
 use serde::Serialize;
 use crate::AppError;
 
+#[allow(non_snake_case)]
+struct Payload<'a, P>{
+    payload:&'a P,
+    uuid: String,
+    authId: String,
+    authName: String,
+}
 #[derive(Deserialize, Validate, FromRow)]
-pub struct NewBookPayload {
+pub struct ParentPayload {
     title: String,
     body: String,
     identity: i16,
 }
 
 #[derive(Deserialize, Validate, FromRow)]
-pub struct ChapterPayload {
+#[allow(non_snake_case)]
+pub struct ChildPayload {
+    title: String,
+    body: String,
+    identity: i16,
     bookId: String,
     parentId: String,
-    title: String,
-    body: String,
-    identity: i16,
+}
+pub enum PayloadInner {
+    PARENT(ParentPayload),
+    CHILD(ChildPayload)
 }
 
-#[derive(Deserialize, Validate, FromRow)]
-pub struct SectionPayload {
-    bookId: String,
-    parentId: String,
-    title: String,
-    body: String,
-    identity: i16,
+trait MakeQuery {
+    type Response;
+    fn query(&self) -> String;
+    fn response(&self) -> Self::Response;
 }
+impl<'a> Payload<'a, PayloadInner> {
+    fn new(p: &'a PayloadInner, session: &Session) -> Result<Self, actix_web::Error> {
+        let auth = auth_session(session)?;
+        Ok(Self {
+            payload: p,
+            uuid: time_uuid().to_string(),
+            authId: auth.userId,
+            authName: format!("{} {}", auth.fname, auth.lname) 
+        })
+    }
+}
+impl<'a> MakeQuery for Payload<'a, PayloadInner> {
+    type Response = NewBookResponse;
+    fn query(&self) -> String {
+        match self.payload {
+            PayloadInner::PARENT(payload) => {
+            return format!(
+                "INSERT INTO sankar.book (
+	                bookId, uniqueId, authorId, authorName, title, body, identity, createdAt, updatedAt
+                ) VALUES(
+                    {},{},{},{},{},{},{},{},{}
+                )", 
+                self.uuid,self.uuid,self.authId,self.authName,&payload.title, &payload.body, &payload.identity,self.uuid,self.uuid);
+            },
+            PayloadInner::CHILD(payload) => {
+            return format!(
+                "INSERT INTO sankar.book (
+                    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
+                ) VALUES(
+                    {},{},{},{},{},{},{},{},{},{}
+                )", 
+                payload.bookId,self.uuid,payload.parentId,self.authId,self.authName,&payload.title, &payload.body, &payload.identity,self.uuid,self.uuid);
+            },
+        }
+        
+    }
 
-// #[derive(Deserialize, Validate, FromRow)]
-// pub struct BookPayload {
-//     bookId: String,
-//     parentId: String,
-//     title: String,
-//     body: String,
-//     identity: i16,
-// }
+    fn response(&self) -> Self::Response {
+        match self.payload {
+            PayloadInner::PARENT(payload) => {
+                return NewBookResponse { 
+                    bookId:     self.uuid.clone(), 
+                    uniqueId:   self.uuid.clone(),
+                    parentId:   None,
+                    // user
+                    authorId:   self.authId.clone(),
+                    authorName: self.authName.clone(),
+                    // book
+                    title:      payload.title.to_string(),
+                    body:       payload.body.to_string(),
+                    identity:   payload.identity,
+                    // timestamp
+                    createdAt:  self.uuid.clone(),
+                    updatedAt:  self.uuid.clone(),
+                };
+            },
+            PayloadInner::CHILD(payload) => {
+                return NewBookResponse { 
+                    bookId:     self.uuid.clone(), 
+                    uniqueId:   self.uuid.clone(),
+                    parentId:   Some(payload.parentId.clone()),
+                    // user
+                    authorId:   self.authId.clone(),
+                    authorName: self.authName.clone(),
+                    // book
+                    title:      payload.title.clone(),
+                    body:       payload.body.clone(),
+                    identity:   payload.identity,
+                    // timestamp
+                    createdAt:  self.uuid.clone(),
+                    updatedAt:  self.uuid.clone(),
+                };
+            },
+        }
+    }
+}
 
 #[derive(Serialize, Validate, FromRow)]
 #[allow(non_snake_case)]
 pub struct NewBookResponse {
     bookId: String,
     uniqueId: String,
+    parentId: Option<String>,
     title: String,
     body: String,
     identity: i16,
@@ -63,266 +140,85 @@ pub struct NewBookResponse {
     updatedAt: String,
 }
 
-#[derive(Serialize, Validate, FromRow)]
-#[allow(non_snake_case)]
-pub struct NewChapterResponse {
-    bookId: String,
-    uniqueId: String,
-    parentId: String,
-    title: String,
-    body: String,
-    identity: i16,
-    authorId: String,
-    authorName: String,
-    createdAt: String,
-    updatedAt: String,
-}
-
-static CREATE_NEW_BOOK: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES(
-    ?,?,?,?,?,?,?,?
-)";
-static CREATE_NEW_PAGE: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES(
-    ?,?,?,?,?,?,?,?,?
-)";
-static CREATE_NEW_CHAPTER: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES(
-    ?,?,?,?,?,?,?,?,?
-)";
-static CREATE_NEW_SECTION: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES(
-    ?,?,?,?,?,?,?,?,?
-)";
 
 pub async fn create_new_book(
     _app: web::Data<App>, 
-    request: web::Json<NewBookPayload>,
+    request: web::Json<ParentPayload>,
     session: Session
 ) 
 -> Result<HttpResponse, actix_web::Error> 
 {
-    // get auth user
-    let auth_user = auth_session(&session)?; 
-    // get conn
-    let conn = _app.conn_result()?;    
-    // new BOOK id
-    let time_uuid = time_uuid();
-    let author_name = format!("{} {}", &auth_user.fname, &auth_user.lname);
-    // create new BOOK
-    let _: Option<Vec<NewBookPayload>> = conn
-        .query(CREATE_NEW_BOOK, 
-            (
-                // primary key and clustering column
-                time_uuid,                  // bookId 
-                time_uuid,                  // uniqueId
-                // parentId not added because this is the parent Id 
-                // user Info
-                &auth_user.userId,          // authorId
-                author_name.clone(),        // authorName 
-                // book
-                &request.title,             // title
-                &request.body,              // body
-                &request.identity,          // identity
-                // timestamp
-                time_uuid,                  // createdAt
-                time_uuid                   // updatedAt
-            )
+    
+    let conn = _app.conn_result()?;
+    let pinner = PayloadInner::PARENT(request.0);    
+    let payload = Payload::new(&pinner, &session)?;
+    let _: Option<Vec<ParentPayload>> = conn
+        .query(payload.query(), 
+            &[]
         ).await.get_query_result()?;
 
-    // return data of the new BOOK
-    let time_uuid = time_uuid.to_string();
-
     Ok(
-        HttpResponse::Ok().json(NewBookResponse { 
-            bookId:     time_uuid.clone(), 
-            uniqueId:   time_uuid.clone(),
-            // user
-            authorId:   auth_user.userId,
-            authorName: author_name,
-            // book
-            title:      request.title.to_string(),
-            body:       request.body.to_string(),
-            identity:   request.identity,
-            // timestamp
-            createdAt:  time_uuid.clone(),
-            updatedAt:  time_uuid.clone(),
-        })
+        HttpResponse::Ok().json(payload.response())
     )
 }
 
 pub async fn create_new_chapter(
     _app: web::Data<App>, 
-    request: web::Json<ChapterPayload>,
+    request: web::Json<ChildPayload>,
     session: Session
 ) 
 -> Result<HttpResponse, actix_web::Error> 
 {
-    // get auth user
-    let auth_user = auth_session(&session)?; 
-    // get conn
     let conn = _app.conn_result()?;    
-    // new BOOK id
-    let time_uuid = time_uuid();
-    let author_name = format!("{} {}", &auth_user.fname, &auth_user.lname);
-    // create new BOOK
-    let _: Option<Vec<NewBookPayload>> = conn
-        .query(CREATE_NEW_CHAPTER, 
-            (
-                // primary key and clustering column
-                &request.bookId,            // bookId 
-                time_uuid,                  // uniqueId
-                &request.parentId,          // parentId
-                // user Info
-                &auth_user.userId,          // authorId
-                author_name.clone(),        // authorName 
-                // book
-                &request.title,             // title
-                &request.body,              // body
-                &request.identity,          // identity
-                // timestamp
-                time_uuid,                  // createdAt
-                time_uuid                   // updatedAt
-            )
+    let pinner = PayloadInner::CHILD(request.0);    
+    let payload = Payload::new(&pinner, &session)?;
+    let _: Option<Vec<ChildPayload>> = conn
+        .query(payload.query(), 
+            &[]
         ).await.get_query_result()?;
 
-    // return data of the new BOOK
-    let time_uuid = time_uuid.to_string();
-
     Ok(
-        HttpResponse::Ok().json(NewChapterResponse { 
-            bookId:     time_uuid.clone(), 
-            uniqueId:   time_uuid.clone(),
-            parentId:   request.parentId.clone(),
-            // user
-            authorId:   auth_user.userId,
-            authorName: author_name,
-            // book
-            title:      request.title.to_string(),
-            body:       request.body.to_string(),
-            identity:   request.identity,
-            // timestamp
-            createdAt:  time_uuid.clone(),
-            updatedAt:  time_uuid.clone(),
-        })
+        HttpResponse::Ok().json(payload.response())
     )
 }
 
 pub async fn create_new_page(
     _app: web::Data<App>, 
-    request: web::Json<ChapterPayload>,
+    request: web::Json<ChildPayload>,
     session: Session
 ) 
 -> Result<HttpResponse, actix_web::Error> 
 {
-    // get auth user
-    let auth_user = auth_session(&session)?; 
-    // get conn
     let conn = _app.conn_result()?;    
-    // new BOOK id
-    let time_uuid = time_uuid();
-    let author_name = format!("{} {}", &auth_user.fname, &auth_user.lname);
-    // create new BOOK
-    let _: Option<Vec<NewBookPayload>> = conn
-        .query(CREATE_NEW_PAGE, 
-            (
-                // primary key and clustering column
-                &request.bookId,            // bookId 
-                time_uuid,                  // uniqueId
-                &request.parentId,          // parentId
-                // user Info
-                &auth_user.userId,          // authorId
-                author_name.clone(),        // authorName 
-                // book
-                &request.title,             // title
-                &request.body,              // body
-                &request.identity,          // identity
-                // timestamp
-                time_uuid,                  // createdAt
-                time_uuid                   // updatedAt
-            )
+    let pinner = PayloadInner::CHILD(request.0);    
+    let payload = Payload::new(&pinner, &session)?;
+    let _: Option<Vec<ChildPayload>> = conn
+        .query(payload.query(), 
+            &[]
         ).await.get_query_result()?;
 
-    // return data of the new BOOK
-    let time_uuid = time_uuid.to_string();
-
     Ok(
-        HttpResponse::Ok().json(NewChapterResponse { 
-            bookId:     time_uuid.clone(), 
-            uniqueId:   time_uuid.clone(),
-            parentId:   request.parentId.clone(),
-            // user
-            authorId:   auth_user.userId,
-            authorName: author_name,
-            // book
-            title:      request.title.to_string(),
-            body:       request.body.to_string(),
-            identity:   request.identity,
-            // timestamp
-            createdAt:  time_uuid.clone(),
-            updatedAt:  time_uuid.clone(),
-        })
+        HttpResponse::Ok().json(payload.response())
     )
 }
 
 pub async fn create_new_section(
     _app: web::Data<App>, 
-    request: web::Json<ChapterPayload>,
+    request: web::Json<ChildPayload>,
     session: Session
 ) 
 -> Result<HttpResponse, actix_web::Error> 
 {
-    // get auth user
-    let auth_user = auth_session(&session)?; 
-    // get conn
-    let conn = _app.conn_result()?;    
-    // new BOOK id
-    let time_uuid = time_uuid();
-    let author_name = format!("{} {}", &auth_user.fname, &auth_user.lname);
-    // create new BOOK
-    let _: Option<Vec<NewBookPayload>> = conn
-        .query(CREATE_NEW_SECTION, 
-            (
-                // primary key and clustering column
-                &request.bookId,            // bookId 
-                time_uuid,                  // uniqueId
-                &request.parentId,          // parentId
-                // user Info
-                &auth_user.userId,          // authorId
-                author_name.clone(),        // authorName 
-                // book
-                &request.title,             // title
-                &request.body,              // body
-                &request.identity,          // identity
-                // timestamp
-                time_uuid,                  // createdAt
-                time_uuid                   // updatedAt
-            )
+   let conn = _app.conn_result()?;    
+    let pinner = PayloadInner::CHILD(request.0);    
+    let payload = Payload::new(&pinner, &session)?;
+    let _: Option<Vec<ChildPayload>> = conn
+        .query(payload.query(), 
+            &[]
         ).await.get_query_result()?;
 
-    // return data of the new BOOK
-    let time_uuid = time_uuid.to_string();
-
     Ok(
-        HttpResponse::Ok().json(NewChapterResponse { 
-            bookId:     time_uuid.clone(), 
-            uniqueId:   time_uuid.clone(),
-            parentId:   request.parentId.clone(),
-            // user
-            authorId:   auth_user.userId,
-            authorName: author_name,
-            // book
-            title:      request.title.to_string(),
-            body:       request.body.to_string(),
-            identity:   request.identity,
-            // timestamp
-            createdAt:  time_uuid.clone(),
-            updatedAt:  time_uuid.clone(),
-        })
+        HttpResponse::Ok().json(payload.response())
     )
 }
 
@@ -341,7 +237,7 @@ fn auth_id(session: &Session) -> Result<Uuid, actix_web::Error>  {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[allow(non_snake_case)]
 struct AUTHUSER {
     userId: String,
@@ -351,9 +247,10 @@ struct AUTHUSER {
 }
 
 fn auth_session(session: &Session) -> Result<AUTHUSER, actix_web::Error>  {
-    let auth_user_id = session.get::<AUTHUSER>("AUTH_USER")?;
-    match auth_user_id {
-        Some(id) => Ok(id),
+    let auth_user = session.get::<String>("AUTH_USER")?;
+    // let auth_user: AUTHUSER = auth_user.into();
+    match auth_user {
+        Some(auth_user) => Ok(serde_json::from_str(&auth_user).unwrap()),
         None => return Err(AppError::from("UN_AUTHENTICATED_USER").into())
     }
 }

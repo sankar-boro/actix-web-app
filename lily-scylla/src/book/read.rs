@@ -35,30 +35,19 @@ pub struct NewDocument {
 #[allow(non_snake_case)]
 pub struct Book {
     bookId: Uuid,
+    uniqueId: Uuid,
+    parentId: Option<Uuid>,
+    authorId: Uuid,
+    authorName: String,
     title: String,
     body: String,
-    parentId: Uuid,
-    uniqueId: Uuid,
     identity: i16,
-    // createdAt: Uuid,
-    // updatedAt: Uuid,
+    createdAt: Uuid,
+    updatedAt: Uuid,
 }
 
-#[derive(FromRow, Serialize)]
-#[allow(non_snake_case)]
-pub struct BookSibs {
-    bookId: Uuid,
-    title: String,
-    body: String,
-    parentId: Uuid,
-    uniqueId: Uuid,
-    identity: i16,
-    // createdAt: Uuid,
-    // updatedAt: Uuid,
-}
-
-static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, title, body, parentId, uniqueId, authorId, identity from sankar.book";
-static GET_DOCUMENT: &'static str = "SELECT * from sankar.book WHERE bookId={} LIMIT 1";
+static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt from sankar.book";
+static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt from sankar.book WHERE bookId=";
 
 pub async fn get_all(_app: web::Data<App>) 
 -> Result<HttpResponse, actix_web::Error> {
@@ -81,7 +70,7 @@ fn get_document_query(document_id: &str)
 -> Result<String, actix_web::Error> {
     match Uuid::parse_str(document_id) {
         Ok(document_id) => {
-            Ok(format!("{} {}", GET_DOCUMENT, document_id))
+            Ok(format!("{}{}", GET_ALL_DOCUMENTS_FROM_ID, document_id))
         }
         Err(err) => Err(AppError::from(err).into())
     }
@@ -91,8 +80,7 @@ fn get_all_document_from_id_query(document_id: &str)
 -> Result<String, actix_web::Error> {
     match Uuid::parse_str(document_id) {
         Ok(document_id) => {
-            let q = format!("SELECT bookId, title, body, parentId, uniqueId, identity from sankar.book WHERE bookId={}", document_id);
-            println!("{}", q);
+            let q = format!("{}{}", GET_ALL_DOCUMENTS_FROM_ID, document_id);
             Ok(q)
         }
         Err(err) => Err(AppError::from(err).into())
@@ -121,9 +109,10 @@ pub async fn get_one(session: web::Data<App>, document_id: web::Path<String>,)
 pub async fn get_all_from_id(session: web::Data<App>, document_id: web::Path<String>) 
 -> Result<HttpResponse, actix_web::Error> {
     let conn = session.conn_result()?;
-
-    let documents: Option<Vec<BookSibs>> = 
-		conn.query(get_all_document_from_id_query(&document_id)?, &[])
+    let q = get_all_document_from_id_query(&document_id)?;
+    println!("{}", q.clone());
+    let documents: Option<Vec<Book>> = 
+		conn.query(q, &[])
 		.await
 		.get_query_result()?;
 
@@ -131,7 +120,7 @@ pub async fn get_all_from_id(session: web::Data<App>, document_id: web::Path<Str
     match documents {
         Some(docs) => Ok(HttpResponse::Ok().json(docs)),
         None => {
-            let mt: Vec<BookSibs> = Vec::new();
+            let mt: Vec<Book> = Vec::new();
             Ok(HttpResponse::Ok().json(mt))
         },
     }
