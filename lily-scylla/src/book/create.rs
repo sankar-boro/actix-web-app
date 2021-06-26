@@ -64,11 +64,11 @@ impl<'a> MakeQuery for Payload<'a, PayloadInner> {
     fn query(&self) -> String {
         match self.payload {
             PayloadInner::PARENT(payload) => {
-            return format!(
+                return format!(
                 "INSERT INTO sankar.book (
 	                bookId, uniqueId, authorId, authorName, title, body, identity, createdAt, updatedAt
                 ) VALUES(
-                    {},{},{},{},{},{},{},{},{}
+                    {},{},{},'{}','{}','{}',{},{},{}
                 )", 
                 self.uuid,self.uuid,self.authId,self.authName,&payload.title, &payload.body, &payload.identity,self.uuid,self.uuid);
             },
@@ -77,7 +77,7 @@ impl<'a> MakeQuery for Payload<'a, PayloadInner> {
                 "INSERT INTO sankar.book (
                     bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
                 ) VALUES(
-                    {},{},{},{},{},{},{},{},{},{}
+                    {},{},{},{},'{}','{}','{}',{},{},{}
                 )", 
                 payload.bookId,self.uuid,payload.parentId,self.authId,self.authName,&payload.title, &payload.body, &payload.identity,self.uuid,self.uuid);
             },
