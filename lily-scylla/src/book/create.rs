@@ -1,6 +1,7 @@
 use actix_session::Session;
 use actix_web::dev::ServiceRequest;
 use actix_web::{HttpRequest, HttpResponse, web};
+use scylla::batch::Batch;
 use serde::{Deserialize};
 use uuid::Uuid;
 use crate::App;
@@ -79,7 +80,7 @@ impl<'a> MakeQuery for Payload<'a, PayloadInner> {
                 ) VALUES(
                     {},{},{},{},'{}','{}','{}',{},{},{}
                 )", 
-                payload.bookId,self.uuid,payload.parentId,self.authId,self.authName,&payload.title, &payload.body, &payload.identity,self.uuid,self.uuid);
+                payload.bookId,self.uuid,payload.parentId,self.authId, self.authName,&payload.title, &payload.body, &payload.identity,self.uuid,self.uuid);
             },
         }
         
@@ -180,6 +181,49 @@ pub async fn create_new_chapter(
     Ok(
         HttpResponse::Ok().json(payload.response())
     )
+}
+
+#[derive(Deserialize, Validate, FromRow)]
+#[allow(non_snake_case)]
+pub struct UpdateAndInsert {
+    title: String,
+    body: String,
+    identity: i16,
+    bookId: String,
+    topUniqueId: String,
+    botUniqueId: String,
+}
+static UP: &str = "UPDATE sankar.book SET parentId=? WHERE bookId=? AND uniqueId=?";
+static IT: &str = "INSERT INTO sankar.book (bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+pub async fn create_and_update_chapter(
+    _app: web::Data<App>, 
+    payload: web::Json<UpdateAndInsert>,
+    session: Session
+) 
+-> Result<HttpResponse, actix_web::Error> 
+{
+    let new_id = time_uuid();
+    let conn = _app.conn_result()?;
+    let mut batch: Batch = Default::default();
+    let auth_user = auth_session(&session)?;
+    batch.append_statement(UP);
+    batch.append_statement(IT);
+    let name = format!("{} {}", &auth_user.fname, &auth_user.lname);
+    println!("{}", &UP);
+    println!("{}", &IT);
+    let bo_ok_id = Uuid::parse_str(&payload.bookId).unwrap();
+    let u_id = Uuid::parse_str(&payload.botUniqueId).unwrap();
+    let p_id = Uuid::parse_str(&payload.topUniqueId).unwrap();
+    let a_id = Uuid::parse_str(&auth_user.userId).unwrap();
+    let batch_values = (
+        (&new_id, bo_ok_id.clone(), &u_id),                
+        (bo_ok_id,&new_id,&p_id,&a_id, &name, &payload.title, &payload.body, &payload.identity,&new_id,&new_id)
+    );
+    match conn.batch(&batch, batch_values).await {
+        Ok(_) => Ok(HttpResponse::Ok().body("Updated and created new chapter.")),
+        Err(err) => Err(AppError::from(err).into())
+    }
 }
 
 pub async fn create_new_page(

@@ -94,3 +94,4 @@ static CREATE_NEW_SECTION: &str = "INSERT INTO sankar.book (
 ) VALUES(
     ?,?,?,?,?,?,?,?,?,?
 )";
+// “ UPDATE emp SET emp_city='Delhi',emp_sal=50000 WHERE emp_id = 2;”
