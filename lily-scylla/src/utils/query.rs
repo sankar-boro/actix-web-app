@@ -37,12 +37,7 @@ pub struct Update {
 }
 impl Update {
 	pub fn from(table: &str) -> Self {
-		let mut q = String::from("UPDATE");
-		q.push_str(" ");
-		q.push_str(table);
-		q.push_str(" ");
-		q.push_str("SET");
-
+		let q = format!("UPDATE {} SET", table);
 		Self {
 			query: q,
 			sets: 0,
@@ -50,28 +45,26 @@ impl Update {
 	}
 
 	pub fn set(mut self, key: &str, value: &str) -> Self {
-		if self.sets > 0 {
-			self.query.push_str(",");
-			self.query.push_str(" ");
+		if self.sets == 0 {
+			let q = format!(" {}='{}'", key, value);
+			self.query.push_str(&q);	
 		} else {
-			self.query.push_str(" ");	
+			let q = format!(", {}='{}'", key, value);
+			self.query.push_str(&q);	
 		}
-		self.query.push_str(key);
-		self.query.push_str("=");
-		self.query.push_str("'");
-		self.query.push_str(value);
-		self.query.push_str("'");
-		self.query.push_str(" ");
 		self.sets += 1;
 		self
 	}
 
 	pub fn where_in(mut self, key: &str, value: &str) -> Self {
-		self.query.push_str("WHERE");
-		self.query.push_str(" ");
-		self.query.push_str(key);
-		self.query.push_str("=");
-		self.query.push_str(value);
+		let q = format!(" WHERE {}={}", key, value);
+		self.query.push_str(&q);
+		self
+	}
+
+	pub fn and(mut self, key: &str, value: &str) -> Self {
+		let q = format!(" AND {}={}", key, value);
+        self.query.push_str(&q);
 		self
 	}
 
@@ -79,19 +72,3 @@ impl Update {
 		self.query.clone()
 	} 
 }
-
-static CREATE_NEW_BOOK: &str = "INSERT INTO sankar.book (
-	bookId, uniqueId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES";
-static CREATE_NEW_PAGE: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES";
-static CREATE_NEW_CHAPTER: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES";
-static CREATE_NEW_SECTION: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt
-) VALUES(
-    ?,?,?,?,?,?,?,?,?,?
-)";
-// “ UPDATE emp SET emp_city='Delhi',emp_sal=50000 WHERE emp_id = 2;”

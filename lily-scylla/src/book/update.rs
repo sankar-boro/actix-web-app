@@ -11,8 +11,9 @@ use crate::{App, utils::{ConnectionResult, GetQueryResult, Update}};
 
 #[derive(Deserialize)]
 pub struct UpdateDocumentData {
+    bookId: Uuid,
+    uniqueId: Uuid,
     title: String,
-    tags: String,
     body: String,
 }
 
@@ -24,14 +25,14 @@ pub struct Document {
     body: String,
 }
 
-pub async fn update_one(session: web::Data<App>, doc_id: web::Path<String>, request: web::Json<UpdateDocumentData>) 
+pub async fn update_one(session: web::Data<App>, request: web::Json<UpdateDocumentData>) 
 -> Result<HttpResponse, actix_web::Error> {
     let conn = session.conn_result()?;
     let query = Update::from("sankar.documents")
             .set("title", &request.title)
-            .set("tags", &request.tags)
             .set("body", &request.body)
-            .where_in("documentId", &doc_id)
+            .where_in("bookId", &request.bookId.to_string())
+            .and("uniqueId", &request.uniqueId.to_string())
             .query();
     let _: Option<Vec<Document>> = conn
     .query(query, &[])
