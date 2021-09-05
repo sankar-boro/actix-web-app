@@ -28,7 +28,7 @@ pub struct Document {
 pub async fn update_one(session: web::Data<App>, request: web::Json<UpdateDocumentData>) 
 -> Result<HttpResponse, actix_web::Error> {
     let conn = session.conn_result()?;
-    let query = Update::from("sankar.documents")
+    let query = Update::from("sankar.book")
             .set("title", &request.title)
             .set("body", &request.body)
             .where_in("bookId", &request.bookId.to_string())
