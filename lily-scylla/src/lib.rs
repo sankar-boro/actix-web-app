@@ -8,19 +8,18 @@ mod error;
 mod query;
 
 use std::sync::Arc;
-
-use actix_session::CookieSession;
 use anyhow::Result;
 use error::Error as AppError;
 use actix_redis::RedisSession;
 use crate::utils::ConnectionResult;
-use scylla::{Session, SessionBuilder};
+use scylla::{Session, SessionBuilder, transport::errors::NewSessionError};
 use helpers::error::Error as RequestError;
-use actix_web::{App as ActixApp, HttpServer, http};
+use actix_web::{App as ActixApp, HttpServer};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use actix_web::web;
 use actix_cors::Cors;
 use time::Duration;
+use log::{error};
 
 #[derive(Clone)]
 pub struct App {
@@ -39,9 +38,10 @@ impl App {
     }
 }
 
-async fn session() -> Session {
+async fn session() -> Result<Session, NewSessionError> {
     let uri = "127.0.0.1:9042";
-    SessionBuilder::new().known_node(uri).build().await.unwrap()
+    let a = SessionBuilder::new().known_node(uri).build().await;
+    a
 }
 
 pub struct ScyllaConnectionManager {
@@ -49,9 +49,9 @@ pub struct ScyllaConnectionManager {
 }
 
 impl ScyllaConnectionManager {
-    async fn new() -> Self {
+    async fn new(s: Session) -> Self {
         Self {
-            session:Arc::new(session().await)
+            session:Arc::new(s)
         }
     }
 }
@@ -74,8 +74,8 @@ impl ManageConnection for ScyllaConnectionManager {
     }
 }
 
-async fn builder() -> Pool<ScyllaConnectionManager> {
-    let m = ScyllaConnectionManager::new().await;
+async fn builder(s: Session) -> Pool<ScyllaConnectionManager> {
+    let m = ScyllaConnectionManager::new(s).await;
     let p = r2d2::Pool::builder()
         .max_size(3)
         .build(m)
@@ -83,10 +83,7 @@ async fn builder() -> Pool<ScyllaConnectionManager> {
     p
 }
 
-pub async fn start_scylla_app() -> Result<()> {
-    let session = builder().await;
-    let app = App::new(session);
-
+async fn start_server(app: App) -> Result<()> {
     HttpServer::new(move || {
         let cors = Cors::default()
               .allow_any_origin()
@@ -107,6 +104,33 @@ pub async fn start_scylla_app() -> Result<()> {
     .bind("127.0.0.1:8000")?
     .run()
     .await?;
+    Ok(())
+}
+
+pub async fn start_scylla_app() -> Result<()> {
+    let session = session().await;
+
+    if let Ok(session) = session {
+        let session = builder(session).await;
+        let app = App::new(session);
+    
+        return start_server(app).await;
+    }
+
+    if let Err(err) = session {
+        match err {
+            NewSessionError::FailedToResolveAddress(e) => error!("FailedToResolveAddress, {}", e),
+            NewSessionError::EmptyKnownNodesList => error!("EmptyKnownNodesList"),
+            NewSessionError::DbError(e, er) => error!("DbError, {} {}", e, er),
+            NewSessionError::BadQuery(e) => error!("BadQuery, {}", e),
+            NewSessionError::IoError(e) => {
+                error!("IoError, {}", e);
+                println!("Would you mind to check if you have started scylladb service. Command is: \"sudo systemctl start scylla-server\" ");
+            },
+            NewSessionError::ProtocolError(e) => error!("ProtocolError, {}", e),
+        }
+    }
+
     Ok(())
 }
 
