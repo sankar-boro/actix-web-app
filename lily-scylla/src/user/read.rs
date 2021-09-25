@@ -1,13 +1,11 @@
 use actix_session::Session;
 use actix_web::{HttpResponse,web};
-use serde_json::json;
 use crate::App;
 use crate::utils::ConnectionResult;
 use uuid::Uuid;
 use serde::Serialize;
 use crate::AppError;
 
-use scylla::IntoTypedRows;
 use scylla::macros::FromRow;
 use scylla::frame::response::cql_to_rust::FromRow;
 use crate::utils::{GetQueryResult};

@@ -1,7 +1,6 @@
 use argon2;
 use std::fmt::Write;
 use actix_web::http::StatusCode;
-use actix_web::HttpResponse;
 use actix_web::{web::BytesMut};
 use actix_web::http::header;
 use derive_more::{Display};

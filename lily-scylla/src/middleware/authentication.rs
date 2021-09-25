@@ -2,17 +2,11 @@ use std::pin::Pin;
 use std::cell::RefCell;
 use std::rc::Rc;
 use actix_service::{Service, Transform};
-// use actix_web::web::json;
-use actix_web::{dev::ServiceRequest, dev::ServiceResponse, HttpResponse, Error};
+use actix_web::{dev::ServiceRequest, dev::ServiceResponse, Error};
 use futures::future::{ok, Ready};
 use futures::Future;
 use actix_session::UserSession;
 use crate::AppError;
-
-use jsonwebtoken::Validation;
-use jsonwebtoken::DecodingKey;
-use crate::utils::SessionClaims;
-use jsonwebtoken::{decode, Algorithm};
 use log::{info};
 
 

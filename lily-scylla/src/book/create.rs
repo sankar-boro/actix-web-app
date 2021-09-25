@@ -1,6 +1,5 @@
 use actix_session::Session;
-use actix_web::dev::ServiceRequest;
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{HttpResponse, web};
 use scylla::batch::Batch;
 use serde::{Deserialize};
 use uuid::Uuid;

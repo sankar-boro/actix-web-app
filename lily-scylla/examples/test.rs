@@ -1,15 +1,7 @@
-//! Example of cookie based session
-//! Session data is stored in cookie, it is limited to 4kb
-//!
-//! [Redis session example](https://github.com/actix/examples/tree/master/redis-session)
-//!
-//! [User guide](https://actix.rs/docs/middleware/#user-sessions)
-
-use actix_session::{CookieSession, Session};
+use actix_session::{Session};
 use actix_web::{middleware::Logger, web, App, HttpRequest, HttpServer, Result};
 use actix_redis::RedisSession;
 
-/// simple index handler with session
 async fn index(session: Session, req: HttpRequest) -> Result<&'static str> {
     session.insert("user", "sankar")?;
     session.renew();

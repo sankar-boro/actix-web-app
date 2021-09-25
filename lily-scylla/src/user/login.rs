@@ -1,6 +1,5 @@
 use crate::App;
 use crate::AppError;
-use crate::session;
 use scylla::macros::FromRow;
 
 use uuid::Uuid;

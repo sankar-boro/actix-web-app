@@ -35,7 +35,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/create/new/chapter", web::post().to(book::create_new_chapter))
     .route("/create/update/chapter", web::post().to(book::create_and_update_chapter))
     .route("/update", web::post().to(book::update_one))
-    .route("/delete/{id}", web::post().to(book::delete_one))
+    .route("/delete/section", web::post().to(book::delete_section))
   );
   // config.service(
   //   web::scope("/upload")
