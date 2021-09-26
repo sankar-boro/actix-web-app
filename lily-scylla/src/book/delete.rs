@@ -8,6 +8,8 @@ use crate::utils::{ConnectionResult};
 use scylla::frame::response::cql_to_rust::FromRow;
 use scylla::batch::Batch;
 use crate::AppError;
+use scylla::query::Query;
+
 
 #[derive(Deserialize, Validate, FromRow)]
 #[allow(non_snake_case)]
@@ -85,6 +87,67 @@ pub async fn delete_section_first(
     );
 
     match conn.batch(&batch, batch_values).await {
+        Ok(_) => Ok(HttpResponse::Ok().body("Updated and created new chapter.")),
+        Err(err) => Err(AppError::from(err).into())
+    }
+}
+
+#[derive(Deserialize)]
+struct SectionUpdateData {
+    uniqueId: String,
+    newParentId: String,
+}
+#[derive(Deserialize)]
+struct SectionDeleteData {
+    uniqueId: String,
+}
+
+#[derive(Deserialize)]
+#[allow(non_snake_case)]
+pub struct DeleteSectionInner{
+    updateData: SectionUpdateData,
+    deleteData: Vec<SectionDeleteData>
+}
+
+#[derive(Deserialize, Validate, FromRow)]
+#[allow(non_snake_case)]
+pub struct DeleteSection {
+    bookId: String,
+    data: String,
+}
+
+pub async fn delete_main_section(
+    session: web::Data<App>, 
+    payload: web::Json<DeleteSection>
+)
+-> Result<HttpResponse, actix_web::Error> 
+{
+    let conn = session.conn_result()?;
+    let p: DeleteSectionInner = serde_json::from_str(&payload.data).unwrap();
+    let u = p.updateData;
+    let d = p.deleteData;
+
+    let mut batch: Batch = Default::default();
+    let book_id = Uuid::parse_str(&payload.bookId).unwrap();
+
+    let g: Query = Query::new(format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &u.newParentId, &book_id, &u.uniqueId));
+    batch.append_statement(g);
+
+    let mut d_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
+    for (_i, f) in d.iter().enumerate() {
+        let u_id = Uuid::parse_str(&f.uniqueId).unwrap();
+        if _i == 0 {
+            d_query.push_str(&format!("{}", &u_id));
+        } else {
+            d_query.push_str(&format!(",{}", &u_id));    
+        }
+    }
+    d_query.push_str(")");
+    println!("{}", &d_query);
+    let q: Query = Query::new(d_query);
+    batch.append_statement(q);
+
+    match conn.batch(&batch, ((), ())).await {
         Ok(_) => Ok(HttpResponse::Ok().body("Updated and created new chapter.")),
         Err(err) => Err(AppError::from(err).into())
     }

@@ -41,6 +41,10 @@ impl Update {
 }
 
 fn main() {
-    let q = Update::from("sankar.users").set("fname", "Sankar").set("lname", "Boro").where_in("userId", "1").and("uniqueId", "1").query();
-    println!("{}", q);
+	let mut b = Vec::new();
+	b.push(());
+	b.push(());
+	b.push(());
+	let c = 
+	println!("{:?}", b);
 }
