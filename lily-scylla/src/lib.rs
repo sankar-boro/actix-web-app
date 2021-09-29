@@ -6,14 +6,18 @@ mod book;
 mod utils;
 mod error;
 mod query;
+mod auth;
 
 use std::sync::Arc;
 use anyhow::Result;
 use error::Error as AppError;
 use actix_redis::RedisSession;
 use crate::utils::ConnectionResult;
-use scylla::{Session, SessionBuilder, transport::errors::NewSessionError};
-use helpers::error::Error as RequestError;
+use scylla::{
+    Session, 
+    SessionBuilder, 
+    transport::errors::NewSessionError
+};
 use actix_web::{App as ActixApp, HttpServer};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use actix_web::web;

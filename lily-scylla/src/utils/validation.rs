@@ -25,6 +25,7 @@ impl SessionClaims {
 		}
 	}
 
+	#[allow(dead_code)]
 	pub fn get_id(&self) -> &str {
 		&self.id
 	}

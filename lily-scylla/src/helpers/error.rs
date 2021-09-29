@@ -1,3 +1,5 @@
+#[allow(dead_code)]
+
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -6,8 +8,9 @@ pub struct Error<'a> {
     message: &'a str,
     data: Option<String>
 }
-
 impl<'a> Error<'a> {
+
+    #[allow(dead_code)]
     pub fn not_found(message: &'a str) -> Self {
         Self {
             status: "NOT_FOUND",
@@ -16,6 +19,7 @@ impl<'a> Error<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn db_error(message: &'a str) -> Self {
         Self {
             status: "DB_ERROR",
@@ -24,6 +28,7 @@ impl<'a> Error<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn bad_request(message: &'a str) -> Self {
         Self {
             status: "BAD_REQUEST",

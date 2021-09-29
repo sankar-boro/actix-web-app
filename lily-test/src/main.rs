@@ -1,5 +1,5 @@
-use std::{thread, time};
-use std::sync::{Arc, RwLock};
+use std::{thread};
+use std::sync::{Arc};
 
 fn main() {
     let a = String::from("sankar");

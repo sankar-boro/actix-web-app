@@ -5,6 +5,7 @@ mod read;
 mod update;
 mod delete;
 mod image;
+mod payload;
 
 pub use image::upload_image;
 pub use create::{create_new_book, create_new_chapter, create_new_section, create_new_page, create_and_update_chapter};

@@ -1,11 +1,8 @@
 use uuid::Uuid;
 use crate::App;
 use serde::Deserialize;
-use validator::Validate;
-use scylla::macros::FromRow;
 use actix_web::{web, HttpResponse};
 use crate::utils::{ConnectionResult};
-use scylla::frame::response::cql_to_rust::FromRow;
 use scylla::batch::Batch;
 use crate::AppError;
 use scylla::query::Query;

@@ -10,6 +10,7 @@ use scylla::frame::response::cql_to_rust::FromRow;
 use crate::{App, utils::{ConnectionResult, GetQueryResult, Update}};
 
 #[derive(Deserialize)]
+#[allow(non_snake_case)]
 pub struct UpdateDocumentData {
     bookId: Uuid,
     uniqueId: Uuid,

@@ -2,7 +2,7 @@ use actix_session::{Session};
 use actix_web::{middleware::Logger, web, App, HttpRequest, HttpServer, Result};
 use actix_redis::RedisSession;
 
-async fn index(session: Session, req: HttpRequest) -> Result<&'static str> {
+async fn index(session: Session, _: HttpRequest) -> Result<&'static str> {
     session.insert("user", "sankar")?;
     session.renew();
     Ok("welcome!")
