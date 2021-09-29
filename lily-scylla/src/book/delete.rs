@@ -45,27 +45,36 @@ pub async fn update_or_delete(
 
     let mut batch: Batch = Default::default();
 
-    if let Some(update_data) = update_data {
-        let q = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.newParentId, &book_id, &update_data.uniqueId);
-        let g: Query = Query::new(q);
-        batch.append_statement(g);
+    if let Some(update_data) = &update_data {
+        let update_query = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.newParentId, &book_id, &update_data.uniqueId);
+        log::info!("{}", &update_query);
+        let query: Query = Query::new(update_query);
+        batch.append_statement(query);
     }
 
-
-    let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
-    for (_i, del_item) in delete_data.iter().enumerate() {
-        if _i == 0 {
-            delete_query.push_str(&del_item);
-        } else {
-            delete_query.push_str(&del_item);    
+    if delete_data.len() > 0 {
+        let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
+        for (_i, del_item) in delete_data.iter().enumerate() {
+            if _i == 0 {
+                delete_query.push_str(&del_item);
+            } else {
+                delete_query.push_str(&format!(", {}", &del_item));    
+            }
         }
+        delete_query.push_str(")");
+        log::info!("{}", delete_query);
+        batch.append_statement(Query::new(delete_query));
     }
-    delete_query.push_str(")");
 
-    batch.append_statement(Query::new(delete_query));
-
-    match conn.batch(&batch, ((), ())).await {
-        Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
-        Err(err) => Err(AppError::from(err).into())
+    if let Some(_) = &update_data {
+        return match conn.batch(&batch, ((), ())).await {
+            Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
+            Err(err) => Err(AppError::from(err).into())
+        }
+    } else {
+        return match conn.batch(&batch, ((),)).await {
+            Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
+            Err(err) => Err(AppError::from(err).into())
+        }
     }
 }
