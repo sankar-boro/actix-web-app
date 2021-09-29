@@ -10,145 +10,62 @@ use scylla::batch::Batch;
 use crate::AppError;
 use scylla::query::Query;
 
-
-#[derive(Deserialize, Validate, FromRow)]
-#[allow(non_snake_case)]
-pub struct Delete {
-    bookId: String,
-    uniqueId: String,
-}
-
-pub async fn delete_section_last(
-    session: web::Data<App>, 
-    payload: web::Json<Delete>
-)
--> Result<HttpResponse, actix_web::Error> 
-{
-    let conn = session.conn_result()?;
-    let book_id =  Uuid::parse_str(&payload.bookId).unwrap();
-    let unique_id =  Uuid::parse_str(&payload.uniqueId).unwrap();
-    conn
-    .query("DELETE FROM sankar.book WHERE bookId=? AND uniqueId=?", (book_id, unique_id))
-    .await.unwrap();
-    Ok(HttpResponse::Ok().body("Document deleted"))
-}
-
-#[derive(Deserialize, Validate, FromRow)]
-#[allow(non_snake_case)]
-pub struct PayloadUpdateAndDelete {
-    data: String,
-}
-
 #[derive(Deserialize)]
 #[allow(non_snake_case)]
 struct UpdateData {
-    bookId: String,
     uniqueId: String,
     newParentId: String,
 }
+
 #[derive(Deserialize)]
 #[allow(non_snake_case)]
-struct DeleteData {
+pub struct UpdateOrDeleteInner {
+    updateData: Option<UpdateData>,
+    deleteData: Vec<String>,
+}
+
+#[derive(Deserialize)]
+#[allow(non_snake_case)]
+pub struct UpdateOrDelete {
     bookId: String,
-    deleteUniqueId: String,
+    json: String,
 }
 
-#[derive(Deserialize)]
-#[allow(non_snake_case)]
-pub struct UpdateAndDelete {
-    updateData: UpdateData,
-    deleteData: DeleteData,
-}
-
-pub async fn delete_section_first(
+pub async fn update_or_delete(
     session: web::Data<App>, 
-    payload: web::Json<PayloadUpdateAndDelete>
-)
--> Result<HttpResponse, actix_web::Error> 
-{
-    println!("{}", payload.data);
-
+    payload: web::Json<UpdateOrDelete>
+) -> Result<HttpResponse, actix_web::Error> {
+    
     let conn = session.conn_result()?;
-    let p: UpdateAndDelete = serde_json::from_str(&payload.data).unwrap();
-    let u = p.updateData;
-    let d = p.deleteData;
+    let _json: UpdateOrDeleteInner = serde_json::from_str(&payload.json).unwrap();
 
-    let mut batch: Batch = Default::default();
-    batch.append_statement("UPDATE sankar.book SET parentId=? WHERE bookId=? AND uniqueId=?");
-    batch.append_statement("DELETE FROM sankar.book WHERE bookId=? AND uniqueId=?");
-
-    let book_id = Uuid::parse_str(&u.bookId).unwrap();
-    let new_parent_id = Uuid::parse_str(&u.newParentId).unwrap();
-    let unique_id = Uuid::parse_str(&u.uniqueId).unwrap();
-    let delete_id = Uuid::parse_str(&d.deleteUniqueId).unwrap();
-    let batch_values = (
-        (&new_parent_id, &book_id, &unique_id),                
-        (&book_id, &delete_id)
-    );
-
-    match conn.batch(&batch, batch_values).await {
-        Ok(_) => Ok(HttpResponse::Ok().body("Updated and created new chapter.")),
-        Err(err) => Err(AppError::from(err).into())
-    }
-}
-
-#[derive(Deserialize)]
-struct SectionUpdateData {
-    uniqueId: String,
-    newParentId: String,
-}
-#[derive(Deserialize)]
-struct SectionDeleteData {
-    uniqueId: String,
-}
-
-#[derive(Deserialize)]
-#[allow(non_snake_case)]
-pub struct DeleteSectionInner{
-    updateData: SectionUpdateData,
-    deleteData: Vec<SectionDeleteData>
-}
-
-#[derive(Deserialize, Validate, FromRow)]
-#[allow(non_snake_case)]
-pub struct DeleteSection {
-    bookId: String,
-    data: String,
-}
-
-pub async fn delete_main_section(
-    session: web::Data<App>, 
-    payload: web::Json<DeleteSection>
-)
--> Result<HttpResponse, actix_web::Error> 
-{
-    let conn = session.conn_result()?;
-    let p: DeleteSectionInner = serde_json::from_str(&payload.data).unwrap();
-    let u = p.updateData;
-    let d = p.deleteData;
-
-    let mut batch: Batch = Default::default();
+    let update_data = _json.updateData;
+    let delete_data = _json.deleteData;
     let book_id = Uuid::parse_str(&payload.bookId).unwrap();
 
-    let g: Query = Query::new(format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &u.newParentId, &book_id, &u.uniqueId));
-    batch.append_statement(g);
+    let mut batch: Batch = Default::default();
 
-    let mut d_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
-    for (_i, f) in d.iter().enumerate() {
-        let u_id = Uuid::parse_str(&f.uniqueId).unwrap();
+    if let Some(update_data) = update_data {
+        let q = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.newParentId, &book_id, &update_data.uniqueId);
+        let g: Query = Query::new(q);
+        batch.append_statement(g);
+    }
+
+
+    let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
+    for (_i, del_item) in delete_data.iter().enumerate() {
         if _i == 0 {
-            d_query.push_str(&format!("{}", &u_id));
+            delete_query.push_str(&del_item);
         } else {
-            d_query.push_str(&format!(",{}", &u_id));    
+            delete_query.push_str(&del_item);    
         }
     }
-    d_query.push_str(")");
-    println!("{}", &d_query);
-    let q: Query = Query::new(d_query);
-    batch.append_statement(q);
+    delete_query.push_str(")");
+
+    batch.append_statement(Query::new(delete_query));
 
     match conn.batch(&batch, ((), ())).await {
-        Ok(_) => Ok(HttpResponse::Ok().body("Updated and created new chapter.")),
+        Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
         Err(err) => Err(AppError::from(err).into())
     }
 }
