@@ -10,6 +10,7 @@ use crate::utils::{
 	ConnectionResult
 };
 use crate::book::queries::CHILD;
+use uuid::Uuid;
 
 #[derive(Deserialize, Validate, FromRow)]
 #[allow(non_snake_case)]
@@ -43,11 +44,13 @@ pub async fn create_new_section(
     let conn = app.conn_result()?;
     let unique_id = time_uuid();
     let unique_id_str = unique_id.to_string();
+    let book_id = Uuid::parse_str(&request.bookId).unwrap();
+    let parent_id = Uuid::parse_str(&request.parentId).unwrap();
 
     let _: Option<Vec<Request>> = conn
         .query(CHILD, 
             (
-                &request.bookId, &unique_id, &request.parentId,
+                &book_id, &unique_id, &parent_id,
                 &request.title, &request.body,
                 &request.identity, &unique_id, &unique_id,
             )
