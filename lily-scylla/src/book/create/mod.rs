@@ -1,4 +1,4 @@
-pub mod create_and_update_chapter;
+pub mod create_and_update;
 
 use actix_session::Session;
 use actix_web::{HttpResponse, web};

@@ -33,7 +33,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/create/new/page", web::post().to(book::child_request))
     .route("/create/new/section", web::post().to(book::child_request))
     .route("/create/new/chapter", web::post().to(book::child_request))
-    .route("/create/update/chapter", web::post().to(book::create_and_update_chapter))
+    .route("/create/update", web::post().to(book::create_and_update_chapter))
     .route("/update", web::post().to(book::update_one))
     // .route("/delete/sub_section/last", web::post().to(book::delete_section_last))
     // .route("/delete/sub_section/first", web::post().to(book::delete_section_first))
