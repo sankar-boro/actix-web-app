@@ -11,7 +11,7 @@ use crate::utils::{
 	ConnectionResult
 };
 use crate::AppError;
-use crate::book::queries::{UPDATE, CHILD};
+use crate::book::queries::{UPDATE_PARENT_ID, CHILD};
 
 #[derive(Deserialize, Validate, FromRow)]
 #[allow(non_snake_case)]
@@ -41,7 +41,7 @@ pub async fn create_and_update_chapter(
     
     // query
     let mut batch: Batch = Default::default();
-    batch.append_statement(UPDATE);
+    batch.append_statement(UPDATE_PARENT_ID);
     batch.append_statement(CHILD);
     
     // init ids

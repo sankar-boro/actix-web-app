@@ -1,42 +1,33 @@
 use uuid::Uuid;
 use serde::Deserialize;
-use actix_web::{web, HttpResponse};
-use serde::{Serialize};
-
-// both of them is required to implement FromRow
 use scylla::macros::FromRow;
+use super::queries::UPDATE_BOOK;
+use actix_web::{web, HttpResponse};
 use scylla::frame::response::cql_to_rust::FromRow;
 
-use crate::{App, utils::{ConnectionResult, GetQueryResult, Update}};
 
-#[derive(Deserialize)]
+use crate::{App, utils::{ConnectionResult, GetQueryResult}};
+
+#[derive(Deserialize, FromRow)]
 #[allow(non_snake_case)]
-pub struct UpdateDocumentData {
-    bookId: Uuid,
-    uniqueId: Uuid,
+pub struct Request {
+    bookId: String,
+    uniqueId: String,
     title: String,
     body: String,
 }
 
-#[derive(FromRow, Serialize)]
-pub struct Document {
-	id: Uuid,
-	title: String,
-	tags: String,
-    body: String,
-}
-
-pub async fn update_one(session: web::Data<App>, request: web::Json<UpdateDocumentData>) 
+pub async fn update_one(session: web::Data<App>, request: web::Json<Request>) 
 -> Result<HttpResponse, actix_web::Error> {
     let conn = session.conn_result()?;
-    let query = Update::from("sankar.book")
-            .set("title", &request.title)
-            .set("body", &request.body)
-            .where_in("bookId", &request.bookId.to_string())
-            .and("uniqueId", &request.uniqueId.to_string())
-            .query();
-    let _: Option<Vec<Document>> = conn
-    .query(query, &[])
+    let book_id = Uuid::parse_str(&request.bookId).unwrap();
+    let unique_id = Uuid::parse_str(&request.uniqueId).unwrap();
+
+    let _: Option<Vec<Request>> = conn
+    .query(UPDATE_BOOK, (
+        &request.title, &request.body, &book_id, &unique_id
+    ))
     .await.get_query_result()?;
+    
     Ok(HttpResponse::Ok().body("Document updated"))
 }

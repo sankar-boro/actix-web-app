@@ -1,17 +1,18 @@
+use actix_session::Session;
 use uuid::Uuid;
 use serde::Deserialize;
 use actix_web::{web, HttpResponse};
 use serde::{Serialize};
-
-// both of them is required to implement FromRow
 use scylla::macros::FromRow;
+use super::queries::UPDATE_USER;
 use scylla::frame::response::cql_to_rust::FromRow;
 
-use crate::{App, utils::{ConnectionResult, GetQueryResult, Update}};
+use crate::{App, auth::AuthSession, utils::{ConnectionResult, GetQueryResult}};
 
 #[derive(Deserialize)]
-pub struct UpdateUserData {
+pub struct Request {
     fname: String,
+    lname: String,
 }
 
 #[derive(FromRow, Serialize)]
@@ -21,15 +22,16 @@ pub struct User {
 	password: Vec<u8>,
 }
 
-pub async fn update_one(session: web::Data<App>, id: web::Path<String>, request: web::Form<UpdateUserData>) 
+pub async fn update_one(app: web::Data<App>, request: web::Json<Request>, session: Session) 
 -> Result<HttpResponse, actix_web::Error> {
-    let conn = session.conn_result()?;
-    let query = Update::from("sankar.users")
-            .set("fname", &request.fname)
-            .where_in("userid", &id)
-            .query();
+    
+    let conn = app.conn_result()?;
+    let auth = session.user_info()?;
+    let auth_id = Uuid::parse_str(&auth.userId).unwrap();
     let _: Option<Vec<User>> = conn
-    .query(query, &[])
+    .query(UPDATE_USER, (
+        &request.fname, &request.lname, &auth_id
+    ))
     .await.get_query_result()?;
     Ok(HttpResponse::Ok().body("User updated"))
 }

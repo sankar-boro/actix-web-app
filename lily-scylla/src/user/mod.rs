@@ -4,6 +4,7 @@ mod delete;
 mod update;
 mod login;
 mod logout;
+mod queries;
 
 pub use signup::create_user;
 pub use read::{get_one, get_all, user_session};
