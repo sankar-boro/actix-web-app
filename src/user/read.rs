@@ -7,7 +7,6 @@ use serde::Serialize;
 use crate::AppError;
 
 use scylla::macros::FromRow;
-use scylla::frame::response::cql_to_rust::FromRow;
 use crate::utils::{GetQueryResult};
 
 #[derive(FromRow, Serialize)]

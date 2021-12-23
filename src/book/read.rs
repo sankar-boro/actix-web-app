@@ -4,7 +4,6 @@ use uuid::Uuid;
 use serde::Serialize;
 
 use scylla::macros::FromRow;
-use scylla::frame::response::cql_to_rust::FromRow;
 use crate::utils::{
 	GetQueryResult, 
 	ConnectionResult

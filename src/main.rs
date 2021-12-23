@@ -132,6 +132,8 @@ pub async fn start_scylla_app() -> Result<()> {
                 println!("Would you mind to check if you have started scylladb service. Command is: \"sudo systemctl start scylla-server\" ");
             },
             NewSessionError::ProtocolError(e) => error!("ProtocolError, {}", e),
+            NewSessionError::InvalidMessage(e) => error!("InvalidMessage, {}", e),
+            NewSessionError::TimeoutError => error!("TimeoutError"),
         }
     }
 

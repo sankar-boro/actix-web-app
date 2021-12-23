@@ -7,7 +7,6 @@ use uuid::Uuid;
 use crate::App;
 use validator::Validate;
 use lily_utils::time_uuid;
-use scylla::frame::response::cql_to_rust::FromRow;
 use scylla::macros::FromRow;
 use crate::utils::{
 	GetQueryResult, 

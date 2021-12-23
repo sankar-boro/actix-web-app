@@ -5,7 +5,6 @@ use actix_web::{web, HttpResponse};
 use serde::{Serialize};
 use scylla::macros::FromRow;
 use super::queries::UPDATE_USER;
-use scylla::frame::response::cql_to_rust::FromRow;
 
 use crate::{App, auth::AuthSession, utils::{ConnectionResult, GetQueryResult}};
 

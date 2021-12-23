@@ -3,7 +3,6 @@ use serde::Deserialize;
 use scylla::macros::FromRow;
 use super::queries::UPDATE_BOOK;
 use actix_web::{web, HttpResponse};
-use scylla::frame::response::cql_to_rust::FromRow;
 
 
 use crate::{App, utils::{ConnectionResult, GetQueryResult}};

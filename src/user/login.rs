@@ -12,7 +12,6 @@ use crate::utils::SessionClaims;
 use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
 use jsonwebtoken::{EncodingKey, Algorithm};
-use scylla::frame::response::cql_to_rust::FromRow;
 use crate::utils::{
 	validate_user_credentials, 
 	GetQueryResult, 
