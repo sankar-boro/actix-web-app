@@ -10,8 +10,8 @@ use scylla::query::Query;
 #[derive(Deserialize)]
 #[allow(non_snake_case)]
 struct UpdateData {
-    uniqueId: String,
-    newParentId: String,
+    topUniqueId: String,
+    botUniqueId: String,
 }
 
 #[derive(Deserialize)]
@@ -43,7 +43,7 @@ pub async fn update_or_delete(
     let mut batch: Batch = Default::default();
 
     if let Some(update_data) = &update_data {
-        let update_query = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.newParentId, &book_id, &update_data.uniqueId);
+        let update_query = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.topUniqueId, &book_id, &update_data.botUniqueId);
         log::info!("{}", &update_query);
         let query: Query = Query::new(update_query);
         batch.append_statement(query);
