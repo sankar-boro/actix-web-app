@@ -34,6 +34,7 @@ pub async fn update_or_delete(
 ) -> Result<HttpResponse, actix_web::Error> {
     
     let conn = session.conn_result()?;
+    println!("{}", payload.json);
     let _json: UpdateOrDeleteInner = serde_json::from_str(&payload.json).unwrap();
 
     let update_data = _json.updateData;
