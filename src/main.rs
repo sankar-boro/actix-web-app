@@ -22,7 +22,6 @@ use actix_web::{App as ActixApp, HttpServer};
 use r2d2::{ManageConnection, Pool, PooledConnection};
 use actix_web::web;
 use actix_cors::Cors;
-use time::Duration;
 use log::{error};
 
 #[derive(Clone)]
@@ -100,12 +99,11 @@ async fn start_server(app: App) -> Result<()> {
             .wrap(
                 RedisSession::new("127.0.0.1:6379", &[0; 32])
                 .cookie_name("lily-session")
-                .cookie_max_age(Some(Duration::days(1)))
             )
-            .data(app.clone())
+            .app_data(web::Data::new(app.clone()))
             .configure(route::routes)
     })
-    .bind("127.0.0.1:8000")?
+    .bind("127.0.0.1:7500")?
     .run()
     .await?;
     Ok(())

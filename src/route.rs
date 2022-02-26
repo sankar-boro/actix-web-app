@@ -16,6 +16,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     web::scope("/user")
     .route("/session", web::get().to(user::user_session))
   );
+  config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.service(
     web::scope("/user")
     .wrap(Authentication{})
@@ -34,19 +35,9 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/create/new/section", web::post().to(book::child_request))
     .route("/create/new/chapter", web::post().to(book::child_request))
     .route("/create/update", web::post().to(book::create_and_update_chapter))
-    .route("/update", web::post().to(book::update_one))
-    // .route("/delete/sub_section/last", web::post().to(book::delete_section_last))
-    // .route("/delete/sub_section/first", web::post().to(book::delete_section_first))
-    // .route("/delete/main_section", web::post().to(book::delete_main_section))
     .route("/update_or_delete", web::post().to(book::update_or_delete))
     .route("/create/update/any", web::post().to(book::any))
   );
-  // config.service(
-  //   web::scope("/upload")
-  //   .wrap(Authentication{})
-  //   .route("/image", web::post().to(post::upload_image))
-  // );
-  config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.service(
     web::scope("")
     .wrap(Authentication{})
@@ -54,3 +45,6 @@ pub fn routes(config: &mut web::ServiceConfig) {
   );
 }
 
+// book/update_or_delete
+// /create/update/any
+// /create/new/book

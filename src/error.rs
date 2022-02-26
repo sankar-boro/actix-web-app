@@ -1,10 +1,13 @@
 use argon2;
-use std::fmt::Write;
-use actix_web::http::StatusCode;
-use actix_web::{web::BytesMut};
-use actix_web::http::header;
-use derive_more::{Display};
-use serde_json::json;
+
+use actix_web::{
+    http::{
+        header::ContentType, 
+        StatusCode
+    },
+    HttpResponse,
+};
+use derive_more::Display;
 
 
 #[derive(Display, Debug)]
@@ -17,10 +20,6 @@ pub struct Error {
 impl Error {
     pub fn get_status(&self) -> StatusCode {
         self.status
-    }
-
-    pub fn get_message(&self) -> &str {
-        &self.message
     }
 }
 
@@ -113,15 +112,9 @@ impl actix_web::ResponseError for Error {
         self.get_status()
     }
 
-    fn error_response(&self) -> actix_web::BaseHttpResponse<actix_web::body::Body> {
-        let mut resp = actix_web::BaseHttpResponse::new(self.status_code());
-        let err_json = json!({ "status": self.status_code().as_u16(), "message": self.get_message() });
-        let mut buf = BytesMut::new();
-		buf.write_str(err_json.to_string().as_str()).unwrap();
-        resp.headers_mut().insert(
-            header::CONTENT_TYPE,
-            header::HeaderValue::from_static("application/json"),
-        );
-        resp.set_body(actix_web::body::Body::from(buf))
+    fn error_response(&self) -> actix_web::HttpResponse {
+        HttpResponse::build(self.status_code())
+        .insert_header(ContentType::html())
+        .body(self.to_string())
     }
 }

@@ -13,12 +13,12 @@ members = [
 [dependencies]
 
 #actix
-actix-web = "4.0.0-beta.6"
-actix-session = { git = "https://github.com/sankar-boro/actix-extras", branch = "sankar", version = "0.5.0-beta.2" }
-actix-cors = { git = "https://github.com/sankar-boro/actix-extras", branch = "sankar", version = "0.6.0-beta.2" }
-actix-service = "2.0.0"
-actix-redis = { git = "https://github.com/sankar-boro/actix-extras", branch = "sankar", version = "0.10.0-beta.2" }
-actix-multipart = "0.4.0-beta.4"
+actix-web = "4"
+actix-cors = "0.6.0"
+actix-service = "2.0.2"
+actix-multipart = "0.4.0"
+actix-session = "0.5.0-beta.7"
+actix-redis = "0.10.0-beta.5"
 
 #serializer
 serde = { version = "1.0.132", features = ["derive"] }

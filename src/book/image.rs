@@ -9,7 +9,7 @@ use std::io::Write;
 pub async fn upload_image(mut payload: Multipart) -> HttpResponse {
     // iterate over multipart stream
     while let Ok(Some(mut field)) = payload.try_next().await {
-        let content_type = field.content_disposition().unwrap();
+        let content_type = field.content_disposition();
         let filename = content_type.get_filename().unwrap();
         let filepath = format!("./tmp/{}", sanitize_filename::sanitize(&filename));
 
