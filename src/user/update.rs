@@ -6,7 +6,7 @@ use serde::{Serialize};
 use scylla::macros::FromRow;
 use super::queries::UPDATE_USER;
 
-use crate::{App, auth::AuthSession, utils::{ConnectionResult, GetQueryResult}};
+use crate::{App, auth::AuthSession, utils::{GetQueryResult}};
 
 #[derive(Deserialize)]
 pub struct Request {
@@ -24,10 +24,9 @@ pub struct User {
 pub async fn update_one(app: web::Data<App>, request: web::Json<Request>, session: Session) 
 -> Result<HttpResponse, actix_web::Error> {
     
-    let conn = app.conn_result()?;
     let auth = session.user_info()?;
     let auth_id = Uuid::parse_str(&auth.userId).unwrap();
-    let _: Option<Vec<User>> = conn
+    let _: Option<Vec<User>> = app.session
     .query(UPDATE_USER, (
         &request.fname, &request.lname, &auth_id
     ))

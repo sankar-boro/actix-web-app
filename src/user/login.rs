@@ -14,8 +14,7 @@ use serde::{Serialize, Deserialize};
 use jsonwebtoken::{EncodingKey, Algorithm};
 use crate::utils::{
 	validate_user_credentials, 
-	GetQueryResult, 
-	ConnectionResult
+	GetQueryResult,
 };
 use serde_json::json;
 
@@ -93,9 +92,8 @@ pub async fn login(
 	if let Err(_) = request.validate() {
 		return Err(AppError::from("INVALID_CREDENTIALS").into());
 	}
-	let conn = app.conn_result()?;
 	let rows: Option<Vec<GetUser>> = 
-		conn.query(get_user_query(&request.email), &[])
+		app.session.query(get_user_query(&request.email), &[])
 		.await
 		.get_query_result()?;
 	let auth_user: &GetUser = match &rows {

@@ -23,15 +23,10 @@ pub struct SignupForm {
 
 // TODO: 
 // return HttpResponse is too verbal
-pub async fn create_user(_app: web::Data<App>, request: web::Json<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
+pub async fn create_user(session: web::Data<App>, request: web::Json<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
     if let Err(err) = request.validate() {
 		return Err(AppError::from(err).into());
 	}
-
-    let conn = match _app.as_ref().conn() {
-        Ok(conn) => conn,
-        Err(err) => return Err(AppError::from(err).into()),
-    };
 
     let password = match encrypt_text(&request.password) {
         Ok(pass) => pass,
@@ -53,7 +48,7 @@ pub async fn create_user(_app: web::Data<App>, request: web::Json<SignupForm>) -
         (id, fname, &lname, &email, password,id,id)
     );
 
-    match conn.batch(&batch, batch_values).await {
+    match session.session.batch(&batch, batch_values).await {
         Ok(_) => Ok(HttpResponse::Ok().body("New user created!")),
         Err(err) => Err(AppError::from(err).into())
     }

@@ -30,12 +30,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/all", web::get().to(book::get_all))
     .route("/get/{id}", web::get().to(book::get_one))
     .route("/getall/{id}", web::get().to(book::get_all_from_id))
-    .route("/create/new/book", web::post().to(book::parent_request))
-    .route("/create/new/page", web::post().to(book::child_request))
-    .route("/create/new/section", web::post().to(book::child_request))
-    .route("/create/new/chapter", web::post().to(book::child_request))
-    .route("/create/update", web::post().to(book::create_and_update_chapter))
-    .route("/update_or_delete", web::post().to(book::update_or_delete))
+    .route("/create/new/book", web::post().to(book::new_book))
+    .route("/update/delete/any", web::post().to(book::update_or_delete))
     .route("/create/update/any", web::post().to(book::any))
   );
   config.service(
@@ -44,7 +40,3 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/logout", web::post().to(user::logout_user))
   );
 }
-
-// book/update_or_delete
-// /create/update/any
-// /create/new/book

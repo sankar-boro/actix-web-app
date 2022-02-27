@@ -1,7 +1,6 @@
 use actix_session::Session;
 use actix_web::{HttpResponse,web};
 use crate::App;
-use crate::utils::ConnectionResult;
 use uuid::Uuid;
 use serde::Serialize;
 use crate::AppError;
@@ -18,11 +17,10 @@ struct GetUser {
 }
 
 static GET_ALL_TABLE_USERS: &str = "SELECT userId, fname, lname, email from sankar.users";
-pub async fn get_all(session: web::Data<App>) 
+pub async fn get_all(app: web::Data<App>) 
 -> Result<HttpResponse, actix_web::Error> {
-    let conn = session.conn_result()?;
     let rows: Option<Vec<GetUser>> = 
-		conn.query(GET_ALL_TABLE_USERS, &[])
+		app.session.query(GET_ALL_TABLE_USERS, &[])
 		.await
 		.get_query_result()?;
     match rows {
@@ -45,11 +43,10 @@ fn get_user_query(user_id: &str)
         Err(err) => Err(AppError::from(err).into())
     }
 }
-pub async fn get_one(conn: web::Data<App>, get_user_id: web::Path<String>) 
+pub async fn get_one(app: web::Data<App>, get_user_id: web::Path<String>) 
 -> Result<HttpResponse, actix_web::Error> {
-    let conn = conn.conn_result()?;
     let rows: Option<Vec<GetUser>> = 
-		conn.query(get_user_query(&get_user_id)?, &[])
+		app.session.query(get_user_query(&get_user_id)?, &[])
 		.await
 		.get_query_result()?;
     match rows {

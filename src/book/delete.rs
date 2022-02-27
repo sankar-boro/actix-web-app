@@ -2,7 +2,6 @@ use uuid::Uuid;
 use crate::App;
 use serde::Deserialize;
 use actix_web::{web, HttpResponse};
-use crate::utils::{ConnectionResult};
 use scylla::batch::Batch;
 use crate::AppError;
 use scylla::query::Query;
@@ -29,12 +28,9 @@ pub struct UpdateOrDelete {
 }
 
 pub async fn update_or_delete(
-    session: web::Data<App>, 
+    app: web::Data<App>, 
     payload: web::Json<UpdateOrDelete>
 ) -> Result<HttpResponse, actix_web::Error> {
-    
-    let conn = session.conn_result()?;
-    println!("{}", payload.json);
     let _json: UpdateOrDeleteInner = serde_json::from_str(&payload.json).unwrap();
 
     let update_data = _json.updateData;
@@ -45,7 +41,6 @@ pub async fn update_or_delete(
 
     if let Some(update_data) = &update_data {
         let update_query = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.topUniqueId, &book_id, &update_data.botUniqueId);
-        log::info!("{}", &update_query);
         let query: Query = Query::new(update_query);
         batch.append_statement(query);
     }
@@ -60,17 +55,16 @@ pub async fn update_or_delete(
             }
         }
         delete_query.push_str(")");
-        log::info!("{}", delete_query);
         batch.append_statement(Query::new(delete_query));
     }
 
     if let Some(_) = &update_data {
-        return match conn.batch(&batch, ((), ())).await {
+        return match app.session.batch(&batch, ((), ())).await {
             Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
             Err(err) => Err(AppError::from(err).into())
         }
     } else {
-        return match conn.batch(&batch, ((),)).await {
+        return match app.session.batch(&batch, ((),)).await {
             Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
             Err(err) => Err(AppError::from(err).into())
         }

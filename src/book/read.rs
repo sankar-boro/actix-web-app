@@ -5,8 +5,7 @@ use serde::Serialize;
 
 use scylla::macros::FromRow;
 use crate::utils::{
-	GetQueryResult, 
-	ConnectionResult
+	GetQueryResult
 };
 use crate::AppError;
 
@@ -45,11 +44,10 @@ pub struct Book {
 static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt from sankar.book";
 static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt from sankar.book WHERE bookId=";
 
-pub async fn get_all(_app: web::Data<App>) 
+pub async fn get_all(app: web::Data<App>) 
 -> Result<HttpResponse, actix_web::Error> {
-    let conn = _app.conn_result()?;
     let documents: Option<Vec<Book>> = 
-    conn.query(GET_ALL_DOCUMENTS, &[])
+    app.session.query(GET_ALL_DOCUMENTS, &[])
     .await
     .get_query_result()?;
 
@@ -83,12 +81,11 @@ fn get_all_document_from_id_query(document_id: &str)
     }
 }
 
-pub async fn get_one(session: web::Data<App>, document_id: web::Path<String>,) 
+pub async fn get_one(app: web::Data<App>, document_id: web::Path<String>,) 
 -> Result<HttpResponse, actix_web::Error> {
-    let conn = session.conn_result()?;
 
     let documents: Option<Vec<Book>> = 
-		conn.query(get_document_query(&document_id)?, &[])
+		app.session.query(get_document_query(&document_id)?, &[])
 		.await
 		.get_query_result()?;
 
@@ -102,13 +99,11 @@ pub async fn get_one(session: web::Data<App>, document_id: web::Path<String>,)
     }
 }
 
-pub async fn get_all_from_id(session: web::Data<App>, document_id: web::Path<String>) 
+pub async fn get_all_from_id(app: web::Data<App>, document_id: web::Path<String>) 
 -> Result<HttpResponse, actix_web::Error> {
-    let conn = session.conn_result()?;
-    let q = get_all_document_from_id_query(&document_id)?;
-    println!("{}", q.clone());
+    let _docs = get_all_document_from_id_query(&document_id)?;
     let documents: Option<Vec<Book>> = 
-		conn.query(q, &[])
+		app.session.query(_docs, &[])
 		.await
 		.get_query_result()?;
 

@@ -6,9 +6,6 @@ use crate::App;
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::macros::FromRow;
-use crate::utils::{
-	ConnectionResult
-};
 use crate::AppError;
 use crate::book::queries::{UPDATE_PARENT_ID, CHILD};
 
@@ -30,14 +27,11 @@ pub struct Response {
 }
 
 pub async fn any(
-    _app: web::Data<App>, 
+    app: web::Data<App>, 
     payload: web::Json<Request>
 ) 
 -> Result<HttpResponse, actix_web::Error> 
 {
-    // init
-    let conn = _app.conn_result()?;
-    
     // query
     let mut batch: Batch = Default::default();
     batch.append_statement(UPDATE_PARENT_ID);
@@ -56,7 +50,7 @@ pub async fn any(
             (&new_id, book_id.clone(), &bot_unique_id), // update
             (book_id,&new_id,&top_unique_id, &payload.title, &payload.body, &payload.identity,&new_id,&new_id) // create
         );
-        return match conn.batch(&batch, batch_values).await {
+        return match app.session.batch(&batch, batch_values).await {
             Ok(_) => Ok(HttpResponse::Ok().json(Response {
                 uniqueId: unique_id
             })),
@@ -65,7 +59,7 @@ pub async fn any(
     }
     
     let batch_values = (book_id,&new_id,&top_unique_id, &payload.title, &payload.body, &payload.identity,&new_id,&new_id);
-    let res = conn
+    let res = app.session
     .query(CHILD, batch_values)
     .await;
 

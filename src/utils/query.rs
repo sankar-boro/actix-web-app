@@ -1,15 +1,8 @@
-use crate::ScyllaConnectionManager;
 use crate::AppError;
-
 use scylla::QueryResult;
 use scylla::IntoTypedRows;
-use r2d2::PooledConnection;
 use scylla::transport::errors::QueryError;
 use scylla::frame::response::cql_to_rust::FromRow;
-
-pub trait ConnectionResult {
-	fn conn_result(&self) -> Result<PooledConnection<ScyllaConnectionManager>, actix_web::Error>;
-}
 
 pub trait GetQueryResult<T> {
 	type Request;
