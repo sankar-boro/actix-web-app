@@ -5,7 +5,7 @@ mod middleware;
 mod book;
 mod utils;
 mod error;
-mod query;
+// mod query;
 mod auth;
 
 use std::sync::Arc;
@@ -22,6 +22,11 @@ use actix_web::web;
 use actix_cors::Cors;
 use log::{error};
 
+use scylla::QueryResult;
+use scylla::query::Query;
+use scylla::frame::value::ValueList;
+use scylla::transport::errors::QueryError;
+
 #[derive(Clone)]
 pub struct App {
     session: Arc<Session>
@@ -32,6 +37,10 @@ impl App {
         Self {
             session: Arc::new(session),
         }
+    }
+
+    pub async fn query(&self, query: impl Into<Query>, values: impl ValueList) -> Result<QueryResult, QueryError>{
+        self.session.query(query, values).await
     }
 }
 

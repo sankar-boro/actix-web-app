@@ -47,7 +47,6 @@ pub async fn new_book(
     let unique_id = time_uuid();
     let unique_id_str = unique_id.to_string();
     let auth_name = format!("{} {}", auth.fname, auth.lname);
-
     let _: Option<Vec<ParentRequest>> = app.session
         .query(PARENT, 
             (
