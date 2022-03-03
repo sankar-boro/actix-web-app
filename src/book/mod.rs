@@ -1,9 +1,10 @@
 mod create;
 mod read;
-mod delete;
 mod image;
 mod queries;
-mod create_update;
+mod append_node;
+mod merge_node;
+mod delete;
 
 pub use image::upload_image;
 pub use create::{
@@ -14,5 +15,9 @@ pub use read::{
     get_one, 
     get_all_from_id
 };
-pub use delete::update_or_delete;
-pub use create_update::create_update;
+pub use append_node::append_node;
+pub use merge_node::merge_node;
+pub use delete::{
+    updateBotNodeOnDeleteNode,
+    deleteLastNode
+};

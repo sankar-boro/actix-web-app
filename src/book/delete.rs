@@ -27,7 +27,8 @@ pub struct UpdateOrDelete {
     json: String,
 }
 
-pub async fn update_or_delete(
+#[allow(non_snake_case)]
+pub async fn updateBotNodeOnDeleteNode(
     app: web::Data<App>, 
     payload: web::Json<UpdateOrDelete>
 ) -> Result<HttpResponse, actix_web::Error> {
@@ -69,4 +70,32 @@ pub async fn update_or_delete(
             Err(err) => Err(AppError::from(err).into())
         }
     }
+}
+
+
+#[derive(Deserialize)]
+#[allow(non_snake_case)]
+pub struct DeleteNodeRequest {
+    bookId: String,
+    deleteData: Vec<String>,
+}
+
+#[allow(non_snake_case)]
+pub async fn deleteLastNode(
+    app: web::Data<App>, 
+    payload: web::Json<DeleteNodeRequest>
+) -> Result<HttpResponse, crate::AppError> {
+    let book_id = Uuid::parse_str(&payload.bookId)?;
+    let delete_data = &payload.deleteData;
+    let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
+    for (_i, del_item) in delete_data.iter().enumerate() {
+        if _i == 0 {
+            delete_query.push_str(&del_item);
+        } else {
+            delete_query.push_str(&format!(", {}", &del_item));    
+        }
+    }
+    delete_query.push_str(")");
+    app.query(delete_query, &[]).await?;
+    Ok(HttpResponse::Ok().body("Deleted."))
 }

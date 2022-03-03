@@ -15,15 +15,7 @@ pub struct NewDocument {
     documentId: Uuid,
     title: String,
     tags: String,
-    body: String,
-    // smDocumentImageUrl: Option<String>,
-    // mdDocumentImageUrl: Option<String>,
-    // lgDocumentImageUrl: Option<String>,
-    // authorId: Uuid,
-    // authorName: Option<String>,
-    // authorImageUrl: Option<String>,
-    // createdAt: Uuid,
-    // updatedAt: Uuid,
+    body: String
 }
 
 #[derive(FromRow, Serialize)]
