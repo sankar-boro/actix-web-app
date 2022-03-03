@@ -33,6 +33,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/create/new/book", web::post().to(book::new_book))
     .route("/append/node", web::post().to(book::append_node))
     .route("/merge/node", web::post().to(book::merge_node))
+    .route("/deleteBook/{bookId}", web::post().to(book::deleteBook))
     .route("/deleteLastNode", web::post().to(book::deleteLastNode))
     .route("/updateBotNodeOnDeleteNode", web::post().to(book::updateBotNodeOnDeleteNode))
   );

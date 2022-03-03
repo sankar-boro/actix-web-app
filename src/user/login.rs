@@ -27,7 +27,6 @@ pub struct LoginForm {
 
 // TODO: check if this needs to be pub
 #[derive(Serialize, Debug)]
-#[allow(non_snake_case)]
 pub struct UserInfo {
 	pub userId: String,
 	pub email: String,
@@ -36,7 +35,6 @@ pub struct UserInfo {
 }
 
 #[derive(FromRow, Serialize, Debug)]
-#[allow(non_snake_case)]
 pub struct GetUser {
 	userId: Uuid,
 	email: String,

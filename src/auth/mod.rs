@@ -3,7 +3,6 @@ use actix_session::Session;
 use crate::AppError;
 
 #[derive(Deserialize, Serialize)]
-#[allow(non_snake_case)]
 pub struct AUTHUSER {
     pub userId: String,
     pub fname: String,

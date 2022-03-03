@@ -19,5 +19,6 @@ pub use append_node::append_node;
 pub use merge_node::merge_node;
 pub use delete::{
     updateBotNodeOnDeleteNode,
-    deleteLastNode
+    deleteLastNode,
+    deleteBook
 };

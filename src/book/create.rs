@@ -20,7 +20,6 @@ pub struct ParentRequest {
 }
 
 #[derive(Serialize, Validate, FromRow)]
-#[allow(non_snake_case)]
 pub struct ParentResponse {
     bookId: String,
     uniqueId: String,

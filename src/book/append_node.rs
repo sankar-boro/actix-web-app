@@ -12,7 +12,6 @@ use scylla::macros::FromRow;
 use crate::book::queries::{CHILD};
 
 #[derive(Deserialize, Validate, FromRow)]
-#[allow(non_snake_case)]
 pub struct AppendNodeRequest {
     title: String,
     body: String,
@@ -22,7 +21,6 @@ pub struct AppendNodeRequest {
 }
 
 #[derive(Serialize)]
-#[allow(non_snake_case)]
 pub struct Response {
     uniqueId: String,
 }

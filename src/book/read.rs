@@ -10,7 +10,6 @@ use crate::utils::{
 use crate::AppError;
 
 #[derive(FromRow, Serialize)]
-#[allow(non_snake_case)]
 pub struct NewDocument {
     documentId: Uuid,
     title: String,
@@ -19,7 +18,6 @@ pub struct NewDocument {
 }
 
 #[derive(FromRow, Serialize)]
-#[allow(non_snake_case)]
 pub struct Book {
     bookId: Uuid,
     uniqueId: Uuid,

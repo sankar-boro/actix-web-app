@@ -13,7 +13,6 @@ use scylla::macros::FromRow;
 use crate::book::queries::{UPDATE_PARENT_ID, CHILD};
 
 #[derive(Deserialize, Validate, FromRow)]
-#[allow(non_snake_case)]
 pub struct MergeNodeRequest {
     title: String,
     body: String,
@@ -24,7 +23,6 @@ pub struct MergeNodeRequest {
 }
 
 #[derive(Serialize)]
-#[allow(non_snake_case)]
 pub struct Response {
     uniqueId: String,
 }

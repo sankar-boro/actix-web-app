@@ -3,49 +3,39 @@ use crate::App;
 use serde::Deserialize;
 use actix_web::{web, HttpResponse};
 use scylla::batch::Batch;
-use crate::AppError;
 use scylla::query::Query;
 
 #[derive(Deserialize)]
-#[allow(non_snake_case)]
 struct UpdateData {
     topUniqueId: String,
     botUniqueId: String,
 }
 
 #[derive(Deserialize)]
-#[allow(non_snake_case)]
-pub struct UpdateOrDeleteInner {
-    updateData: Option<UpdateData>,
+pub struct UpdateOrDelete {
+    bookId: String,
+    updateData: UpdateData,
     deleteData: Vec<String>,
 }
 
-#[derive(Deserialize)]
-#[allow(non_snake_case)]
-pub struct UpdateOrDelete {
-    bookId: String,
-    json: String,
-}
-
-#[allow(non_snake_case)]
 pub async fn updateBotNodeOnDeleteNode(
     app: web::Data<App>, 
     payload: web::Json<UpdateOrDelete>
-) -> Result<HttpResponse, actix_web::Error> {
-    let _json: UpdateOrDeleteInner = serde_json::from_str(&payload.json)?;
+) -> Result<HttpResponse, crate::AppError> {
 
-    let update_data = _json.updateData;
-    let delete_data = _json.deleteData;
-    let book_id = Uuid::parse_str(&payload.bookId).unwrap();
+    let update_data = &payload.updateData;
+    let delete_data = &payload.deleteData;
+    let book_id = Uuid::parse_str(&payload.bookId)?;
 
     let mut batch: Batch = Default::default();
 
-    if let Some(update_data) = &update_data {
-        let update_query = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.topUniqueId, &book_id, &update_data.botUniqueId);
-        let query: Query = Query::new(update_query);
-        batch.append_statement(query);
-    }
+    // update query
+    let update_query = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.topUniqueId, &book_id, &update_data.botUniqueId);
+    let query: Query = Query::new(update_query);
+    batch.append_statement(query);
+    //
 
+    // delete query
     if delete_data.len() > 0 {
         let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
         for (_i, del_item) in delete_data.iter().enumerate() {
@@ -58,35 +48,27 @@ pub async fn updateBotNodeOnDeleteNode(
         delete_query.push_str(")");
         batch.append_statement(Query::new(delete_query));
     }
+    //
 
-    if let Some(_) = &update_data {
-        return match app.session.batch(&batch, ((), ())).await {
-            Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
-            Err(err) => Err(AppError::from(err).into())
-        }
-    } else {
-        return match app.session.batch(&batch, ((),)).await {
-            Ok(_) => Ok(HttpResponse::Ok().body("Updated or deleted.")),
-            Err(err) => Err(AppError::from(err).into())
-        }
-    }
+    app.batch(&batch, ((), ())).await?;
+    Ok(HttpResponse::Ok().body("Updated or deleted."))
 }
 
 
 #[derive(Deserialize)]
-#[allow(non_snake_case)]
 pub struct DeleteNodeRequest {
     bookId: String,
     deleteData: Vec<String>,
 }
 
-#[allow(non_snake_case)]
 pub async fn deleteLastNode(
     app: web::Data<App>, 
     payload: web::Json<DeleteNodeRequest>
 ) -> Result<HttpResponse, crate::AppError> {
     let book_id = Uuid::parse_str(&payload.bookId)?;
     let delete_data = &payload.deleteData;
+
+    // make delete query
     let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
     for (_i, del_item) in delete_data.iter().enumerate() {
         if _i == 0 {
@@ -96,6 +78,20 @@ pub async fn deleteLastNode(
         }
     }
     delete_query.push_str(")");
+    //
+
     app.query(delete_query, &[]).await?;
     Ok(HttpResponse::Ok().body("Deleted."))
+}
+
+pub async fn deleteBook(
+    app: web::Data<App>,
+    book_id: web::Path<String>
+) -> Result<HttpResponse, crate::AppError> {
+    let book_id = Uuid::parse_str(&book_id)?;
+
+    // make delete query
+    let delete_query = format!("DELETE * FROM sankar.book WHERE bookId={}", &book_id);
+    app.query(delete_query, &[]).await?;
+    Ok(HttpResponse::Ok().body("Deleted book."))
 }

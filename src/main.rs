@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 mod route;
 mod user;
 mod helpers;
