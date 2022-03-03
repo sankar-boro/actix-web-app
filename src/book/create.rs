@@ -39,7 +39,7 @@ pub async fn new_book(
     request: web::Json<ParentRequest>,
     session: Session
 ) 
--> Result<HttpResponse, actix_web::Error> 
+-> Result<HttpResponse, crate::AppError> 
 {
     let auth = session.user_info()?;
     let auth_id_str = auth.userId;

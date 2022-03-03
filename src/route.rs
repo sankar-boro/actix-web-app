@@ -32,7 +32,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/getall/{id}", web::get().to(book::get_all_from_id))
     .route("/create/new/book", web::post().to(book::new_book))
     .route("/update/delete/any", web::post().to(book::update_or_delete))
-    .route("/create/update/any", web::post().to(book::any))
+    .route("/create/update/any", web::post().to(book::create_update))
   );
   config.service(
     web::scope("")
