@@ -28,3 +28,9 @@ CREATE TABLE bookInfo (
     updatedAt timeuuid,
     PRIMARY KEY (bookId)
 );
+
+INSERT INTO sankar.bookInfo (
+    bookId, authorId, fname, lname, title, body, createdAt, updatedAt
+) VALUES(
+    $1, $2, $3, $4, $5, $6, $7
+)

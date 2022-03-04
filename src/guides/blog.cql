@@ -1,7 +1,8 @@
 CREATE TABLE blog (
     blogId timeuuid,
     authorId timeuuid,
-    authorName varchar,
+    fname varchar,
+    lname varchar,
     title varchar,
     body text,
     createdAt timeuuid,

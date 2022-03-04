@@ -1,4 +1,5 @@
 use argon2;
+use serde_json;
 
 use actix_web::{
     http::{
@@ -106,6 +107,14 @@ impl From<uuid::Error> for Error {
     }
 }
 
+impl From<serde_json::Error> for Error {
+    fn from(e: serde_json::Error) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
 
 impl actix_web::ResponseError for Error {
     fn status_code(&self) -> StatusCode {

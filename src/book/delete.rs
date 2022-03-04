@@ -84,9 +84,8 @@ pub async fn deleteLastNode(
     Ok(HttpResponse::Ok().body("Deleted."))
 }
 
-pub static DELETE_BOOK: &str = "DELETE * FROM sankar.book where bookId=?";
-pub static DELETE_BOOK_INFO: &str = "DELETE * FROM sankar.bookInfo where bookId=?";
-
+pub static DELETE_BOOK: &str = "DELETE FROM sankar.book where bookId=?";
+pub static DELETE_BOOK_INFO: &str = "DELETE FROM sankar.bookInfo where bookId=?";
 pub async fn deleteBook(
     app: web::Data<App>,
     bookId: web::Path<String>

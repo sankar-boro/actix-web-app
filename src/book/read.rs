@@ -22,7 +22,8 @@ pub struct Book {
     uniqueId: Uuid,
     parentId: Option<Uuid>,
     authorId: Option<Uuid>,
-    authorName: Option<String>,
+    fname: Option<String>,
+    lname: Option<String>,
     title: String,
     body: String,
     identity: i16,
@@ -30,9 +31,7 @@ pub struct Book {
     updatedAt: Uuid,
 }
 
-static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt from sankar.book WHERE parentId=null";
-static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, uniqueId, parentId, authorId, authorName, title, body, identity, createdAt, updatedAt from sankar.book WHERE bookId=";
-
+static GET_ALL_DOCUMENTS: &'static str = "SELECT * from sankar.bookInfo";
 pub async fn getAllBooks(app: web::Data<App>) 
 -> Result<HttpResponse, actix_web::Error> {
     let documents: Option<Vec<Book>> = 
@@ -49,6 +48,7 @@ pub async fn getAllBooks(app: web::Data<App>)
     }
 }
 
+static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT * from sankar.book WHERE bookId=";
 pub async fn getAllNodesFromBookId(app: web::Data<App>, book_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     let bookId = Uuid::parse_str(&book_id)?;
     let query = format!("{}{}", GET_ALL_DOCUMENTS_FROM_ID, &bookId);
@@ -57,7 +57,6 @@ pub async fn getAllNodesFromBookId(app: web::Data<App>, book_id: web::Path<Strin
 		.await
 		.get_query_result()?;
 
-    // TODO: should recover from unwrap()
     match documents {
         Some(docs) => Ok(HttpResponse::Ok().json(docs)),
         None => {

@@ -22,10 +22,10 @@ pub struct User {
 }
 
 pub async fn update_one(app: web::Data<App>, request: web::Json<Request>, session: Session) 
--> Result<HttpResponse, actix_web::Error> {
+-> Result<HttpResponse, crate::AppError> {
     
     let auth = session.user_info()?;
-    let auth_id = Uuid::parse_str(&auth.userId).unwrap();
+    let auth_id = Uuid::parse_str(&auth.userId)?;
     let _: Option<Vec<User>> = app.session
     .query(UPDATE_USER, (
         &request.fname, &request.lname, &auth_id
