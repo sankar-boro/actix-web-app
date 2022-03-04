@@ -8,12 +8,11 @@ mod delete;
 
 pub use image::upload_image;
 pub use create::{
-    new_book
+    createNewBook
 };
 pub use read::{
-    get_all, 
-    get_one, 
-    get_all_from_id
+    getAllNodesFromBookId,
+    getAllBooks
 };
 pub use append_node::append_node;
 pub use merge_node::merge_node;
