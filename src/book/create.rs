@@ -36,13 +36,13 @@ pub struct ParentResponse {
 pub static CREATE_BOOK: &str = "INSERT INTO sankar.book (
     bookId, uniqueId, authorId, fname, lname, title, body, identity, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
     bookId, authorId, fname, lname, title, body, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub async fn createNewBook(
@@ -64,7 +64,7 @@ pub async fn createNewBook(
     let unique_id_str = unique_id.to_string();
 
     let batch_values = (
-        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, 101, &unique_id, &unique_id),
+        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &request.identity, &unique_id, &unique_id),
         (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &unique_id, &unique_id)
     );
 

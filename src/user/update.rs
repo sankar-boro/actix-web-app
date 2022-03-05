@@ -26,7 +26,7 @@ pub async fn update_one(app: web::Data<App>, request: web::Json<Request>, sessio
     
     let auth = session.user_info()?;
     let auth_id = Uuid::parse_str(&auth.userId)?;
-    let _: Option<Vec<User>> = app.session
+    let _: Option<Vec<User>> = app
     .query(UPDATE_USER, (
         &request.fname, &request.lname, &auth_id
     ))

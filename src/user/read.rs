@@ -20,7 +20,7 @@ static GET_ALL_TABLE_USERS: &str = "SELECT userId, fname, lname, email from sank
 pub async fn get_all(app: web::Data<App>) 
 -> Result<HttpResponse, actix_web::Error> {
     let rows: Option<Vec<GetUser>> = 
-		app.session.query(GET_ALL_TABLE_USERS, &[])
+		app.query(GET_ALL_TABLE_USERS, &[])
 		.await
 		.get_query_result()?;
     match rows {
@@ -46,7 +46,7 @@ fn get_user_query(user_id: &str)
 pub async fn get_one(app: web::Data<App>, get_user_id: web::Path<String>) 
 -> Result<HttpResponse, actix_web::Error> {
     let rows: Option<Vec<GetUser>> = 
-		app.session.query(get_user_query(&get_user_id)?, &[])
+		app.query(get_user_query(&get_user_id)?, &[])
 		.await
 		.get_query_result()?;
     match rows {

@@ -17,6 +17,36 @@ pub struct NewDocument {
 }
 
 #[derive(FromRow, Serialize)]
+pub struct BookInfo {
+    bookId: Uuid,
+    authorId: Option<Uuid>,
+    fname: Option<String>,
+    lname: Option<String>,
+    title: String,
+    body: String,
+    createdAt: Uuid,
+    updatedAt: Uuid,
+}
+
+// cannot use * when getting all documents;
+static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, authorId, fname, lname, title, body, createdAt, updatedAt from sankar.bookInfo";
+pub async fn getAllBooks(app: web::Data<App>) 
+-> Result<HttpResponse, crate::AppError> {
+    let documents: Option<Vec<BookInfo>> = 
+    app.query(GET_ALL_DOCUMENTS, &[])
+    .await
+    .get_query_result()?;
+
+    match documents {
+        Some(docs) => Ok(HttpResponse::Ok().json(docs)),
+        None => {
+            let mt: Vec<Book> = Vec::new();
+            Ok(HttpResponse::Ok().json(mt))
+        },
+    }
+}
+
+#[derive(FromRow, Serialize)]
 pub struct Book {
     bookId: Uuid,
     uniqueId: Uuid,
@@ -31,24 +61,7 @@ pub struct Book {
     updatedAt: Uuid,
 }
 
-static GET_ALL_DOCUMENTS: &'static str = "SELECT * from sankar.bookInfo";
-pub async fn getAllBooks(app: web::Data<App>) 
--> Result<HttpResponse, actix_web::Error> {
-    let documents: Option<Vec<Book>> = 
-    app.query(GET_ALL_DOCUMENTS, &[])
-    .await
-    .get_query_result()?;
-
-    match documents {
-        Some(docs) => Ok(HttpResponse::Ok().json(docs)),
-        None => {
-            let mt: Vec<Book> = Vec::new();
-            Ok(HttpResponse::Ok().json(mt))
-        },
-    }
-}
-
-static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT * from sankar.book WHERE bookId=";
+static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, uniqueId, parentId, authorId, fname, lname, title, body, identity, createdAt, updatedAt from sankar.book WHERE bookId=";
 pub async fn getAllNodesFromBookId(app: web::Data<App>, book_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     let bookId = Uuid::parse_str(&book_id)?;
     let query = format!("{}{}", GET_ALL_DOCUMENTS_FROM_ID, &bookId);

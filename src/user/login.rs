@@ -85,13 +85,13 @@ pub async fn login(
 	app: web::Data<App>, 
 	session: Session
 ) 
--> Result<HttpResponse, actix_web::Error> 
+-> Result<HttpResponse, crate::AppError> 
 {
 	if let Err(_) = request.validate() {
 		return Err(AppError::from("INVALID_CREDENTIALS").into());
 	}
 	let rows: Option<Vec<GetUser>> = 
-		app.session.query(get_user_query(&request.email), &[])
+		app.query(get_user_query(&request.email), &[])
 		.await
 		.get_query_result()?;
 	let auth_user: &GetUser = match &rows {

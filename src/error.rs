@@ -22,6 +22,10 @@ impl Error {
     pub fn get_status(&self) -> StatusCode {
         self.status
     }
+
+    pub fn get_message(&self) -> String {
+        self.message.clone()
+    }
 }
 
 impl From<r2d2::Error> for Error {
@@ -124,6 +128,6 @@ impl actix_web::ResponseError for Error {
     fn error_response(&self) -> actix_web::HttpResponse {
         HttpResponse::build(self.status_code())
         .insert_header(ContentType::html())
-        .body(self.to_string())
+        .body(self.get_message())
     }
 }
