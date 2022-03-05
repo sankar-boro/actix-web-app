@@ -1,11 +1,9 @@
 use actix_web::{HttpResponse, web};
-use serde::{Serialize, Deserialize};
-use uuid::Uuid;
+use serde::Deserialize;
 use crate::App;
 use validator::Validate;
-use lily_utils::time_uuid;
 use scylla::macros::FromRow;
-use crate::query::{CREATE_NODE_QUERY};
+use uuid::Uuid;
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct UpdateRequest {
@@ -21,7 +19,11 @@ pub async fn update(
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {   
+    let bookId = Uuid::parse_str(&payload.bookId)?;
+    let uniqueId = Uuid::parse_str(&payload.uniqueId)?;
+
     let query = format!("UPDATE sankar.book SET title=?, body=? WHERE bookId=? AND uniqueId=?");
-    app.query(query, (&payload.title, &payload.body, &payload.bookId, &payload.uniqueId)).await?;
+    app.query(query, (&payload.title, &payload.body, &bookId, &uniqueId)).await?;
+    
     Ok(HttpResponse::Ok().body("Updated".to_string()))
 }
