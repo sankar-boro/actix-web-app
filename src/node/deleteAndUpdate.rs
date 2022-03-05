@@ -24,31 +24,35 @@ pub async fn deleteAndUpdate(
 ) -> Result<HttpResponse, crate::AppError> {
 
     let update_data = &payload.updateData;
-    let delete_data = &payload.deleteData;
     let book_id = Uuid::parse_str(&payload.bookId)?;
 
     let mut batch: Batch = Default::default();
 
     // update query
-    let update_query = format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", &update_data.topUniqueId, &book_id, &update_data.botUniqueId);
-    let query: Query = Query::new(update_query);
-    batch.append_statement(query);
-    //
+    let query = Query::new(
+        format!("UPDATE sankar.book SET parentId={} WHERE bookId={} AND uniqueId={}", 
+        &update_data.topUniqueId, 
+        &book_id, 
+        &update_data.botUniqueId)
+    );
+    batch.append_statement(query); // append query
 
     // delete query
-    if delete_data.len() > 0 {
-        let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
-        for (_i, del_item) in delete_data.iter().enumerate() {
-            if _i == 0 {
-                delete_query.push_str(&del_item);
-            } else {
-                delete_query.push_str(&format!(", {}", &del_item));    
-            }
-        }
-        delete_query.push_str(")");
-        batch.append_statement(Query::new(delete_query));
+    let deleteData = &payload.deleteData;
+    let mut deleteData = deleteData.iter();
+    let mut uniqueIds = String::from("");
+    if let Some(id) = deleteData.next() {
+        uniqueIds.push_str(id);
     }
-    //
+    while let Some(id) = deleteData.next() {
+        uniqueIds.push_str(&format!(", {}", &id));
+    }
+    let query = Query::new(format!(
+        "DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN ({})",
+        &book_id,
+        &uniqueIds)
+    );
+    batch.append_statement(query); // append query
 
     app.batch(&batch, ((), ())).await?;
     Ok(HttpResponse::Ok().body("Updated or deleted."))

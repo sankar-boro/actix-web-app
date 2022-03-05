@@ -1,14 +1,11 @@
 use actix_web::{HttpResponse, web};
-use scylla::{
-    frame::value::ValueList, 
-    QueryResult
-};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use crate::App;
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::macros::FromRow;
+use crate::query::{CREATE_NODE_QUERY};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct AppendNodeRequest {
@@ -24,26 +21,23 @@ pub struct Response {
     uniqueId: String,
 }
 
-pub static CHILD: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, title, body, identity, createdAt, updatedAt
-) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
-)";
+trait ParseUuid {
+    fn to_uuid(self) -> Result<Uuid, crate::AppError>;
+}
+
+impl ParseUuid for &String {
+    fn to_uuid(self) -> Result<Uuid, crate::AppError> {
+        Ok(Uuid::parse_str(self)?)
+    }
+}
 
 impl AppendNodeRequest {
-
-    async fn query(&self, app: &App, value_list: impl ValueList) -> Result<QueryResult, crate::AppError> {
-        Ok(app.query(CHILD, value_list).await?)
-    }
-
+    
     async fn run(&self, app: &App) -> Result<HttpResponse, crate::AppError> {
-        // Create and parse elements
         let new_id = time_uuid();
-        let book_id = Uuid::parse_str(&self.bookId)?;
-        let top_unique_id = Uuid::parse_str(&self.topUniqueId)?;
+        let book_id = self.bookId.to_uuid()?;
+        let top_unique_id = self.topUniqueId.to_uuid()?;
         let unique_id = new_id.to_string();
-
-        // Create data
         let create_data = ( 
             &book_id,
             &new_id,
@@ -54,9 +48,7 @@ impl AppendNodeRequest {
             &new_id,
             &new_id
         );
-        
-        self.query(app, create_data).await?;
-        
+        app.query(CREATE_NODE_QUERY, create_data).await?;
         Ok(HttpResponse::Ok().json(Response {
             uniqueId: unique_id
         }))

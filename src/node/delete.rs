@@ -14,20 +14,19 @@ pub async fn delete(
     payload: web::Json<DeleteNodeRequest>
 ) -> Result<HttpResponse, crate::AppError> {
     let book_id = Uuid::parse_str(&payload.bookId)?;
-    let delete_data = &payload.deleteData;
-
-    // make delete query
-    let mut delete_query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN (", &book_id);
-    for (_i, del_item) in delete_data.iter().enumerate() {
-        if _i == 0 {
-            delete_query.push_str(&del_item);
-        } else {
-            delete_query.push_str(&format!(", {}", &del_item));    
-        }
+    let deleteData = &payload.deleteData;
+    let mut deleteData = deleteData.iter();
+    
+    let mut uniqueIds = String::from("");
+    if let Some(id) = deleteData.next() {
+        uniqueIds.push_str(id);
     }
-    delete_query.push_str(")");
-    //
+    while let Some(id) = deleteData.next() {
+        uniqueIds.push_str(&format!(", {}", &id));
+    }
 
-    app.query(delete_query, &[]).await?;
+    let query = format!("DELETE FROM sankar.book WHERE bookId={} AND uniqueId IN ({})", &book_id, &uniqueIds);
+
+    app.query(query, &[]).await?;
     Ok(HttpResponse::Ok().body("Deleted."))
 }

@@ -7,7 +7,7 @@ mod middleware;
 mod book;
 mod utils;
 mod error;
-// mod query;
+mod query;
 mod auth;
 mod node;
 
