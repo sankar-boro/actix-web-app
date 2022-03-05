@@ -1,5 +1,6 @@
 use crate::user;
 use crate::book;
+use crate::node;
 
 use actix_web::{web, HttpResponse};
 use crate::middleware::Authentication;
@@ -11,30 +12,34 @@ async fn home() -> HttpResponse {
 pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/", web::get().to(home));
   config.route("/login", web::post().to(user::login));
-  config.route("/signup", web::post().to(user::create_user));
+  config.route("/signup", web::post().to(user::signup));
   config.service(
     web::scope("/user")
     .route("/session", web::get().to(user::user_session))
   );
   config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
+  config.route("/users", web::post().to(user::users));
   config.service(
     web::scope("/user")
     .wrap(Authentication{})
-    .route("/get/all", web::get().to(user::get_all))
-    .route("/get/authuser", web::get().to(user::get_one))
-    .route("/update/authuser", web::post().to(user::update_one))
+    .route("/get/{userId}", web::get().to(user::get))
+    .route("/update", web::post().to(user::update))
   );
+  config.route("/books", web::post().to(book::getAllBooks));
   config.service(
     web::scope("/book")
     .wrap(Authentication{})
-    .route("/getAllBooks", web::get().to(book::getAllBooks))
-    .route("/getAllNodesFromBookId/{bookId}", web::get().to(book::getAllNodesFromBookId))
-    .route("/createNewBook", web::post().to(book::createNewBook))
-    .route("/appendNode", web::post().to(book::append_node))
-    .route("/mergeNode", web::post().to(book::merge_node))
-    .route("/deleteBook/{bookId}", web::post().to(book::deleteBook))
-    .route("/deleteLastNode", web::post().to(book::deleteLastNode))
-    .route("/updateBotNodeOnDeleteNode", web::post().to(book::updateBotNodeOnDeleteNode))
+    .route("/get/{bookId}", web::get().to(book::getAllNodesFromBookId))
+    .route("/create", web::post().to(book::create))
+    .route("/delete", web::post().to(book::delete))
+  );
+  config.service(
+    web::scope("/node")
+    .wrap(Authentication{})
+    .route("/create", web::post().to(node::create))
+    .route("/merge", web::post().to(node::merge))
+    .route("/delete", web::post().to(node::delete))
+    .route("/delete/update", web::post().to(node::deleteAndUpdate))
   );
   config.service(
     web::scope("")

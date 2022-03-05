@@ -45,7 +45,7 @@ pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
     ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
-pub async fn createNewBook(
+pub async fn create(
     app: web::Data<App>, 
     request: web::Json<ParentRequest>,
     session: Session

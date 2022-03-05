@@ -21,7 +21,7 @@ pub struct User {
 	password: Vec<u8>,
 }
 
-pub async fn update_one(app: web::Data<App>, request: web::Json<Request>, session: Session) 
+pub async fn update(app: web::Data<App>, request: web::Json<Request>, session: Session) 
 -> Result<HttpResponse, crate::AppError> {
     
     let auth = session.user_info()?;

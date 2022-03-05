@@ -9,6 +9,7 @@ mod utils;
 mod error;
 // mod query;
 mod auth;
+mod node;
 
 use std::sync::Arc;
 use anyhow::Result;

@@ -13,25 +13,7 @@ struct GetUser {
     id: Uuid,
     fname: Option<String>,
     lname: Option<String>,
-    email: Option<String>,
-}
-
-static GET_ALL_TABLE_USERS: &str = "SELECT userId, fname, lname, email from sankar.users";
-pub async fn get_all(app: web::Data<App>) 
--> Result<HttpResponse, actix_web::Error> {
-    let rows: Option<Vec<GetUser>> = 
-		app.query(GET_ALL_TABLE_USERS, &[])
-		.await
-		.get_query_result()?;
-    match rows {
-        Some(rows) => {
-            Ok(HttpResponse::Ok().json(rows))
-        }
-        None => {
-            let mt: Vec<GetUser> = Vec::new();
-            Ok(HttpResponse::Ok().json(mt))
-        }
-    }
+    email: String,
 }
 
 fn get_user_query(user_id: &str) 
@@ -43,10 +25,11 @@ fn get_user_query(user_id: &str)
         Err(err) => Err(AppError::from(err).into())
     }
 }
-pub async fn get_one(app: web::Data<App>, get_user_id: web::Path<String>) 
--> Result<HttpResponse, actix_web::Error> {
+
+pub async fn get(app: web::Data<App>, userId: web::Path<String>) 
+-> Result<HttpResponse, crate::AppError> {
     let rows: Option<Vec<GetUser>> = 
-		app.query(get_user_query(&get_user_id)?, &[])
+		app.query(get_user_query(&userId)?, &[])
 		.await
 		.get_query_result()?;
     match rows {

@@ -9,7 +9,6 @@ use crate::App;
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::macros::FromRow;
-use crate::book::queries::{CHILD};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct AppendNodeRequest {
@@ -24,6 +23,12 @@ pub struct AppendNodeRequest {
 pub struct Response {
     uniqueId: String,
 }
+
+pub static CHILD: &str = "INSERT INTO sankar.book (
+    bookId, uniqueId, parentId, title, body, identity, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?
+)";
 
 impl AppendNodeRequest {
 
@@ -58,7 +63,7 @@ impl AppendNodeRequest {
     }
 }
 
-pub async fn append_node(
+pub async fn create(
     app: web::Data<App>, 
     payload: web::Json<AppendNodeRequest>
 ) 

@@ -10,7 +10,6 @@ use crate::App;
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::macros::FromRow;
-use crate::book::queries::{UPDATE_PARENT_ID, CHILD};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct MergeNodeRequest {
@@ -26,6 +25,13 @@ pub struct MergeNodeRequest {
 pub struct Response {
     uniqueId: String,
 }
+
+pub static UPDATE_PARENT_ID: &str = "UPDATE sankar.book SET parentId=? WHERE bookId=? AND uniqueId=?";
+pub static CHILD: &str = "INSERT INTO sankar.book (
+    bookId, uniqueId, parentId, title, body, identity, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?
+)";
 
 impl MergeNodeRequest {
 
@@ -73,7 +79,7 @@ impl MergeNodeRequest {
     }
 }
 
-pub async fn merge_node(
+pub async fn merge(
     app: web::Data<App>, 
     payload: web::Json<MergeNodeRequest>
 ) 

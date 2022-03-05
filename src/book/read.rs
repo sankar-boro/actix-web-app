@@ -36,7 +36,6 @@ pub async fn getAllBooks(app: web::Data<App>)
     app.query(GET_ALL_DOCUMENTS, &[])
     .await
     .get_query_result()?;
-
     match documents {
         Some(docs) => Ok(HttpResponse::Ok().json(docs)),
         None => {

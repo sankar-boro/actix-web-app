@@ -21,9 +21,7 @@ pub struct SignupForm {
     password: String,
 }
 
-// TODO: 
-// return HttpResponse is too verbal
-pub async fn create_user(session: web::Data<App>, request: web::Json<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
+pub async fn signup(session: web::Data<App>, request: web::Json<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
     if let Err(err) = request.validate() {
 		return Err(AppError::from(err).into());
 	}

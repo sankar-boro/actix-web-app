@@ -120,6 +120,15 @@ impl From<serde_json::Error> for Error {
     }
 }
 
+impl From<scylla::cql_to_rust::FromRowError> for Error {
+    fn from(e: scylla::cql_to_rust::FromRowError) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+
 impl actix_web::ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         self.get_status()
