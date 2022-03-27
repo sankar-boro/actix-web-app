@@ -10,6 +10,7 @@ mod error;
 mod query;
 mod auth;
 mod node;
+mod blog;
 
 use std::sync::Arc;
 use anyhow::Result;

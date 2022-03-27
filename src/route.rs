@@ -31,7 +31,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .wrap(Authentication{})
     .route("/get/{bookId}", web::get().to(book::getAllNodesFromBookId))
     .route("/create", web::post().to(book::create))
-    .route("/delete", web::post().to(book::delete))
+    .route("/delete/{deleteId}", web::post().to(book::delete))
     .route("/update", web::post().to(book::update))
   );
   config.service(
@@ -42,6 +42,14 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/delete", web::post().to(node::delete))
     .route("/delete/update", web::post().to(node::deleteAndUpdate))
     .route("/update", web::post().to(node::update))
+  );
+  config.service(
+    web::scope("/blog")
+    .wrap(Authentication{})
+    .route("/get/{blogId}", web::get().to(blog::getAllNodesFromBlogId))
+    .route("/create", web::post().to(blog::create))
+    .route("/delete/{deleteId}", web::post().to(blog::delete))
+    .route("/update", web::post().to(blog::update))
   );
   config.service(
     web::scope("")
