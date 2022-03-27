@@ -8,7 +8,7 @@ pub use image::upload_image;
 pub use create::create;
 pub use read::{
     getAllNodesFromBlogId,
-    getAllBooks
+    getAllBlogs
 };
 pub use delete::delete;
 pub use update::update;
