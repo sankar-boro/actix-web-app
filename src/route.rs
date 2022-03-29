@@ -1,7 +1,8 @@
 use crate::user;
 use crate::book;
-use crate::node;
 use crate::blog;
+use crate::booknode;
+use crate::blognode;
 
 use actix_web::{web, HttpResponse};
 use crate::middleware::Authentication;
@@ -36,14 +37,15 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/update", web::post().to(book::update))
   );
   config.service(
-    web::scope("/node")
+    web::scope("/booknode")
     .wrap(Authentication{})
-    .route("/create", web::post().to(node::create))
-    .route("/merge", web::post().to(node::merge))
-    .route("/delete", web::post().to(node::delete))
-    .route("/delete/update", web::post().to(node::deleteAndUpdate))
-    .route("/update", web::post().to(node::update))
+    .route("/create", web::post().to(booknode::create))
+    .route("/merge", web::post().to(booknode::merge))
+    .route("/delete", web::post().to(booknode::delete))
+    .route("/delete/update", web::post().to(booknode::deleteAndUpdate))
+    .route("/update", web::post().to(booknode::update))
   );
+  config.route("/blogs", web::get().to(blog::getAllBlogs));
   config.service(
     web::scope("/blog")
     .wrap(Authentication{})
@@ -51,6 +53,15 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/create", web::post().to(blog::create))
     .route("/delete/{deleteId}", web::post().to(blog::delete))
     .route("/update", web::post().to(blog::update))
+  );
+  config.service(
+    web::scope("/blognode")
+    .wrap(Authentication{})
+    .route("/create", web::post().to(blognode::create))
+    .route("/merge", web::post().to(blognode::merge))
+    .route("/delete", web::post().to(blognode::delete))
+    .route("/delete/update", web::post().to(blognode::deleteAndUpdate))
+    .route("/update", web::post().to(blognode::update))
   );
   config.service(
     web::scope("")

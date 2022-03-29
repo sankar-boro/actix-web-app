@@ -33,13 +33,13 @@ pub struct ParentResponse {
     updatedAt: String,
 }
 
-pub static CREATE_BLOG: &str = "INSERT INTO sankar.blog (
+pub static CREATE_BOOK: &str = "INSERT INTO sankar.blog (
     blogId, uniqueId, authorId, fname, lname, title, body, identity, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
-pub static CREATE_BLOG_INFO: &str = "INSERT INTO sankar.blogInfo (
+pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.blogInfo (
     blogId, authorId, fname, lname, title, body, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?
@@ -53,8 +53,8 @@ pub async fn create(
 -> Result<HttpResponse, crate::AppError> 
 {
     let mut batch: Batch = Default::default();
-    batch.append_statement(CREATE_BLOG);
-    batch.append_statement(CREATE_BLOG_INFO);
+    batch.append_statement(CREATE_BOOK);
+    batch.append_statement(CREATE_BOOK_INFO);
 
 
     let auth = session.user_info()?;

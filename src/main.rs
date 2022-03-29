@@ -9,8 +9,9 @@ mod utils;
 mod error;
 mod query;
 mod auth;
-mod node;
 mod blog;
+mod booknode;
+mod blognode;
 
 use std::sync::Arc;
 use anyhow::Result;
