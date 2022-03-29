@@ -5,7 +5,7 @@ use crate::App;
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::macros::FromRow;
-use crate::query::{CREATE_NODE_QUERY};
+use crate::query::{CREATE_BLOG_NODE_QUERY};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct AppendNodeRequest {
@@ -48,7 +48,7 @@ impl AppendNodeRequest {
             &new_id,
             &new_id
         );
-        app.query(CREATE_NODE_QUERY, create_data).await?;
+        app.query(CREATE_BLOG_NODE_QUERY, create_data).await?;
         Ok(HttpResponse::Ok().json(Response {
             uniqueId: unique_id
         }))

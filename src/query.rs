@@ -1,5 +1,11 @@
-pub static CREATE_NODE_QUERY: &str = "INSERT INTO sankar.book (
+pub static CREATE_BOOK_NODE_QUERY: &str = "INSERT INTO sankar.book (
     bookId, uniqueId, parentId, title, body, identity, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?
+)";
+
+pub static CREATE_BLOG_NODE_QUERY: &str = "INSERT INTO sankar.blog (
+    blogId, uniqueId, parentId, title, body, identity, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?
 )";
