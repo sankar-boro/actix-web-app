@@ -21,9 +21,7 @@ pub async fn update(
 {   
     let blogId = Uuid::parse_str(&payload.blogId)?;
     let uniqueId = Uuid::parse_str(&payload.uniqueId)?;
-
     let query = format!("UPDATE sankar.blog SET title=?, body=? WHERE blogId=? AND uniqueId=?");
     app.query(query, (&payload.title, &payload.body, &blogId, &uniqueId)).await?;
-    
     Ok(HttpResponse::Ok().body("Updated".to_string()))
 }

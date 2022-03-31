@@ -27,6 +27,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/get/{userId}", web::get().to(user::get))
     .route("/update", web::post().to(user::update))
   );
+  //
   config.route("/books", web::get().to(book::getAllBooks));
   config.service(
     web::scope("/book")
@@ -45,6 +46,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/delete/update", web::post().to(booknode::deleteAndUpdate))
     .route("/update", web::post().to(booknode::update))
   );
+  //
   config.route("/blogs", web::get().to(blog::getAllBlogs));
   config.service(
     web::scope("/blog")
@@ -63,6 +65,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/delete/update", web::post().to(blognode::deleteAndUpdate))
     .route("/update", web::post().to(blognode::update))
   );
+  //
   config.service(
     web::scope("")
     .wrap(Authentication{})
