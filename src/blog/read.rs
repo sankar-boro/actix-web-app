@@ -2,9 +2,9 @@ use actix_web::{HttpResponse,web};
 use crate::App;
 use uuid::Uuid;
 use serde::Serialize;
-
 use scylla::macros::FromRow;
 use crate::utils::{
+    ParseUuid,
 	GetQueryResult
 };
 
@@ -60,10 +60,9 @@ pub struct Blog {
     updatedAt: Uuid,
 }
 
-static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT blogId, uniqueId, parentId, authorId, fname, lname, title, body, identity, createdAt, updatedAt from sankar.blog WHERE blogId=";
+static QUERY: &'static str = "SELECT blogId, uniqueId, parentId, authorId, fname, lname, title, body, identity, createdAt, updatedAt from sankar.blog WHERE blogId=";
 pub async fn getAllNodesFromBlogId(app: web::Data<App>, blog_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
-    let blogId = Uuid::parse_str(&blog_id)?;
-    let query = format!("{}{}", GET_ALL_DOCUMENTS_FROM_ID, &blogId);
+    let query = format!("{}{}", QUERY, &blog_id.to_uuid()?);
     let documents: Option<Vec<Blog>> = 
 		app.query(query, &[])
 		.await

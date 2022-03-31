@@ -1,9 +1,10 @@
 use argon2;
 use serde_json;
+use serde::{Serialize};
 
 use actix_web::{
     http::{
-        header::ContentType, 
+        // header::ContentType, 
         StatusCode
     },
     HttpResponse,
@@ -129,14 +130,21 @@ impl From<scylla::cql_to_rust::FromRowError> for Error {
     }
 }
 
+#[derive(Serialize)]
+pub struct ErrorResponse {
+    status: u16,
+    message: String,
+}
+
 impl actix_web::ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         self.get_status()
     }
 
     fn error_response(&self) -> actix_web::HttpResponse {
-        HttpResponse::build(self.status_code())
-        .insert_header(ContentType::html())
-        .body(self.get_message())
+        HttpResponse::build(self.status_code()).json(ErrorResponse {
+            status: self.status_code().as_u16(),
+            message: self.get_message()
+        })
     }
 }
