@@ -24,7 +24,7 @@ pub struct ParentResponse {
     title: String,
     body: String,
     authorId: String,
-    identity: String,
+    identity: i16,
     fname: String,
     lname: String,
     createdAt: String,
@@ -53,7 +53,7 @@ pub async fn create(
     let mut batch: Batch = Default::default();
     batch.append_statement(CREATE_BLOG);
     batch.append_statement(CREATE_BLOG_INFO);
-    let identity = "101".to_string();
+    let identity: i16 = 101;
 
     let auth = session.user_info()?;
     let auth_id = &auth.userId.to_uuid()?;

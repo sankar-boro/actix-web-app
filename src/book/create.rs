@@ -55,7 +55,7 @@ pub async fn create(
     let mut batch: Batch = Default::default();
     batch.append_statement(CREATE_BOOK);
     batch.append_statement(CREATE_BOOK_INFO);
-    let identity = "101".to_string();
+    let identity: i16 = 101;
 
     let auth = session.user_info()?;
     let auth_id_str = auth.userId;
