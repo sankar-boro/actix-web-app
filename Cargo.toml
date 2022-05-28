@@ -54,3 +54,5 @@ log = "0.4"
 
 lily-service = { path = "./lily-service"}
 lily-utils = { path = "./lily-utils"}
+tantivy = "0.18.0"
+tempfile = "3.3.0"
