@@ -40,14 +40,13 @@ fn get_schema() -> Result<Schema, anyhow::Error> {
 pub struct SearchHandler {
     schema: SchemaHandler,
     index: Index,
-    index_writer: Arc<Mutex<IndexWriter>>,
+    index_writer: IndexWriter,
     reader: IndexReader
 }
 
 impl SearchHandler {
     pub fn new() -> Self {
         let schema = SchemaHandler::new();
-        let index_path = TempDir::new().unwrap();
         let index = Index::create_in_dir("/home/sankar/lily_data", schema.schema.clone()).unwrap();
         let index_writer = index.writer(50_000_000).unwrap();
         let reader = index
@@ -58,7 +57,7 @@ impl SearchHandler {
         SearchHandler {
             schema,
             index,
-            index_writer: Arc::new(Mutex::new(index_writer)),
+            index_writer,
             reader
         }
     }
@@ -70,10 +69,8 @@ impl SearchHandler {
             self.schema.body,
             body,
         );
-        let a = Arc::clone(&self.index_writer);
-        let b = a.as_ref();
-        // a.index_writer.get_mut().add_document(old_man_doc).unwrap();
-        // self.index_writer.get_mut().commit().unwrap();
+        self.index_writer.add_document(old_man_doc).unwrap();
+        self.index_writer.commit().unwrap();
     }
 
     pub fn search(&self, query: &str) -> Result<(), anyhow::Error> {
