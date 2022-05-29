@@ -34,16 +34,19 @@ use scylla::query::Query;
 use scylla::frame::value::ValueList;
 use scylla::frame::value::BatchValues;
 use scylla::transport::errors::QueryError;
+use search::SearchHandler;
 
 #[derive(Clone)]
 pub struct App {
-    session: Arc<Session>
+    session: Arc<Session>,
+    search: Arc<SearchHandler>
 }
 
 impl App {
     fn new(session: Session) -> Self {
         Self {
             session: Arc::new(session),
+            search: Arc::new(SearchHandler::new()),
         }
     }
 
