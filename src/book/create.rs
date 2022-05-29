@@ -2,13 +2,15 @@ use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::App;
+use crate::{App, Search};
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::{
     batch::Batch,
     macros::FromRow
 };
+use std::sync::Arc;
+use async_std::sync::Mutex;
 use crate::auth::AuthSession;
 
 #[derive(Deserialize, Validate, FromRow)]
@@ -46,7 +48,8 @@ pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
 )";
 
 pub async fn create(
-    app: web::Data<App>, 
+    app: web::Data<App>,
+    search: web::Data<Mutex<Search>>, 
     request: web::Json<ParentRequest>,
     session: Session
 ) 
@@ -69,6 +72,9 @@ pub async fn create(
     );
 
     app.batch(&batch, &batch_values).await?;
+
+    let a = &mut search.try_lock().unwrap().search;
+    a.create_document(&request.title, &request.body);
 
     Ok(
         HttpResponse::Ok().json(ParentResponse {

@@ -16,6 +16,7 @@ mod search;
 
 use std::sync::Arc;
 use anyhow::Result;
+use async_std::sync::Mutex;
 use error::Error as AppError;
 use actix_redis::RedisSession;
 use scylla::batch::Batch;
@@ -25,7 +26,7 @@ use scylla::{
     transport::errors::NewSessionError
 };
 use actix_web::{App as ActixApp, HttpServer};
-use actix_web::web;
+use actix_web::web::{self, Data};
 use actix_cors::Cors;
 use log::{error};
 
@@ -39,14 +40,28 @@ use search::SearchHandler;
 #[derive(Clone)]
 pub struct App {
     session: Arc<Session>,
-    search: Arc<SearchHandler>
+}
+
+pub struct Search {
+    search: SearchHandler
+}
+
+impl Search {
+    fn new() -> Self {
+        Search {
+            search: SearchHandler::new(),
+        }
+    }
+
+    // pub fn create_document(&mut self, title: &str, body: &str) {
+    //     self.search.as_ref().lock().create_document(title, body);
+    // }
 }
 
 impl App {
     fn new(session: Session) -> Self {
         Self {
             session: Arc::new(session),
-            search: Arc::new(SearchHandler::new()),
         }
     }
 
@@ -60,6 +75,7 @@ impl App {
 }
 
 async fn start_server(app: App) -> Result<()> {
+    let search = Data::new(Mutex::new(Search::new()));
     HttpServer::new(move || {
         let cors = Cors::default()
               .allow_any_origin()
@@ -74,6 +90,7 @@ async fn start_server(app: App) -> Result<()> {
                 .cookie_name("lily-session")
             )
             .app_data(web::Data::new(app.clone()))
+            .app_data(Data::clone(&search))
             .configure(route::routes)
     })
     .bind("127.0.0.1:7500")?
