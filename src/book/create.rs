@@ -2,14 +2,13 @@ use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{App, Search};
+use crate::{App, search::search::IndexHandler};
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::{
     batch::Batch,
     macros::FromRow
 };
-use std::sync::Arc;
 use async_std::sync::Mutex;
 use crate::auth::AuthSession;
 
@@ -49,7 +48,7 @@ pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
 
 pub async fn create(
     app: web::Data<App>,
-    search: web::Data<Mutex<Search>>, 
+    search: web::Data<Mutex<IndexHandler>>, 
     request: web::Json<ParentRequest>,
     session: Session
 ) 
@@ -73,7 +72,7 @@ pub async fn create(
 
     app.batch(&batch, &batch_values).await?;
 
-    let a = &mut search.try_lock().unwrap().search;
+    let a = &mut search.try_lock().unwrap();
     a.create_document(&request.title, &request.body);
 
     Ok(

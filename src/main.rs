@@ -35,27 +35,11 @@ use scylla::query::Query;
 use scylla::frame::value::ValueList;
 use scylla::frame::value::BatchValues;
 use scylla::transport::errors::QueryError;
-use search::SearchHandler;
+use search::search::SearchHandler;
 
 #[derive(Clone)]
 pub struct App {
     session: Arc<Session>,
-}
-
-pub struct Search {
-    search: SearchHandler
-}
-
-impl Search {
-    fn new() -> Self {
-        Search {
-            search: SearchHandler::new(),
-        }
-    }
-
-    // pub fn create_document(&mut self, title: &str, body: &str) {
-    //     self.search.as_ref().lock().create_document(title, body);
-    // }
 }
 
 impl App {
@@ -75,7 +59,10 @@ impl App {
 }
 
 async fn start_server(app: App) -> Result<()> {
-    let search = Data::new(Mutex::new(Search::new()));
+    // let search = Data::new(Mutex::new(Search::new()));
+    let (search, index) = SearchHandler::new();
+    let search = Data::new(Mutex::new(search));
+
     HttpServer::new(move || {
         let cors = Cors::default()
               .allow_any_origin()
@@ -91,6 +78,7 @@ async fn start_server(app: App) -> Result<()> {
             )
             .app_data(web::Data::new(app.clone()))
             .app_data(Data::clone(&search))
+            .app_data(web::Data::new(index.clone()))
             .configure(route::routes)
     })
     .bind("127.0.0.1:7500")?

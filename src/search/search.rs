@@ -1,17 +1,15 @@
 use tantivy::IndexReader;
 use tantivy::IndexWriter;
 use tantivy::collector::TopDocs;
-use tantivy::doc;
+// use tantivy::doc;
 use tantivy::query::QueryParser;
 use tantivy::schema::*;
 use tantivy::Index;
 use tantivy::ReloadPolicy;
-use tempfile::TempDir;
 use anyhow::Result;
-use async_std::sync::Mutex;
 use std::sync::Arc;
 
-// #[derive(Clone)]
+#[derive(Clone)]
 struct SchemaHandler {
     schema: Schema,
     title: Field,
@@ -36,32 +34,18 @@ fn get_schema() -> Result<Schema, anyhow::Error> {
     Ok(schema)
 }
 
-// #[derive(Clone)]
 pub struct SearchHandler {
     schema: SchemaHandler,
     index: Index,
-    index_writer: IndexWriter,
     reader: IndexReader
 }
 
-impl SearchHandler {
-    pub fn new() -> Self {
-        let schema = SchemaHandler::new();
-        let index = Index::create_in_dir("/home/sankar/lily_data", schema.schema.clone()).unwrap();
-        let index_writer = index.writer(50_000_000).unwrap();
-        let reader = index
-            .reader_builder()
-            .reload_policy(ReloadPolicy::OnCommit)
-            .try_into().unwrap();
-    
-        SearchHandler {
-            schema,
-            index,
-            index_writer,
-            reader
-        }
-    }
+pub struct IndexHandler {
+    schema: SchemaHandler,
+    index_writer: IndexWriter,
+}
 
+impl IndexHandler {
     pub fn create_document(&mut self, title: &str, body: &str) {
         let mut old_man_doc = Document::default();
         old_man_doc.add_text(self.schema.title, title);
@@ -72,17 +56,43 @@ impl SearchHandler {
         self.index_writer.add_document(old_man_doc).unwrap();
         self.index_writer.commit().unwrap();
     }
+}
 
-    pub fn search(&self, query: &str) -> Result<(), anyhow::Error> {
+impl SearchHandler {
+    pub fn new() -> (SearchHandler, Arc<IndexHandler>) {
+        let schema = SchemaHandler::new();
+        let index = Index::create_in_dir("/home/sankar/lily_data", schema.schema.clone()).unwrap();
+        let index_writer = index.writer(50_000_000).unwrap();
+        let reader = index
+            .reader_builder()
+            .reload_policy(ReloadPolicy::OnCommit)
+            .try_into().unwrap();
+    
+        (
+            SearchHandler {
+                schema: schema.clone(),
+                index,
+                reader
+            },
+            Arc::new(IndexHandler {
+                schema,
+                index_writer
+            })
+        )
+    }
+
+    pub fn search(&self, query: &str) -> Result<Vec<Document>, anyhow::Error> {
         let searcher = self.reader.searcher();
         let query_parser = QueryParser::for_index(&self.index, vec![self.schema.title, self.schema.body]);
         let query = query_parser.parse_query(query)?;
         let top_docs = searcher.search(&query, &TopDocs::with_limit(10))?;
+        let mut a: Vec<Document> = Vec::new();
         for (_score, doc_address) in top_docs {
             let retrieved_doc = searcher.doc(doc_address)?;
-            println!("{}", self.schema.schema.to_json(&retrieved_doc));
+            a.push(retrieved_doc);
+            // let _doc = self.schema.schema.to_json(&retrieved_doc);
         }
-        Ok(())
+        Ok(a)
     }
 
 }
