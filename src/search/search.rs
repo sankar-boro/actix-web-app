@@ -7,7 +7,6 @@ use tantivy::schema::*;
 use tantivy::Index;
 use tantivy::ReloadPolicy;
 use anyhow::Result;
-use std::sync::Arc;
 
 #[derive(Clone)]
 struct SchemaHandler {
@@ -59,7 +58,7 @@ impl IndexHandler {
 }
 
 impl SearchHandler {
-    pub fn new() -> (SearchHandler, Arc<IndexHandler>) {
+    pub fn new() -> (SearchHandler, IndexHandler) {
         let schema = SchemaHandler::new();
         let index = Index::create_in_dir("/home/sankar/lily_data", schema.schema.clone()).unwrap();
         let index_writer = index.writer(50_000_000).unwrap();
@@ -74,10 +73,10 @@ impl SearchHandler {
                 index,
                 reader
             },
-            Arc::new(IndexHandler {
+            IndexHandler {
                 schema,
                 index_writer
-            })
+            }
         )
     }
 

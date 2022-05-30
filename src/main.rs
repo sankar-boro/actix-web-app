@@ -61,7 +61,8 @@ impl App {
 async fn start_server(app: App) -> Result<()> {
     // let search = Data::new(Mutex::new(Search::new()));
     let (search, index) = SearchHandler::new();
-    let search = Data::new(Mutex::new(search));
+    let search = Data::new(search);
+    let index = Data::new(Mutex::new(index));
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -78,7 +79,7 @@ async fn start_server(app: App) -> Result<()> {
             )
             .app_data(web::Data::new(app.clone()))
             .app_data(Data::clone(&search))
-            .app_data(web::Data::new(index.clone()))
+            .app_data(index.clone())
             .configure(route::routes)
     })
     .bind("127.0.0.1:7500")?
