@@ -1,7 +1,6 @@
 use tantivy::IndexReader;
 use tantivy::IndexWriter;
 use tantivy::collector::TopDocs;
-// use tantivy::doc;
 use tantivy::query::QueryParser;
 use tantivy::schema::*;
 use tantivy::Index;
@@ -27,7 +26,7 @@ impl SchemaHandler {
 fn get_schema() -> Result<Schema, anyhow::Error> {
     let mut schema_builder = Schema::builder();
     schema_builder.add_text_field("title", TEXT | STORED);
-    schema_builder.add_text_field("body", TEXT);
+    schema_builder.add_text_field("body", STORED);
     let schema = schema_builder.build();
 
     Ok(schema)
@@ -60,7 +59,7 @@ impl IndexHandler {
 impl SearchHandler {
     pub fn new() -> (SearchHandler, IndexHandler) {
         let schema = SchemaHandler::new();
-        let index = Index::create_in_dir("/home/sankar/lily_data", schema.schema.clone()).unwrap();
+        let index = Index::create_in_dir("/tmp/", schema.schema.clone()).unwrap();
         let index_writer = index.writer(50_000_000).unwrap();
         let reader = index
             .reader_builder()
@@ -80,16 +79,16 @@ impl SearchHandler {
         )
     }
 
-    pub fn search(&self, query: &str) -> Result<Vec<Document>, anyhow::Error> {
+    pub fn search(&self, query_str: &str) -> Result<Vec<Document>, anyhow::Error> {
         let searcher = self.reader.searcher();
-        let query_parser = QueryParser::for_index(&self.index, vec![self.schema.title, self.schema.body]);
-        let query = query_parser.parse_query(query)?;
+        let query_parser = QueryParser::for_index(&self.index, vec![self.schema.title]);
+        let query = query_parser.parse_query(query_str)?;
         let top_docs = searcher.search(&query, &TopDocs::with_limit(10))?;
         let mut a: Vec<Document> = Vec::new();
         for (_score, doc_address) in top_docs {
             let retrieved_doc = searcher.doc(doc_address)?;
+            let _doc = self.schema.schema.to_json(&retrieved_doc);
             a.push(retrieved_doc);
-            // let _doc = self.schema.schema.to_json(&retrieved_doc);
         }
         Ok(a)
     }
