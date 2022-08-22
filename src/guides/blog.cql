@@ -28,9 +28,3 @@ CREATE TABLE blogInfo (
     updatedAt timeuuid,
     PRIMARY KEY (blogId)
 );
-
-INSERT INTO sankar.blogInfo (
-    blogId, authorId, fname, lname, title, body, createdAt, updatedAt
-) VALUES(
-    $1, $2, $3, $4, $5, $6, $7
-)
