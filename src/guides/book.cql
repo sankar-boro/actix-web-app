@@ -24,13 +24,8 @@ CREATE TABLE bookInfo (
     lname varchar,
     title varchar,
     body text,
+    metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
     PRIMARY KEY (bookId)
 );
-
-INSERT INTO sankar.bookInfo (
-    bookId, authorId, fname, lname, title, body, createdAt, updatedAt
-) VALUES(
-    $1, $2, $3, $4, $5, $6, $7
-)

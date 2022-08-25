@@ -22,7 +22,10 @@ pub fn routes(config: &mut web::ServiceConfig) {
   );
   config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.route("/users", web::post().to(user::users));
-  config.route("/search/{query}", web::get().to(search::search_fn));
+  
+  // #search
+  // config.route("/search/{query}", web::get().to(search::search_fn));
+
   config.service(
     web::scope("/user")
     .wrap(Authentication{})

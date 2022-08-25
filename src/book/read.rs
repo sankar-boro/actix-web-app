@@ -24,12 +24,13 @@ pub struct BookInfo {
     lname: Option<String>,
     title: String,
     body: String,
+    metadata: String,
     createdAt: Uuid,
     updatedAt: Uuid,
 }
 
 // cannot use * when getting all documents;
-static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, authorId, fname, lname, title, body, createdAt, updatedAt from sankar.bookInfo";
+static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, authorId, fname, lname, title, body, metadata, createdAt, updatedAt from sankar.bookInfo";
 pub async fn getAllBooks(app: web::Data<App>) 
 -> Result<HttpResponse, crate::AppError> {
     let documents: Option<Vec<BookInfo>> = 

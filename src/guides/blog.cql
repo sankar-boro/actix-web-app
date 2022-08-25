@@ -24,6 +24,7 @@ CREATE TABLE blogInfo (
     lname varchar,
     title varchar,
     body text,
+    metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
     PRIMARY KEY (blogId)

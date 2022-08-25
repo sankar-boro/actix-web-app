@@ -17,6 +17,7 @@ pub struct ParentRequest {
     title: String,
     body: String,
     identity: i16,
+    metadata: String,
 }
 
 #[derive(Serialize, Validate, FromRow)]
@@ -30,6 +31,7 @@ pub struct ParentResponse {
     authorId: String,
     fname: String,
     lname: String,
+    metadata: String,
     createdAt: String,
     updatedAt: String,
 }
@@ -41,14 +43,14 @@ pub static CREATE_BOOK: &str = "INSERT INTO sankar.book (
 )";
 
 pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
-    bookId, authorId, fname, lname, title, body, createdAt, updatedAt
+    bookId, authorId, fname, lname, title, body, metadata, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub async fn create(
     app: web::Data<App>,
-    search: web::Data<Mutex<IndexHandler>>, 
+    // search: web::Data<Mutex<IndexHandler>>, 
     request: web::Json<ParentRequest>,
     session: Session
 ) 
@@ -67,13 +69,13 @@ pub async fn create(
 
     let batch_values = (
         (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &identity, &unique_id, &unique_id),
-        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &unique_id, &unique_id)
+        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &request.metadata, &unique_id, &unique_id)
     );
 
     app.batch(&batch, &batch_values).await?;
 
-    let a = &mut search.try_lock().unwrap();
-    a.create_document(&request.title, &request.body);
+    // let a = &mut search.try_lock().unwrap();
+    // a.create_document(&request.title, &request.body);
 
     Ok(
         HttpResponse::Ok().json(ParentResponse {
@@ -86,6 +88,7 @@ pub async fn create(
             authorId: auth_id.to_string(),
             fname: auth.fname.clone(),
             lname: auth.lname.clone(),
+            metadata: request.metadata.clone(),
             createdAt: unique_id_str.clone(),
             updatedAt: unique_id_str.clone(),
         })
