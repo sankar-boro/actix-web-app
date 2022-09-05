@@ -3,7 +3,8 @@ use crate::book;
 use crate::blog;
 use crate::booknode;
 use crate::blognode;
-use crate::search;
+use crate::auth;
+// use crate::search;
 
 use actix_web::{web, HttpResponse};
 use crate::middleware::Authentication;
@@ -23,6 +24,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.route("/users", web::post().to(user::users));
   
+  config.route("/generate_session", web::post().to(auth::generate_session));
   // #search
   // config.route("/search/{query}", web::get().to(search::search_fn));
 

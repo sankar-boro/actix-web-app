@@ -2,14 +2,13 @@ use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{App, search::search::IndexHandler};
+use crate::{App};
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::{
     batch::Batch,
     macros::FromRow
 };
-use async_std::sync::Mutex;
 use crate::auth::AuthSession;
 
 #[derive(Deserialize, Validate, FromRow)]
