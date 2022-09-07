@@ -3,20 +3,15 @@ use crate::AppError;
 use scylla::macros::FromRow;
 
 use uuid::Uuid;
-use chrono::{Utc};
-use jsonwebtoken::encode;
-use jsonwebtoken::Header;
 use validator::{Validate};
 use actix_session::Session;
-use crate::utils::SessionClaims;
 use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::{EncodingKey, Algorithm};
 use crate::utils::{
-	validate_user_credentials, 
 	GetQueryResult,
 };
 use serde_json::json;
+use lily_utils::validate_user_credentials;
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct LoginForm {
@@ -43,34 +38,6 @@ pub struct GetUser {
 	lname: String,
 }
 
-#[allow(unused)]
-fn create_session_token(user: &GetUser) 
--> Result<String, actix_web::Error> {
-	let exp = 
-		Utc::now()
-		.checked_add_signed(chrono::Duration::seconds(3600))
-		.expect("valid timestamp")
-		.timestamp();
-	let claims = 
-		SessionClaims::new(
-			user.userId, 
-			user.email.clone(),
-			user.fname.clone(),
-			user.lname.clone(), 
-			exp, 
-			Utc::now().timestamp()
-		);
-	let header = Header::new(Algorithm::HS512);
-	match encode(
-		&header, 
-		&claims, 
-		&EncodingKey::from_secret("secret".as_ref())
-	) {
-		Ok(a) => Ok(a),
-		Err(err) => Err(AppError::from(err).into())
-	}
-}
-
 fn get_user_query(email: &str) 
 -> String {
 	let mut query = String::new();
@@ -87,9 +54,7 @@ pub async fn login(
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
-	if let Err(_) = request.validate() {
-		return Err(AppError::from("INVALID_CREDENTIALS").into());
-	}
+	request.validate()?; // validate types: email
 	let rows: Option<Vec<GetUser>> = 
 		app.query(get_user_query(&request.email), &[])
 		.await
@@ -103,9 +68,12 @@ pub async fn login(
 		},
 		None => return Err(AppError::from("USER_NOT_FOUND").into())
 	};
-	validate_user_credentials(&request.password, &auth_user.password)?;
-
-	// let token = create_session_token(&user)?;
+	match validate_user_credentials(&request.password, &auth_user.password) {
+		Ok(_) => {},
+		Err(e) => {
+			return Err(AppError::from(e).into());
+		}
+	}
 	
 	let auth_user_session = json!({
 		"userId": auth_user.userId.to_string(),

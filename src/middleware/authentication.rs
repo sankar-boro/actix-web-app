@@ -48,6 +48,7 @@ where
             let session = req.get_session();
             match session.get::<String>("AUTH_ID") { 
                 Ok(_) => {
+                    session.renew();
                     let res_fut = srv.call(req);
                     return res_fut.await;
                 },

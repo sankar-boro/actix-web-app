@@ -7,7 +7,6 @@ edition = "2018"
 [workspace]
 
 members = [
-	"lily-service",
 	"lily-utils",
 	"lily-test"
 ]
@@ -52,7 +51,6 @@ time = "0.2.27"
 env_logger = "0.8"
 log = "0.4"
 
-lily-service = { path = "./lily-service"}
 lily-utils = { path = "./lily-utils"}
 tantivy = "0.18.0"
 tempfile = "3.3.0"

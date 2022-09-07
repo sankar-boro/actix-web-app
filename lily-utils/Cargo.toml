@@ -10,3 +10,5 @@ edition = "2018"
 rand = "0.8.3"
 chrono = "0.4.19"
 uuid = { version = "0.8", features = ["serde", "v1", "v4"] }
+rust-argon2 = "0.8"
+anyhow = "1.0.33"

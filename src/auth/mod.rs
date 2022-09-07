@@ -1,11 +1,6 @@
-use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize };
 use actix_session::Session;
 use crate::AppError;
-use crate::App;
-use lily_utils::time_uuid;
-use crate::query::{CREATE_USER_SESSION};
-use uuid::Uuid;
 
 #[derive(Deserialize, Serialize)]
 pub struct AUTHUSER {
@@ -36,32 +31,4 @@ impl  AuthSession for Session {
             None => return Err(AppError::from("UN_AUTHENTICATED_USER").into())
         }
     }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct AuthUserSession {
-    pub sessionId: String
-}
-
-pub async fn generate_session(
-    app: web::Data<App>,
-    session: Session
-) -> Result<HttpResponse, crate::AppError> {
-
-    let auth = session.user_info()?;
-    let auth_id_str = auth.userId;
-    let auth_id = Uuid::parse_str(&auth_id_str)?;
-
-    let unique_id = time_uuid();
-    let create_data = ( 
-        &auth_id, // userId
-        &unique_id, // sessionId,
-        &unique_id, // createdAt
-        &unique_id // updatedAt
-    );
-    app.query(CREATE_USER_SESSION, create_data).await?;
-
-    Ok(HttpResponse::Ok().json(AuthUserSession {
-        sessionId: unique_id.to_string(),
-    }))
 }

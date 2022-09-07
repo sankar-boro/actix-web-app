@@ -1,9 +1,6 @@
-mod validation;
 mod query;
 
 use uuid::Uuid;
-
-pub use validation::{SessionClaims, validate_user_credentials};
 pub use query::{GetQueryResult};
 
 pub trait ParseUuid {

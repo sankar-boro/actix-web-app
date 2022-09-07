@@ -3,9 +3,8 @@ use crate::AppError;
 
 use serde::{Deserialize};
 use validator::Validate;
-use lily_utils::time_uuid;
+use lily_utils::{time_uuid, encrypt_text};
 use scylla::batch::Batch;
-use lily_service::encrypt_text;
 use actix_web::{HttpResponse, web};
 
 static INSERT_TABLE__USERS: &str = "INSERT INTO sankar.users (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
