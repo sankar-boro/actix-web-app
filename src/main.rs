@@ -12,7 +12,7 @@ mod book;
 mod blog;
 mod booknode;
 mod blognode;
-mod search;
+// mod search;
 
 use std::sync::Arc;
 use anyhow::Result;

@@ -68,12 +68,7 @@ pub async fn login(
 		},
 		None => return Err(AppError::from("USER_NOT_FOUND").into())
 	};
-	match validate_user_credentials(&request.password, &auth_user.password) {
-		Ok(_) => {},
-		Err(e) => {
-			return Err(AppError::from(e).into());
-		}
-	}
+	validate_user_credentials(&request.password, &auth_user.password)?;
 	
 	let auth_user_session = json!({
 		"userId": auth_user.userId.to_string(),
