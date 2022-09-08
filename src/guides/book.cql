@@ -12,6 +12,7 @@ CREATE TABLE book (
     identity smallint,
     title varchar,
     body text,
+    url text,
     createdAt timeuuid,
     updatedAt timeuuid,
     PRIMARY KEY (bookId, uniqueId)
@@ -24,6 +25,7 @@ CREATE TABLE bookInfo (
     lname varchar,
     title varchar,
     body text,
+    url text,
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,

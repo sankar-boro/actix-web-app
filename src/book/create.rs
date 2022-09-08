@@ -10,6 +10,7 @@ use scylla::{
     macros::FromRow
 };
 use crate::auth::AuthSession;
+// use jsonwebtoken::{encode, Algorithm, Header, EncodingKey};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct ParentRequest {
@@ -17,6 +18,7 @@ pub struct ParentRequest {
     body: String,
     identity: i16,
     metadata: String,
+    uniqueId: String,
 }
 
 #[derive(Serialize, Validate, FromRow)]
@@ -26,6 +28,7 @@ pub struct ParentResponse {
     parentId: Option<String>,
     title: String,
     body: String,
+    url: String,
     identity: i16,
     authorId: String,
     fname: String,
@@ -36,15 +39,15 @@ pub struct ParentResponse {
 }
 
 pub static CREATE_BOOK: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, authorId, fname, lname, title, body, identity, createdAt, updatedAt
+    bookId, uniqueId, authorId, fname, lname, title, body, url, identity, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
-    bookId, authorId, fname, lname, title, body, metadata, createdAt, updatedAt
+    bookId, authorId, fname, lname, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub async fn create(
@@ -61,14 +64,15 @@ pub async fn create(
     let identity: i16 = 101;
 
     let auth = session.user_info()?;
-    let auth_id_str = auth.userId;
-    let auth_id = Uuid::parse_str(&auth_id_str)?;
-    let unique_id = time_uuid();
-    let unique_id_str = unique_id.to_string();
+    let auth_id = Uuid::parse_str(&auth.userId)?;
+    let unique_id = Uuid::parse_str(&request.uniqueId)?;
+    // let unique_id = time_uuid();
+    // let unique_id_str = unique_id.to_string();
+    let url = format!("{}/{}", &auth.userId, &request.uniqueId);
 
     let batch_values = (
-        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &identity, &unique_id, &unique_id),
-        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &request.metadata, &unique_id, &unique_id)
+        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &url, &identity, &unique_id, &unique_id),
+        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &url, &request.metadata, &unique_id, &unique_id)
     );
 
     app.batch(&batch, &batch_values).await?;
@@ -78,18 +82,54 @@ pub async fn create(
 
     Ok(
         HttpResponse::Ok().json(ParentResponse {
-            bookId: unique_id_str.clone(),
-            uniqueId: unique_id_str.clone(),
+            bookId: request.uniqueId.clone(),
+            uniqueId: request.uniqueId.clone(),
             parentId: None,
             title: request.title.clone(),
             body: request.body.clone(),
+            url,
             identity: request.identity.clone(),
             authorId: auth_id.to_string(),
             fname: auth.fname.clone(),
             lname: auth.lname.clone(),
             metadata: request.metadata.clone(),
-            createdAt: unique_id_str.clone(),
-            updatedAt: unique_id_str.clone(),
+            createdAt: request.uniqueId.clone(),
+            updatedAt: request.uniqueId.clone(),
         })
     )
+}
+
+// #[derive(Debug, Serialize, Deserialize)]
+// struct Claims {
+//    userId: String,
+//    contextId: String,
+//    exp: usize,
+// }
+
+// pub async fn create_book_sessionv1(session:Session) -> Result<HttpResponse, crate::AppError> {
+//     let auth = session.user_info()?;
+//     let userId = auth.userId;
+//     let contextId = time_uuid().to_string();
+
+//     let claims = Claims {
+//         userId,
+//         contextId,
+//         exp: 10000000000
+//     };
+
+//     let header =
+//     Header { kid: Some("signing_key".to_owned()), alg: Algorithm::HS512, ..Default::default() };
+
+//     let token = encode(&header, &claims, &EncodingKey::from_secret("secret".as_ref())).unwrap();
+//     Ok(HttpResponse::Ok().body(token))
+// }
+
+#[derive(Serialize, Validate, FromRow)]
+pub struct SessionResponse {
+    uniqueId: String,
+}
+pub async fn create_book_sessionv2() -> Result<HttpResponse, crate::AppError> {
+    Ok(HttpResponse::Ok().json(SessionResponse{
+        uniqueId: time_uuid().to_string()
+    }))
 }

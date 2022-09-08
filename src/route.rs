@@ -39,6 +39,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .wrap(Authentication{})
     .route("/get/{bookId}", web::get().to(book::getAllNodesFromBookId))
     .route("/create", web::post().to(book::create))
+    .route("/create/new_session", web::post().to(book::create_book_sessionv2))
     .route("/delete/{deleteId}", web::post().to(book::delete))
     .route("/update", web::post().to(book::update))
   );
@@ -76,4 +77,5 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .wrap(Authentication{})
     .route("/logout", web::post().to(user::logout_user))
   );
+
 }
