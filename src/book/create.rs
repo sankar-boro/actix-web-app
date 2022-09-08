@@ -19,6 +19,7 @@ pub struct ParentRequest {
     identity: i16,
     metadata: String,
     uniqueId: String,
+    image_url: String,
 }
 
 #[derive(Serialize, Validate, FromRow)]
@@ -71,8 +72,8 @@ pub async fn create(
     let url = format!("{}/{}", &auth.userId, &request.uniqueId);
 
     let batch_values = (
-        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &url, &identity, &unique_id, &unique_id),
-        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &url, &request.metadata, &unique_id, &unique_id)
+        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &request.image_url, &identity, &unique_id, &unique_id),
+        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &request.image_url, &request.metadata, &unique_id, &unique_id)
     );
 
     app.batch(&batch, &batch_values).await?;
