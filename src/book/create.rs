@@ -15,11 +15,11 @@ use crate::auth::AuthSession;
 #[derive(Deserialize, Validate, FromRow)]
 pub struct ParentRequest {
     title: String,
-    body: String,
+    body: Option<String>,
     identity: i16,
     metadata: String,
     uniqueId: String,
-    image_url: String,
+    image_url: Option<String>,
 }
 
 #[derive(Serialize, Validate, FromRow)]
@@ -64,16 +64,22 @@ pub async fn create(
     batch.append_statement(CREATE_BOOK_INFO);
     let identity: i16 = 101;
 
+    let mut body = String::from("");
+    let mut image_url = String::from("");
+
+    if let Some(b) = &request.body {
+        body = b.to_owned();
+    }
+    if let Some(b) = &request.image_url {
+        image_url = b.to_owned();
+    }
+
     let auth = session.user_info()?;
     let auth_id = Uuid::parse_str(&auth.userId)?;
     let unique_id = Uuid::parse_str(&request.uniqueId)?;
-    // let unique_id = time_uuid();
-    // let unique_id_str = unique_id.to_string();
-    let url = format!("{}/{}", &auth.userId, &request.uniqueId);
-
     let batch_values = (
-        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &request.image_url, &identity, &unique_id, &unique_id),
-        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &request.body, &request.image_url, &request.metadata, &unique_id, &unique_id)
+        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &identity, &unique_id, &unique_id),
+        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
     );
 
     app.batch(&batch, &batch_values).await?;
@@ -87,8 +93,8 @@ pub async fn create(
             uniqueId: request.uniqueId.clone(),
             parentId: None,
             title: request.title.clone(),
-            body: request.body.clone(),
-            url,
+            body: body.clone(),
+            url: image_url.clone(),
             identity: request.identity.clone(),
             authorId: auth_id.to_string(),
             fname: auth.fname.clone(),

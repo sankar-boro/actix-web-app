@@ -57,7 +57,7 @@ pub struct Book {
     lname: Option<String>,
     title: String,
     body: String,
-    url: String,
+    url: Option<String>,
     identity: i16,
     createdAt: Uuid,
     updatedAt: Uuid,
