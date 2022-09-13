@@ -21,7 +21,7 @@ pub fn validate_user_credentials(req_pass: &str, db_pass: &[u8]) -> Result<(), a
     let req_pass = req_pass.as_bytes();
     let data = encode(req_pass)?;
     if data.as_bytes() != db_pass {
-      return Err(anyhow::Error::msg("password mismatch"));
+      return Err(anyhow::Error::msg("WRONG_PASSWORD"));
     }
     Ok(())
 }
