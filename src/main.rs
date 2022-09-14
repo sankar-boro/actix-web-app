@@ -55,6 +55,11 @@ impl App {
         self.session.query(query, values).await
     }
 
+    pub async fn query_paged(&self, query: impl Into<Query>, values: impl ValueList, page: Vec<u8>) -> Result<QueryResult, QueryError>{
+        let pagedata = Some(scylla::Bytes::from(page));
+        self.session.query_paged(query, values, pagedata).await
+    }
+
     pub async fn batch(&self, query: &Batch, values: impl BatchValues) -> Result<BatchResult, QueryError>{
         self.session.batch(query, values).await
     }

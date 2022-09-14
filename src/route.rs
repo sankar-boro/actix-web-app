@@ -43,6 +43,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     web::scope("/book")
     .wrap(Authentication{})
     .route("/get/{bookId}", web::get().to(book::getAllNodesFromBookId))
+    .route("/nextpage/{bookId}", web::post().to(book::getNextPage))
     .route("/create", web::post().to(book::create))
     .route("/create/new_session", web::post().to(book::create_book_sessionv2))
     .route("/delete/{deleteId}", web::post().to(book::delete))
