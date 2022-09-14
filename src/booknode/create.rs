@@ -1,10 +1,12 @@
 use actix_web::{HttpResponse, web};
 use serde::{Serialize, Deserialize};
-use crate::App;
+use uuid::Uuid;
+use crate::{App, auth::AuthSession};
 use crate::utils::ParseUuid;
 use lily_utils::time_uuid;
 use scylla::macros::FromRow;
 use crate::query::{CREATE_BOOK_NODE_QUERY};
+use actix_session::Session;
 
 #[derive(Deserialize, FromRow)]
 pub struct AppendNodeRequest {
@@ -22,10 +24,13 @@ pub struct Response {
 
 pub async fn create(
     app: web::Data<App>, 
-    payload: web::Json<AppendNodeRequest>
+    payload: web::Json<AppendNodeRequest>,
+    session: Session
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {   
+    let auth = session.user_info()?;
+    let author_id = Uuid::parse_str(&auth.userId)?;
     let new_id = time_uuid();
     let book_id = &payload.bookId.to_uuid()?;
     let top_unique_id = &payload.topUniqueId.to_uuid()?;
@@ -34,6 +39,7 @@ pub async fn create(
         &book_id,
         &new_id,
         &top_unique_id,
+        &author_id,
         &payload.title,
         &payload.body,
         &payload.identity,
