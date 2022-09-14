@@ -16,7 +16,6 @@ use crate::auth::AuthSession;
 pub struct ParentRequest {
     title: String,
     body: Option<String>,
-    identity: i16,
     metadata: String,
     uniqueId: String,
     image_url: Option<String>,
@@ -39,22 +38,23 @@ pub struct ParentResponse {
     updatedAt: String,
 }
 
-pub static CREATE_BOOK: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, authorId, fname, lname, title, body, url, identity, createdAt, updatedAt
+pub static CREATE_BOOKS: &str = "INSERT INTO sankar.books (
+    bookId, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?
 )";
-
-pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
-    bookId, authorId, fname, lname, title, body, url, metadata, createdAt, updatedAt
+/**
+ * We dont include parentId, because the first node is the parent node.
+ */
+pub static CREATE_BOOK: &str = "INSERT INTO sankar.book (
+    bookId, uniqueId, authorId, title, body, url, identity, metadata, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
-
-pub static CREATE_USER_BOOK: &str = "INSERT INTO sankar.userBooks (
-    bookId, uniqueId, authorId, fname, lname, title, body, url, identity, createdAt, updatedAt
+pub static CREATE_USER_BOOKS: &str = "INSERT INTO sankar.userbooks (
+    bookId, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub async fn create(
@@ -66,9 +66,9 @@ pub async fn create(
 -> Result<HttpResponse, crate::AppError> 
 {
     let mut batch: Batch = Default::default();
+    batch.append_statement(CREATE_BOOKS);
     batch.append_statement(CREATE_BOOK);
-    batch.append_statement(CREATE_USER_BOOK);
-    batch.append_statement(CREATE_BOOK_INFO);
+    batch.append_statement(CREATE_USER_BOOKS);
     let identity: i16 = 101;
 
     let mut body = String::from("");
@@ -85,9 +85,9 @@ pub async fn create(
     let auth_id = Uuid::parse_str(&auth.userId)?;
     let unique_id = Uuid::parse_str(&request.uniqueId)?;
     let batch_values = (
-        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &identity, &unique_id, &unique_id),
-        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &identity, &unique_id, &unique_id),
-        (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
+        (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id),
+        (&unique_id, &unique_id, &auth_id, &request.title, &body, &image_url, &identity, &request.metadata, &unique_id, &unique_id),
+        (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
     );
 
     app.batch(&batch, &batch_values).await?;
@@ -103,7 +103,7 @@ pub async fn create(
             title: request.title.clone(),
             body: body.clone(),
             url: image_url.clone(),
-            identity: request.identity.clone(),
+            identity,
             authorId: auth_id.to_string(),
             fname: auth.fname.clone(),
             lname: auth.lname.clone(),

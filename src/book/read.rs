@@ -17,11 +17,9 @@ pub struct NewDocument {
 }
 
 #[derive(FromRow, Serialize)]
-pub struct BookInfo {
+pub struct Books {
     bookId: Uuid,
     authorId: Option<Uuid>,
-    fname: Option<String>,
-    lname: Option<String>,
     title: String,
     body: String,
     url: String,
@@ -31,17 +29,17 @@ pub struct BookInfo {
 }
 
 // cannot use * when getting all documents;
-static GET_ALL_DOCUMENTS: &'static str = "SELECT bookId, authorId, fname, lname, title, body, url, metadata, createdAt, updatedAt from sankar.bookInfo";
+static BOOKS_QUERY: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.books";
 pub async fn getAllBooks(app: web::Data<App>) 
 -> Result<HttpResponse, crate::AppError> {
-    let documents: Option<Vec<BookInfo>> = 
-    app.query(GET_ALL_DOCUMENTS, &[])
+    let documents: Option<Vec<Books>> = 
+    app.query(BOOKS_QUERY, &[])
     .await
     .get_query_result()?;
     match documents {
         Some(docs) => Ok(HttpResponse::Ok().json(docs)),
         None => {
-            let mt: Vec<Book> = Vec::new();
+            let mt: Vec<Books> = Vec::new();
             Ok(HttpResponse::Ok().json(mt))
         },
     }
@@ -52,18 +50,17 @@ pub struct Book {
     bookId: Uuid,
     uniqueId: Uuid,
     parentId: Option<Uuid>,
-    authorId: Option<Uuid>,
-    fname: Option<String>,
-    lname: Option<String>,
+    authorId: Uuid,
     title: String,
     body: String,
     url: Option<String>,
     identity: i16,
+    metadata: Option<String>,
     createdAt: Uuid,
     updatedAt: Uuid,
 }
 
-static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, uniqueId, parentId, authorId, fname, lname, title, body, url, identity, createdAt, updatedAt from sankar.book WHERE bookId=";
+static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=";
 pub async fn getAllNodesFromBookId(app: web::Data<App>, book_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     let bookId = Uuid::parse_str(&book_id)?;
     let query = format!("{}{}", GET_ALL_DOCUMENTS_FROM_ID, &bookId);

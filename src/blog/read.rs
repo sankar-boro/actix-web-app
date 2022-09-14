@@ -17,29 +17,28 @@ pub struct NewDocument {
 }
 
 #[derive(FromRow, Serialize)]
-pub struct BlogInfo {
+pub struct Blogs {
     blogId: Uuid,
-    authorId: Option<Uuid>,
-    fname: Option<String>,
-    lname: Option<String>,
+    authorId: Uuid,
     title: String,
     body: String,
+    metadata: String,
     createdAt: Uuid,
     updatedAt: Uuid,
 }
 
 // cannot use * when getting all documents;
-static GET_ALL_DOCUMENTS: &'static str = "SELECT blogId, authorId, fname, lname, title, body, createdAt, updatedAt from sankar.blogInfo";
+static GET_ALL_DOCUMENTS: &'static str = "SELECT blogId, authorId, title, body, metadata, createdAt, updatedAt from sankar.blogs";
 pub async fn getAllBlogs(app: web::Data<App>) 
 -> Result<HttpResponse, crate::AppError> {
-    let documents: Option<Vec<BlogInfo>> = 
+    let documents: Option<Vec<Blogs>> = 
     app.query(GET_ALL_DOCUMENTS, &[])
     .await
     .get_query_result()?;
     match documents {
         Some(docs) => Ok(HttpResponse::Ok().json(docs)),
         None => {
-            let mt: Vec<Blog> = Vec::new();
+            let mt: Vec<Blogs> = Vec::new();
             Ok(HttpResponse::Ok().json(mt))
         },
     }

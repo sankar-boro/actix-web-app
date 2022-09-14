@@ -10,3 +10,5 @@ CREATE KEYSPACE sankar WITH replication = {
 'class': 'SimpleStrategy',
 'replication_factor': 1
 };
+
+describe tables;
