@@ -36,5 +36,5 @@ CREATE TABLE userbooks (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (authorId)
+    PRIMARY KEY (authorId, bookId)
 );

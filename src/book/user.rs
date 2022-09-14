@@ -12,22 +12,18 @@ use crate::utils::{
 #[derive(FromRow, Serialize)]
 pub struct Book {
     bookId: Uuid,
-    uniqueId: Uuid,
-    parentId: Option<Uuid>,
     authorId: Option<Uuid>,
-    fname: Option<String>,
-    lname: Option<String>,
     title: String,
     body: String,
     url: Option<String>,
-    identity: i16,
+    metadata: String,
     createdAt: Uuid,
     updatedAt: Uuid,
 }
 
 
 // cannot use * when getting all documents;
-static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, uniqueId, parentId, authorId, fname, lname, title, body, url, identity, createdAt, updatedAt from sankar.userBooks WHERE authorId=";
+static GET_ALL_DOCUMENTS_FROM_ID: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userbooks WHERE authorId=";
 pub async fn getAllNodesFromAuthorId(app: web::Data<App>, author_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     let authorId = Uuid::parse_str(&author_id)?;
     let query = format!("{}{}", GET_ALL_DOCUMENTS_FROM_ID, &authorId);
