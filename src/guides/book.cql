@@ -1,6 +1,8 @@
 use sankar;
+
 DROP TABLE IF EXISTS book;
 DROP TABLE IF EXISTS bookInfo;
+DROP TABLE IF EXISTS userBooks;
 
 CREATE TABLE book (
     bookId timeuuid,
@@ -30,4 +32,20 @@ CREATE TABLE bookInfo (
     createdAt timeuuid,
     updatedAt timeuuid,
     PRIMARY KEY (bookId)
+);
+
+CREATE TABLE userBooks (
+    bookId timeuuid,
+    uniqueId timeuuid,
+    parentId timeuuid,
+    authorId timeuuid,
+    fname varchar,
+    lname varchar,
+    identity smallint,
+    title varchar,
+    body text,
+    url text,
+    createdAt timeuuid,
+    updatedAt timeuuid,
+    PRIMARY KEY (authorId)
 );

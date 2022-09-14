@@ -35,6 +35,11 @@ pub fn routes(config: &mut web::ServiceConfig) {
   //
   config.route("/books", web::get().to(book::getAllBooks));
   config.service(
+    web::scope("/author/books")
+    // .wrap(Authentication{})
+    .route("/get/{author_id}", web::get().to(book::getAllNodesFromAuthorId))
+  );
+  config.service(
     web::scope("/book")
     .wrap(Authentication{})
     .route("/get/{bookId}", web::get().to(book::getAllNodesFromBookId))

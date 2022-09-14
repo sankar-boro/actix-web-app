@@ -51,6 +51,12 @@ pub static CREATE_BOOK_INFO: &str = "INSERT INTO sankar.bookInfo (
     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
+pub static CREATE_USER_BOOK: &str = "INSERT INTO sankar.userBooks (
+    bookId, uniqueId, authorId, fname, lname, title, body, url, identity, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+)";
+
 pub async fn create(
     app: web::Data<App>,
     // search: web::Data<Mutex<IndexHandler>>, 
@@ -61,6 +67,7 @@ pub async fn create(
 {
     let mut batch: Batch = Default::default();
     batch.append_statement(CREATE_BOOK);
+    batch.append_statement(CREATE_USER_BOOK);
     batch.append_statement(CREATE_BOOK_INFO);
     let identity: i16 = 101;
 
@@ -78,6 +85,7 @@ pub async fn create(
     let auth_id = Uuid::parse_str(&auth.userId)?;
     let unique_id = Uuid::parse_str(&request.uniqueId)?;
     let batch_values = (
+        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &identity, &unique_id, &unique_id),
         (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &identity, &unique_id, &unique_id),
         (&unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
     );
