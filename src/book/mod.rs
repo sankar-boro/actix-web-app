@@ -10,6 +10,7 @@ pub use create::{create, create_book_sessionv2};
 pub use read::{
     getAllNodesFromBookId,
     getAllBooks,
+    getNextBooks,
     getNextPage
 };
 pub use user::getAllNodesFromAuthorId;

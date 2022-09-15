@@ -34,6 +34,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
   );
   //
   config.route("/books", web::get().to(book::getAllBooks));
+  config.route("/books/next", web::post().to(book::getNextBooks));
   config.service(
     web::scope("/author/books")
     // .wrap(Authentication{})

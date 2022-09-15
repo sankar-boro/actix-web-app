@@ -3,7 +3,7 @@ use crate::App;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 
-use scylla::{macros::FromRow, query::Query, Bytes};
+use scylla::{macros::FromRow, query::Query};
 use crate::utils::{
 	GetQueryResult
 };
@@ -20,16 +20,56 @@ pub struct Books {
     updatedAt: Uuid,
 }
 
+#[derive(Serialize)]
+pub struct BookPaged {
+    books: Vec<Books>,
+    page: Option<Vec<u8>>,
+}
+
 // cannot use * when getting all documents;
 static BOOKS_QUERY: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.books";
 pub async fn getAllBooks(app: web::Data<App>) 
 -> Result<HttpResponse, crate::AppError> {
-    let documents: Option<Vec<Books>> = 
-    app.query(BOOKS_QUERY, &[])
-    .await
-    .get_query_result()?;
+    let query = Query::new(BOOKS_QUERY).with_page_size(4);
+    let documents = app.query(query, &[])
+    .await?;
+    let page = documents.paging_state.clone();
+    let documents: Option<Vec<Books>> = documents.get_query_result()?;
     match documents {
-        Some(docs) => Ok(HttpResponse::Ok().json(docs)),
+        Some(docs) => {
+            let page = match page {
+                Some(page) => Some(page.to_vec()),
+                None => None,
+            };
+            Ok(HttpResponse::Ok().json(BookPaged{books: docs, page }))
+        },
+        None => {
+            let mt: Vec<Books> = Vec::new();
+            Ok(HttpResponse::Ok().json(mt))
+        },
+    }
+}
+
+// cannot use * when getting all documents;
+static BOOKS_NEXT_QUERY: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.books";
+pub async fn getNextBooks(
+    app: web::Data<App>,
+    request: web::Json<NextPageBook>,
+) 
+-> Result<HttpResponse, crate::AppError> {
+    let query = Query::new(BOOKS_NEXT_QUERY).with_page_size(4);
+    let documents = app.query_paged(query, &[], request.page.clone())
+    .await?;
+    let page = documents.paging_state.clone();
+    let documents: Option<Vec<Books>> = documents.get_query_result()?;
+    match documents {
+        Some(docs) => {
+            let page = match page {
+                Some(page) => Some(page.to_vec()),
+                None => None,
+            };
+            Ok(HttpResponse::Ok().json(BookPaged{books: docs, page }))
+        },
         None => {
             let mt: Vec<Books> = Vec::new();
             Ok(HttpResponse::Ok().json(mt))
