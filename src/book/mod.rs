@@ -6,7 +6,7 @@ mod update;
 mod user;
 
 pub use image::upload_image;
-pub use create::{create, create_book_sessionv2};
+pub use create::{create};
 pub use read::{
     getBooksWithPageSize,
     getNextBooksWithPageSize,

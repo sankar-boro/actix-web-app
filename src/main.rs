@@ -12,6 +12,7 @@ mod book;
 mod blog;
 mod booknode;
 mod blognode;
+mod common;
 // mod search;
 
 use std::sync::Arc;

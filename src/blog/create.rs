@@ -1,5 +1,6 @@
 use actix_session::Session;
 use actix_web::{HttpResponse, web};
+use lily_utils::time_uuid;
 use serde::{Deserialize, Serialize};
 use crate::App;
 use uuid::Uuid;
@@ -100,4 +101,15 @@ pub async fn create(
             updatedAt: request.uniqueId.clone(),
         })
     )
+}
+
+
+#[derive(Serialize)]
+pub struct SessionResponse {
+    uniqueId: String,
+}
+pub async fn create_blog_sessionv2() -> Result<HttpResponse, crate::AppError> {
+    Ok(HttpResponse::Ok().json(SessionResponse{
+        uniqueId: time_uuid().to_string()
+    }))
 }

@@ -139,12 +139,3 @@ pub async fn create(
 //     Ok(HttpResponse::Ok().body(token))
 // }
 
-#[derive(Serialize, Validate, FromRow)]
-pub struct SessionResponse {
-    uniqueId: String,
-}
-pub async fn create_book_sessionv2() -> Result<HttpResponse, crate::AppError> {
-    Ok(HttpResponse::Ok().json(SessionResponse{
-        uniqueId: time_uuid().to_string()
-    }))
-}

@@ -3,6 +3,7 @@ use crate::book;
 use crate::blog;
 use crate::booknode;
 use crate::blognode;
+use crate::common;
 // use crate::search;
 
 use actix_web::{web, HttpResponse};
@@ -40,13 +41,13 @@ pub fn routes(config: &mut web::ServiceConfig) {
     // .wrap(Authentication{})
     .route("/get/{author_id}", web::get().to(book::getAllNodesFromAuthorId))
   );
+  config.route("/create/sessionv2", web::post().to(common::create_sessionv2));
   config.service(
     web::scope("/book")
-    .wrap(Authentication{})
     .route("/get/{bookId}", web::get().to(book::getBookNodesWithPageSizeFromId))
     .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
+    .wrap(Authentication{})
     .route("/create", web::post().to(book::create))
-    .route("/create/new_session", web::post().to(book::create_book_sessionv2))
     .route("/delete/{deleteId}", web::post().to(book::delete))
     .route("/update", web::post().to(book::update))
   );
@@ -64,9 +65,9 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/blogs/next", web::post().to(blog::getNextBlogsWithPageSize));
   config.service(
     web::scope("/blog")
-    .wrap(Authentication{})
     .route("/get/{blogId}", web::get().to(blog::getBlogNodesWithPageSizeFromId))
     .route("/nextpage/{blogId}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
+    .wrap(Authentication{})
     .route("/create", web::post().to(blog::create))
     .route("/delete/{deleteId}", web::post().to(blog::delete))
     .route("/update", web::post().to(blog::update))
