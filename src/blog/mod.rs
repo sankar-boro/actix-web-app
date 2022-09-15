@@ -5,8 +5,10 @@ mod update;
 
 pub use create::create;
 pub use read::{
-    getAllNodesFromBlogId,
-    getAllBlogs
+    getBlogsWithPageSize,
+    getNextBlogsWithPageSize,
+    getBlogNodesWithPageSizeFromId,
+    getNextBlogNodesWithPageSizeFromId
 };
 pub use delete::delete;
 pub use update::update;

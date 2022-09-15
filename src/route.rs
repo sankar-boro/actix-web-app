@@ -33,8 +33,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/update", web::post().to(user::update))
   );
   //
-  config.route("/books", web::get().to(book::getAllBooks));
-  config.route("/books/next", web::post().to(book::getNextBooks));
+  config.route("/books", web::get().to(book::getBooksWithPageSize));
+  config.route("/books/next", web::post().to(book::getNextBooksWithPageSize));
   config.service(
     web::scope("/author/books")
     // .wrap(Authentication{})
@@ -43,8 +43,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.service(
     web::scope("/book")
     .wrap(Authentication{})
-    .route("/get/{bookId}", web::get().to(book::getAllNodesFromBookId))
-    .route("/nextpage/{bookId}", web::post().to(book::getNextPage))
+    .route("/get/{bookId}", web::get().to(book::getBookNodesWithPageSizeFromId))
+    .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
     .route("/create", web::post().to(book::create))
     .route("/create/new_session", web::post().to(book::create_book_sessionv2))
     .route("/delete/{deleteId}", web::post().to(book::delete))
@@ -60,11 +60,13 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/update", web::post().to(booknode::update))
   );
   //
-  config.route("/blogs", web::get().to(blog::getAllBlogs));
+  config.route("/blogs", web::get().to(blog::getBlogsWithPageSize));
+  config.route("/blogs/next", web::post().to(blog::getNextBlogsWithPageSize));
   config.service(
     web::scope("/blog")
     .wrap(Authentication{})
-    .route("/get/{blogId}", web::get().to(blog::getAllNodesFromBlogId))
+    .route("/get/{blogId}", web::get().to(blog::getBlogNodesWithPageSizeFromId))
+    .route("/nextpage/{blogId}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
     .route("/create", web::post().to(blog::create))
     .route("/delete/{deleteId}", web::post().to(blog::delete))
     .route("/update", web::post().to(blog::update))
