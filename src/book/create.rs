@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::{App};
 use validator::Validate;
-use lily_utils::time_uuid;
 use scylla::{
     batch::Batch,
     macros::FromRow
@@ -26,13 +25,11 @@ pub struct ParentResponse {
     bookId: String,
     uniqueId: String,
     parentId: Option<String>,
+    authorId: String,
     title: String,
     body: String,
     url: String,
     identity: i16,
-    authorId: String,
-    fname: String,
-    lname: String,
     metadata: String,
     createdAt: String,
     updatedAt: String,
@@ -105,8 +102,6 @@ pub async fn create(
             url: image_url.clone(),
             identity,
             authorId: auth_id.to_string(),
-            fname: auth.fname.clone(),
-            lname: auth.lname.clone(),
             metadata: request.metadata.clone(),
             createdAt: request.uniqueId.clone(),
             updatedAt: request.uniqueId.clone(),

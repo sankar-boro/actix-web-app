@@ -14,6 +14,7 @@ pub struct BlogMetadata {
     authorId: Uuid,
     title: String,
     body: String,
+    url: String,
     metadata: String,
     createdAt: Uuid,
     updatedAt: Uuid,
@@ -26,7 +27,7 @@ pub struct BlogsMetadataResponse {
 }
 
 // cannot use * when getting all documents;
-static BLOGS_QUERY: &'static str = "SELECT blogId, authorId, title, body, metadata, createdAt, updatedAt from sankar.blogs";
+static BLOGS_QUERY: &'static str = "SELECT blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.blogs";
 pub async fn getBlogsWithPageSize(
     app: web::Data<App>
 ) 
@@ -99,11 +100,10 @@ pub struct BlogNode {
     uniqueId: Uuid,
     parentId: Option<Uuid>,
     authorId: Option<Uuid>,
-    fname: Option<String>,
-    lname: Option<String>,
     title: String,
     body: String,
     identity: i16,
+    url: Option<String>,
     createdAt: Uuid,
     updatedAt: Uuid,
 }
@@ -114,7 +114,7 @@ pub struct BlogNodesResponse {
     page: Option<Vec<u8>>,
 }
 
-static GET_BLOG_NODES_WITH_PAGE_SIZE: &'static str = "SELECT blogId, uniqueId, parentId, authorId, fname, lname, title, body, identity, createdAt, updatedAt from sankar.blog WHERE blogId=";
+static GET_BLOG_NODES_WITH_PAGE_SIZE: &'static str = "SELECT blogId, uniqueId, parentId, authorId, title, body, identity, url, createdAt, updatedAt from sankar.blog WHERE blogId=";
 pub async fn getBlogNodesWithPageSizeFromId(
     app: web::Data<App>, 
     blog_id: web::Path<String>

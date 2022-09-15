@@ -1,6 +1,5 @@
 use actix_session::Session;
 use actix_web::{HttpResponse, web};
-use lily_utils::time_uuid;
 use serde::{Deserialize, Serialize};
 use crate::App;
 use uuid::Uuid;
@@ -80,7 +79,7 @@ pub async fn create(
 
     let batch_values = (
         (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id),
-        (&unique_id, &unique_id, &auth_id, &auth.fname, &auth.lname, &request.title, &body, &identity, &unique_id, &unique_id),
+        (&unique_id, &unique_id, &auth_id, &request.title, &body, &image_url, &identity, &request.metadata, &unique_id, &unique_id),
         (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
     );
 
@@ -101,15 +100,4 @@ pub async fn create(
             updatedAt: request.uniqueId.clone(),
         })
     )
-}
-
-
-#[derive(Serialize)]
-pub struct SessionResponse {
-    uniqueId: String,
-}
-pub async fn create_blog_sessionv2() -> Result<HttpResponse, crate::AppError> {
-    Ok(HttpResponse::Ok().json(SessionResponse{
-        uniqueId: time_uuid().to_string()
-    }))
 }

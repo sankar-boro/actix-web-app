@@ -11,7 +11,7 @@ use crate::utils::{
 #[derive(FromRow, Serialize)]
 pub struct BookMetadata {
     bookId: Uuid,
-    authorId: Option<Uuid>,
+    authorId: Uuid,
     title: String,
     body: String,
     url: String,
