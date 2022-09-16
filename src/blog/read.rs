@@ -14,7 +14,7 @@ pub struct BlogMetadata {
     authorId: Uuid,
     title: String,
     body: String,
-    url: String,
+    url: Option<String>,
     metadata: String,
     createdAt: Uuid,
     updatedAt: Uuid,
@@ -63,13 +63,12 @@ pub struct NextPageRequest {
 }
 
 // cannot use * when getting all documents;
-static BLOGS_NEXT_QUERY: &'static str = "SELECT blogId, authorId, title, body, metadata, createdAt, updatedAt from sankar.blogs";
 pub async fn getNextBlogsWithPageSize(
     app: web::Data<App>, 
     request: web::Json<NextPageRequest>
 ) 
 -> Result<HttpResponse, crate::AppError> {
-    let query = Query::new(BLOGS_NEXT_QUERY).with_page_size(4);
+    let query = Query::new(BLOGS_QUERY).with_page_size(4);
     let documents = 
     app.query_paged(query, &[], request.page.clone())
     .await?;
@@ -82,7 +81,7 @@ pub async fn getNextBlogsWithPageSize(
                 None => None,
             };
             Ok(HttpResponse::Ok().json(BlogsMetadataResponse{
-                blogs: blogs,
+                blogs,
                 page
             }))
         },
