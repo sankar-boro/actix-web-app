@@ -13,6 +13,11 @@ pub use read::{
     getBookNodesWithPageSizeFromId,
     getNextBookNodesWithPageSizeFromId
 };
-pub use user::getAllNodesFromAuthorId;
+pub use user::{
+    getPagedBooksForAuthorId, 
+    getPagedBlogsForAuthorId,
+    getNextPageBooksForAuthorId, 
+    getNextPageBlogsForAuthorId,
+};
 pub use delete::delete;
 pub use update::update;

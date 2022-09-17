@@ -37,9 +37,12 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/books", web::get().to(book::getBooksWithPageSize));
   config.route("/books/next", web::post().to(book::getNextBooksWithPageSize));
   config.service(
-    web::scope("/author/books")
+    web::scope("/author")
     // .wrap(Authentication{})
-    .route("/get/{author_id}", web::get().to(book::getAllNodesFromAuthorId))
+    .route("/books/get/{author_id}", web::get().to(book::getPagedBooksForAuthorId))
+    .route("/blogs/get/{author_id}", web::get().to(book::getPagedBlogsForAuthorId))
+    .route("/books/get/{author_id}", web::get().to(book::getNextPageBooksForAuthorId))
+    .route("/blogs/get/{author_id}", web::get().to(book::getNextPageBlogsForAuthorId))
   );
   config.route("/create/sessionv2", web::post().to(common::create_sessionv2));
   config.service(
