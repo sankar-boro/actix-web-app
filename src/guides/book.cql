@@ -38,5 +38,17 @@ CREATE TABLE userbooks (
     updatedAt timeuuid,
     PRIMARY KEY (authorId, bookId)
 );
+CREATE TABLE categorybooks (
+    category text,
+    bookId timeuuid,
+    authorId timeuuid,
+    title varchar,
+    body text,
+    url text,
+    metadata text,
+    createdAt timeuuid,
+    updatedAt timeuuid,
+    PRIMARY KEY (category, bookId)
+);
 
 SELECT COUNT(*) FROM books;

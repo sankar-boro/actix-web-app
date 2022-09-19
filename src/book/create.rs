@@ -2,7 +2,7 @@ use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{App};
+use crate::{App, query::{CREATE_BOOKS, CREATE_BOOK, CREATE_USER_BOOKS, CREATE_CATEGORY_BOOKS}};
 use validator::Validate;
 use scylla::{
     batch::Batch,
@@ -17,6 +17,7 @@ pub struct ParentRequest {
     body: Option<String>,
     metadata: String,
     uniqueId: String,
+    category: String,
     image_url: Option<String>,
 }
 
@@ -35,25 +36,6 @@ pub struct ParentResponse {
     updatedAt: String,
 }
 
-pub static CREATE_BOOKS: &str = "INSERT INTO sankar.books (
-    bookId, authorId, title, body, url, metadata, createdAt, updatedAt
-) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
-)";
-/**
- * We dont include parentId, because the first node is the parent node.
- */
-pub static CREATE_BOOK: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, authorId, title, body, url, identity, metadata, createdAt, updatedAt
-) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-)";
-pub static CREATE_USER_BOOKS: &str = "INSERT INTO sankar.userbooks (
-    bookId, authorId, title, body, url, metadata, createdAt, updatedAt
-) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
-)";
-
 pub async fn create(
     app: web::Data<App>,
     // search: web::Data<Mutex<IndexHandler>>, 
@@ -66,6 +48,7 @@ pub async fn create(
     batch.append_statement(CREATE_BOOKS);
     batch.append_statement(CREATE_BOOK);
     batch.append_statement(CREATE_USER_BOOKS);
+    batch.append_statement(CREATE_CATEGORY_BOOKS);
     let identity: i16 = 101;
 
     let mut body = String::from("");
@@ -84,7 +67,8 @@ pub async fn create(
     let batch_values = (
         (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id),
         (&unique_id, &unique_id, &auth_id, &request.title, &body, &image_url, &identity, &request.metadata, &unique_id, &unique_id),
-        (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
+        (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id),
+        (&request.category, &unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
     );
 
     app.batch(&batch, &batch_values).await?;
