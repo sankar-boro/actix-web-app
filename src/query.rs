@@ -28,10 +28,17 @@ pub static CREATE_USER_BOOKS: &str = "INSERT INTO sankar.userbooks (
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?
 )";
+
 pub static CREATE_CATEGORY_BOOKS: &str = "INSERT INTO sankar.categorybooks (
     category, bookId, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?, ?
+)";
+
+pub static CREATE_USER_CATEGORIES: &str = "INSERT INTO sankar.usercategories (
+    authorId, category, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?
 )";
 
 // pub static CREATE_USER_SESSION: &str = "INSERT INTO sankar.session (

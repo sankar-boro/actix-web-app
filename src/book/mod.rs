@@ -11,7 +11,9 @@ pub use read::{
     getBooksWithPageSize,
     getNextBooksWithPageSize,
     getBookNodesWithPageSizeFromId,
-    getNextBookNodesWithPageSizeFromId
+    getNextBookNodesWithPageSizeFromId,
+    getBooksWithPageSizeCategories,
+    getBooksWithPageSizeCategoriesNext
 };
 pub use user::{
     getPagedBooksForAuthorId, 

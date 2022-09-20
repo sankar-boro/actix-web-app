@@ -23,6 +23,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
   );
   config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.route("/users", web::post().to(user::users));
+  config.route("/categories", web::get().to(user::get_categories));
+  config.route("/user_categories", web::get().to(user::get_user_categories));
   
   // #search
   // config.route("/search/{query}", web::get().to(search::search_fn));
@@ -32,6 +34,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .wrap(Authentication{})
     .route("/get/{userId}", web::get().to(user::get))
     .route("/update", web::post().to(user::update))
+    .route("/create_categories", web::post().to(user::create_categories))
   );
   //
   config.route("/books", web::get().to(book::getBooksWithPageSize));
@@ -48,12 +51,15 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.service(
     web::scope("/book")
     .route("/get/{bookId}", web::get().to(book::getBookNodesWithPageSizeFromId))
+    .route("/category/{category}", web::get().to(book::getBooksWithPageSizeCategories))
+    .route("/category_next/{category}", web::post().to(book::getBooksWithPageSizeCategoriesNext))
     .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
     .wrap(Authentication{})
     .route("/create", web::post().to(book::create))
     .route("/delete/{deleteId}", web::post().to(book::delete))
     .route("/update", web::post().to(book::update))
   );
+  
   config.service(
     web::scope("/booknode")
     .wrap(Authentication{})

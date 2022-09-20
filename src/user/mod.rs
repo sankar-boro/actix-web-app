@@ -6,6 +6,7 @@ mod login;
 mod logout;
 mod queries;
 mod users;
+mod category;
 
 pub use signup::signup;
 pub use get::{get, user_session};
@@ -14,3 +15,4 @@ pub use update::update;
 pub use login::login;
 pub use logout::logout_user;
 pub use users::users;
+pub use category::{create_categories, get_categories, get_user_categories};
