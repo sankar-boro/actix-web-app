@@ -5,5 +5,5 @@ CREATE TABLE usercategories (
     category varchar,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (authorId)
+    PRIMARY KEY (authorId, category)
 );
