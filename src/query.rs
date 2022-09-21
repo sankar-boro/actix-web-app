@@ -47,6 +47,8 @@ pub static ADD_CATEGORY: &str = "INSERT INTO sankar.usercategories (
     ?, ?, ?, ?
 )";
 
+pub static DELETE_CATEGORY: &str = "DELETE FROM sankar.usercategories WHERE authorId=? AND category=?";
+
 // pub static CREATE_USER_SESSION: &str = "INSERT INTO sankar.session (
 //     userId, sessionId, createdAt, updatedAt
 // ) VALUES(

@@ -22,6 +22,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/session", web::get().to(user::user_session))
     .wrap(Authentication{})
     .route("/add_category", web::post().to(user::add_category))
+    .route("/delete_category", web::post().to(user::delete_category))
   );
   config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.route("/users", web::post().to(user::users));
