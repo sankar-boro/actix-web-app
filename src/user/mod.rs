@@ -15,4 +15,4 @@ pub use update::update;
 pub use login::login;
 pub use logout::logout_user;
 pub use users::users;
-pub use category::{create_categories, get_categories, get_user_categories};
+pub use category::{add_category, get_categories, get_user_categories};

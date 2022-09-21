@@ -3,38 +3,33 @@ use actix_web::{HttpResponse, web};
 use lily_utils::time_uuid;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{App, query::{CREATE_USER_CATEGORIES}, utils::GetQueryResult};
+use crate::{App, query::{ADD_CATEGORY}, utils::GetQueryResult};
 use validator::Validate;
 use scylla::{
-    batch::Batch,
     macros::FromRow,
     query::Query
 };
 use crate::auth::AuthSession;
-// use jsonwebtoken::{encode, Algorithm, Header, EncodingKey};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct UserCategoryRequest {
-    category: Vec<String>,
+    category: String,
 }
 
-pub async fn create_categories(
+pub async fn add_category(
     app: web::Data<App>,
     request: web::Json<UserCategoryRequest>,
     session: Session
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
-    let mut batch: Batch = Default::default();
-    batch.append_statement(CREATE_USER_CATEGORIES);
+
     let auth = session.user_info()?;
     let auth_id = Uuid::parse_str(&auth.userId)?;
     let unique_id = time_uuid();
-    let categories = serde_json::to_string(&request.category)?;
-    let batch_values = (
-        (&auth_id, &auth_id, &categories, &unique_id, &unique_id),
-    );
-    app.batch(&batch, &batch_values).await?;
+    let _ = app
+    .query(ADD_CATEGORY, (&auth_id, &request.category, &unique_id, &unique_id))
+    .await?;
     Ok(
         HttpResponse::Ok().body("Ok")
     )
@@ -42,7 +37,7 @@ pub async fn create_categories(
 
 #[derive(FromRow, Serialize)]
 pub struct Category {
-    category: Uuid,
+    category: String,
 }
 
 #[derive(Serialize)]

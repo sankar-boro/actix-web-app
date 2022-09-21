@@ -35,7 +35,13 @@ pub static CREATE_CATEGORY_BOOKS: &str = "INSERT INTO sankar.categorybooks (
     ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
-pub static CREATE_USER_CATEGORIES: &str = "INSERT INTO sankar.usercategories (
+// pub static CREATE_USER_CATEGORIES: &str = "INSERT INTO sankar.usercategories (
+//     authorId, category, createdAt, updatedAt
+// ) VALUES(
+//     ?, ?, ?, ?
+// )";
+
+pub static ADD_CATEGORY: &str = "INSERT INTO sankar.usercategories (
     authorId, category, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?

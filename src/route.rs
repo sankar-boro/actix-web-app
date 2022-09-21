@@ -20,6 +20,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.service(
     web::scope("/user")
     .route("/session", web::get().to(user::user_session))
+    .wrap(Authentication{})
+    .route("/add_category", web::post().to(user::add_category))
   );
   config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
   config.route("/users", web::post().to(user::users));
@@ -34,7 +36,6 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .wrap(Authentication{})
     .route("/get/{userId}", web::get().to(user::get))
     .route("/update", web::post().to(user::update))
-    .route("/create_categories", web::post().to(user::create_categories))
   );
   //
   config.route("/books", web::get().to(book::getBooksWithPageSize));
