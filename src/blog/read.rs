@@ -175,3 +175,102 @@ pub async fn getNextBlogNodesWithPageSizeFromId(
         },
     }
 }
+
+
+#[derive(FromRow, Serialize)]
+pub struct CategoryBlogMetadata {
+    category: String,
+    blogId: Uuid,
+    authorId: Uuid,
+    title: String,
+    body: String,
+    url: String,
+    metadata: String,
+    createdAt: Uuid,
+    updatedAt: Uuid,
+}
+
+#[derive(Serialize)]
+pub struct CategoryBlogsMetadataResponse {
+    blogs: Vec<CategoryBlogMetadata>,
+    page: Option<Vec<u8>>,
+}
+
+// cannot use * when getting all documents;
+static BOOKS_QUERY_CATEGORY: &'static str = "SELECT category, blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.categoryblogs WHERE category";
+pub async fn getBlogsWithPageSizeCategories(
+    app: web::Data<App>,
+    category: web::Path<String>,
+) 
+-> Result<HttpResponse, crate::AppError> 
+{
+    let mut categories = String::from("");
+    let split_categories: Vec<&str> = category.split('-').collect();
+    for (c_index, category) in split_categories.iter().enumerate() {
+        if c_index != split_categories.len() - 1 {
+            categories.push_str(&format!("'{}',", category));
+        } else {
+            categories.push_str(&format!("'{}'", category));
+        }
+    }
+
+    let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
+    let query = Query::new(query).with_page_size(4);
+    let documents = app.query(query, &[])
+    .await?;
+    let page = documents.paging_state.clone();
+    let documents: Option<Vec<CategoryBlogMetadata>> = documents.get_query_result()?;
+    match documents {
+        Some(docs) => {
+            let page = match page {
+                Some(page) => Some(page.to_vec()),
+                None => None,
+            };
+            Ok(HttpResponse::Ok().json(CategoryBlogsMetadataResponse{blogs: docs, page }))
+        },
+        None => {
+            let x: Vec<CategoryBlogMetadata> = Vec::new();
+            let y = CategoryBlogsMetadataResponse{blogs: x, page: None };
+            Ok(HttpResponse::Ok().json(y))
+        },
+    }
+}
+
+pub async fn getBlogsWithPageSizeCategoriesNext(
+    app: web::Data<App>,
+    category: web::Path<String>,
+    request: web::Json<NextPageRequest>,
+) 
+-> Result<HttpResponse, crate::AppError> 
+{
+    let mut categories = String::from("");
+    let split_categories: Vec<&str> = category.split('-').collect();
+    for (c_index, category) in split_categories.iter().enumerate() {
+        if c_index != split_categories.len() - 1 {
+            categories.push_str(&format!("'{}',", category));
+        } else {
+            categories.push_str(&format!("'{}'", category));
+        }
+    }
+
+    let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
+    let query = Query::new(query).with_page_size(4);
+    let documents = app.query_paged(query, &[], request.page.clone())
+    .await?;
+    let page = documents.paging_state.clone();
+    let documents: Option<Vec<CategoryBlogMetadata>> = documents.get_query_result()?;
+    match documents {
+        Some(docs) => {
+            let page = match page {
+                Some(page) => Some(page.to_vec()),
+                None => None,
+            };
+            Ok(HttpResponse::Ok().json(CategoryBlogsMetadataResponse{blogs: docs, page }))
+        },
+        None => {
+            let x: Vec<CategoryBlogMetadata> = Vec::new();
+            let y = CategoryBlogsMetadataResponse{blogs: x, page: None };
+            Ok(HttpResponse::Ok().json(y))
+        },
+    }
+}

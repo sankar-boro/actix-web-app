@@ -54,3 +54,31 @@ pub static DELETE_CATEGORY: &str = "DELETE FROM sankar.usercategories WHERE auth
 // ) VALUES(
 //     ?, ?, ?, ?
 // )";
+
+pub static CREATE_BLOGS: &str = "INSERT INTO sankar.blogs (
+    blogId, authorId, title, body, url, metadata, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?
+)";
+pub static CREATE_BLOG: &str = "INSERT INTO sankar.blog (
+    blogId, uniqueId, authorId, title, body, url, identity, metadata, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+)";
+pub static CREATE_USER_BLOGS: &str = "INSERT INTO sankar.userblogs (
+    blogId, authorId, title, body, url, metadata, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?
+)";
+
+pub static CREATE_CATEGORY_BLOGS: &str = "INSERT INTO sankar.categoryblogs (
+    category, blogId, authorId, title, body, url, metadata, createdAt, updatedAt
+) VALUES(
+    ?, ?, ?, ?, ?, ?, ?, ?, ?
+)";
+
+pub static CREATE_ALLCATEGORY: &str = "INSERT INTO sankar.allcategories (
+    category
+) VALUES(
+    ?
+) IF NOT EXISTS";

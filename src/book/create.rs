@@ -2,7 +2,10 @@ use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{App, query::{CREATE_BOOKS, CREATE_BOOK, CREATE_USER_BOOKS, CREATE_CATEGORY_BOOKS}};
+use crate::{
+    App, 
+    query::{CREATE_BOOKS, CREATE_BOOK, CREATE_USER_BOOKS, CREATE_CATEGORY_BOOKS, CREATE_ALLCATEGORY }
+};
 use validator::Validate;
 use scylla::{
     batch::Batch,
@@ -72,6 +75,7 @@ pub async fn create(
     );
 
     app.batch(&batch, &batch_values).await?;
+    app.query(CREATE_ALLCATEGORY, (&request.category, )).await?;
 
     // let a = &mut search.try_lock().unwrap();
     // a.create_document(&request.title, &request.body);

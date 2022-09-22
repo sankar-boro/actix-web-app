@@ -2,7 +2,7 @@ use sankar;
 DROP TABLE IF EXISTS blog;
 DROP TABLE IF EXISTS blogs;
 DROP TABLE IF EXISTS userblogs;
-
+DROP TABLE IF EXISTS categoryblogs;
 CREATE TABLE blogs (
     blogId timeuuid,
     authorId timeuuid,
@@ -37,5 +37,19 @@ CREATE TABLE userblogs (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (authorId)
+    PRIMARY KEY (authorId, blogId)
 );
+CREATE TABLE categoryblogs (
+    category text,
+    blogId timeuuid,
+    authorId timeuuid,
+    title varchar,
+    body text,
+    url text,
+    metadata text,
+    createdAt timeuuid,
+    updatedAt timeuuid,
+    PRIMARY KEY (category, blogId)
+);
+
+SELECT COUNT(*) FROM blogs;

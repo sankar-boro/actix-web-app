@@ -1,7 +1,10 @@
 use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
-use crate::App;
+use crate::{
+    App,
+    query::{ CREATE_BLOGS, CREATE_BLOG, CREATE_USER_BLOGS, CREATE_CATEGORY_BLOGS, CREATE_ALLCATEGORY }
+};
 use uuid::Uuid;
 use scylla::{
     batch::Batch,
@@ -16,6 +19,7 @@ pub struct ParentRequest {
     body: Option<String>,
     metadata: String,
     uniqueId: String,
+    category: String,
     image_url: Option<String>,
 }
 
@@ -24,31 +28,15 @@ pub struct ParentResponse {
     blogId: String,
     uniqueId: String,
     parentId: Option<String>,
+    authorId: String,
     title: String,
     body: String,
-    authorId: String,
+    url: String,
     identity: i16,
-    fname: String,
-    lname: String,
+    metadata: String,
     createdAt: String,
     updatedAt: String,
 }
-
-pub static CREATE_BLOGS: &str = "INSERT INTO sankar.blogs (
-    blogId, authorId, title, body, url, metadata, createdAt, updatedAt
-) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
-)";
-pub static CREATE_BLOG: &str = "INSERT INTO sankar.blog (
-    blogId, uniqueId, authorId, title, body, url, identity, metadata, createdAt, updatedAt
-) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-)";
-pub static CREATE_USER_BLOGS: &str = "INSERT INTO sankar.userblogs (
-    blogId, authorId, title, body, url, metadata, createdAt, updatedAt
-) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
-)";
 
 pub async fn create(
     app: web::Data<App>, 
@@ -61,11 +49,11 @@ pub async fn create(
     batch.append_statement(CREATE_BLOGS);
     batch.append_statement(CREATE_BLOG);
     batch.append_statement(CREATE_USER_BLOGS);
-    let identity: i16 = 101;
+    batch.append_statement(CREATE_CATEGORY_BLOGS);
 
+    let identity: i16 = 101;
     let mut body = String::from("");
     let mut image_url = String::from("");
-
     if let Some(b) = &request.body {
         body = b.to_owned();
     }
@@ -76,15 +64,14 @@ pub async fn create(
     let auth = session.user_info()?;
     let auth_id = &auth.userId.to_uuid()?;
     let unique_id = Uuid::parse_str(&request.uniqueId)?;
-
     let batch_values = (
         (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id),
         (&unique_id, &unique_id, &auth_id, &request.title, &body, &image_url, &identity, &request.metadata, &unique_id, &unique_id),
-        (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
+        (&unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id),
+        (&request.category, &unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
     );
-
     app.batch(&batch, &batch_values).await?;
-
+    app.query(CREATE_ALLCATEGORY, (&request.category, )).await?;
     Ok(
         HttpResponse::Ok().json(ParentResponse {
             blogId: request.uniqueId.clone(),
@@ -92,10 +79,10 @@ pub async fn create(
             parentId: None,
             title: request.title.clone(),
             body: body.clone(),
+            url: image_url.clone(),
             identity,
             authorId: auth_id.to_string(),
-            fname: auth.fname.clone(),
-            lname: auth.lname.clone(),
+            metadata: request.metadata.clone(),
             createdAt: request.uniqueId.clone(),
             updatedAt: request.uniqueId.clone(),
         })

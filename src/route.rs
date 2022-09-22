@@ -14,31 +14,38 @@ async fn home() -> HttpResponse {
 }
 
 pub fn routes(config: &mut web::ServiceConfig) {
+  // #search
+  // config.route("/search/{query}", web::get().to(search::search_fn));
+  // basic
   config.route("/", web::get().to(home));
   config.route("/login", web::post().to(user::login));
   config.route("/signup", web::post().to(user::signup));
+
+  // auth
+  config.service(
+    web::scope("/auth")
+    .wrap(Authentication{})
+    .route("/logout", web::post().to(user::logout_user))
+  );
+
+  // image
+  config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
+
+  // user
   config.service(
     web::scope("/user")
     .route("/session", web::get().to(user::user_session))
     .wrap(Authentication{})
-    .route("/add_category", web::post().to(user::add_category))
-    .route("/delete_category", web::post().to(user::delete_category))
-  );
-  config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
-  config.route("/users", web::post().to(user::users));
-  config.route("/categories", web::get().to(user::get_categories));
-  config.route("/user_categories", web::get().to(user::get_user_categories));
-  
-  // #search
-  // config.route("/search/{query}", web::get().to(search::search_fn));
-
-  config.service(
-    web::scope("/user")
-    .wrap(Authentication{})
     .route("/get/{userId}", web::get().to(user::get))
     .route("/update", web::post().to(user::update))
+    .route("/add_category", web::post().to(user::add_category))
+    .route("/get_category", web::get().to(user::get_categories))
+    .route("/delete_category", web::post().to(user::delete_category))
+    .route("/user_categories", web::get().to(user::get_user_categories))
   );
-  //
+  config.route("/users", web::post().to(user::users));
+  
+  // book
   config.route("/books", web::get().to(book::getBooksWithPageSize));
   config.route("/books/next", web::post().to(book::getNextBooksWithPageSize));
   config.service(
@@ -77,6 +84,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.service(
     web::scope("/blog")
     .route("/get/{blogId}", web::get().to(blog::getBlogNodesWithPageSizeFromId))
+    .route("/category/{category}", web::get().to(blog::getBlogsWithPageSizeCategories))
+    .route("/category_next/{category}", web::post().to(blog::getBlogsWithPageSizeCategoriesNext))
     .route("/nextpage/{blogId}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
     .wrap(Authentication{})
     .route("/create", web::post().to(blog::create))
@@ -91,12 +100,6 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/delete", web::post().to(blognode::delete))
     .route("/delete/update", web::post().to(blognode::deleteAndUpdate))
     .route("/update", web::post().to(blognode::update))
-  );
-  //
-  config.service(
-    web::scope("")
-    .wrap(Authentication{})
-    .route("/logout", web::post().to(user::logout_user))
   );
 
 }

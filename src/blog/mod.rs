@@ -8,7 +8,9 @@ pub use read::{
     getBlogsWithPageSize,
     getNextBlogsWithPageSize,
     getBlogNodesWithPageSizeFromId,
-    getNextBlogNodesWithPageSizeFromId
+    getNextBlogNodesWithPageSizeFromId,
+    getBlogsWithPageSizeCategories,
+    getBlogsWithPageSizeCategoriesNext
 };
 pub use delete::delete;
 pub use update::update;
