@@ -71,7 +71,7 @@ pub async fn create(
         (&request.category, &unique_id, &auth_id, &request.title, &body, &image_url, &request.metadata, &unique_id, &unique_id)
     );
     app.batch(&batch, &batch_values).await?;
-    app.query(CREATE_ALLCATEGORY, (&request.category, )).await?;
+    app.query(CREATE_ALLCATEGORY, (&request.category, "demo")).await?;
     Ok(
         HttpResponse::Ok().json(ParentResponse {
             blogId: request.uniqueId.clone(),

@@ -39,11 +39,11 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/get/{userId}", web::get().to(user::get))
     .route("/update", web::post().to(user::update))
     .route("/add_category", web::post().to(user::add_category))
-    .route("/get_category", web::get().to(user::get_categories))
     .route("/delete_category", web::post().to(user::delete_category))
     .route("/user_categories", web::get().to(user::get_user_categories))
   );
   config.route("/users", web::post().to(user::users));
+  config.route("/all_category", web::get().to(user::get_all_category));
   
   // book
   config.route("/books", web::get().to(book::getBooksWithPageSize));

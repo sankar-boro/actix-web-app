@@ -64,13 +64,13 @@ pub struct CategoryResponse {
     page: Option<Vec<u8>>,
 }
 
-static GET_CATEGORIES: &'static str = "SELECT DISTINCT category from sankar.categorybooks";
-pub async fn get_categories(
+static GET_CATEGORIES: &'static str = "SELECT category from sankar.allcategories";
+pub async fn get_all_category(
     app: web::Data<App>
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
-    let query = Query::new(GET_CATEGORIES).with_page_size(4);
+    let query = Query::new(GET_CATEGORIES).with_page_size(50);
     let documents = app.query(query, &[])
     .await?;
     let page = documents.paging_state.clone();

@@ -17,5 +17,5 @@ pub use logout::logout_user;
 pub use users::users;
 pub use category::{
     add_category, delete_category,
-    get_categories, get_user_categories
+    get_all_category, get_user_categories
 };

@@ -75,7 +75,7 @@ pub async fn create(
     );
 
     app.batch(&batch, &batch_values).await?;
-    app.query(CREATE_ALLCATEGORY, (&request.category, )).await?;
+    app.query(CREATE_ALLCATEGORY, (&request.category, "demo")).await?;
 
     // let a = &mut search.try_lock().unwrap();
     // a.create_document(&request.title, &request.body);
