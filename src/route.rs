@@ -53,15 +53,15 @@ pub fn routes(config: &mut web::ServiceConfig) {
     // .wrap(Authentication{})
     .route("/books/get/{author_id}", web::get().to(book::getPagedBooksForAuthorId))
     .route("/blogs/get/{author_id}", web::get().to(book::getPagedBlogsForAuthorId))
-    .route("/books/get/{author_id}", web::get().to(book::getNextPageBooksForAuthorId))
-    .route("/blogs/get/{author_id}", web::get().to(book::getNextPageBlogsForAuthorId))
+    .route("/next_books/get/{author_id}", web::post().to(book::getNextPageBooksForAuthorId))
+    .route("/next_blogs/get/{author_id}", web::post().to(book::getNextPageBlogsForAuthorId))
   );
   config.route("/create/sessionv2", web::post().to(common::create_sessionv2));
   config.service(
     web::scope("/book")
     .route("/get/{bookId}", web::get().to(book::getBookNodesWithPageSizeFromId))
     .route("/category/{category}", web::get().to(book::getBooksWithPageSizeCategories))
-    .route("/category_next/{category}", web::post().to(book::getBooksWithPageSizeCategoriesNext))
+    .route("/next_category/{category}", web::post().to(book::getBooksWithPageSizeCategoriesNext))
     .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
     .wrap(Authentication{})
     .route("/create", web::post().to(book::create))
@@ -85,7 +85,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     web::scope("/blog")
     .route("/get/{blogId}", web::get().to(blog::getBlogNodesWithPageSizeFromId))
     .route("/category/{category}", web::get().to(blog::getBlogsWithPageSizeCategories))
-    .route("/category_next/{category}", web::post().to(blog::getBlogsWithPageSizeCategoriesNext))
+    .route("/next_category/{category}", web::post().to(blog::getBlogsWithPageSizeCategoriesNext))
     .route("/nextpage/{blogId}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
     .wrap(Authentication{})
     .route("/create", web::post().to(blog::create))
