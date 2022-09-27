@@ -65,7 +65,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
     .wrap(Authentication{})
     .route("/create", web::post().to(book::create))
-    .route("/delete/{deleteId}", web::post().to(book::delete))
+    .route("/delete/{deleteId}/{category}", web::post().to(book::delete))
     .route("/update", web::post().to(book::update))
   );
   
@@ -89,7 +89,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/nextpage/{blogId}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
     .wrap(Authentication{})
     .route("/create", web::post().to(blog::create))
-    .route("/delete/{deleteId}", web::post().to(blog::delete))
+    .route("/delete/{deleteId}/{category}", web::post().to(blog::delete))
     .route("/update", web::post().to(blog::update))
   );
   config.service(

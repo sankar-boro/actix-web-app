@@ -88,6 +88,7 @@ async fn start_server(app: App) -> Result<()> {
                 RedisSession::new("127.0.0.1:6379", &[0; 32])
                 .cookie_name("lily-session")
                 .cookie_http_only(true)
+                .ttl(86400)
             )
             .app_data(web::Data::new(app.clone()))
             // .app_data(Data::clone(&search))
