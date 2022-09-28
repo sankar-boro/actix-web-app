@@ -22,7 +22,6 @@ pub async fn update(
     app: web::Data<App>, 
     payload: web::Json<UpdateRequest>,
     session: Session
-
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {   
@@ -34,8 +33,8 @@ pub async fn update(
     let mut batch: Batch = Default::default();
     let bookQuery = Query::from(format!("UPDATE sankar.book SET title=?, body=? WHERE bookId=? AND uniqueId=?"));
     let booksQuery = Query::from(format!("UPDATE sankar.books SET title=?, body=? WHERE bookId=?"));
-    let userBooksQuery = Query::from(format!("UPDATE sankar.userbooks SET title=?, body=? WHERE authorId=? AND bookId IN (?)"));
-    let categoryBooksQuery = Query::from(format!("UPDATE sankar.categorybooks SET title=?, body=? WHERE category=? AND bookId IN (?)"));
+    let userBooksQuery = Query::from(format!("UPDATE sankar.userbooks SET title=?, body=? WHERE authorId=? AND bookId=?"));
+    let categoryBooksQuery = Query::from(format!("UPDATE sankar.categorybooks SET title=?, body=? WHERE category=? AND bookId=?"));
 
     batch.append_statement(bookQuery);
     batch.append_statement(booksQuery);
