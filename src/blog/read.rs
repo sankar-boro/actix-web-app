@@ -102,6 +102,7 @@ pub struct BlogNode {
     title: String,
     body: String,
     identity: i16,
+    metadata: String,
     url: Option<String>,
     createdAt: Uuid,
     updatedAt: Uuid,
@@ -113,7 +114,7 @@ pub struct BlogNodesResponse {
     page: Option<Vec<u8>>,
 }
 
-static GET_BLOG_NODES_WITH_PAGE_SIZE: &'static str = "SELECT blogId, uniqueId, parentId, authorId, title, body, identity, url, createdAt, updatedAt from sankar.blog WHERE blogId=";
+static GET_BLOG_NODES_WITH_PAGE_SIZE: &'static str = "SELECT blogId, uniqueId, parentId, authorId, title, body, identity, metadata, url, createdAt, updatedAt from sankar.blog WHERE blogId=";
 pub async fn getBlogNodesWithPageSizeFromId(
     app: web::Data<App>, 
     blog_id: web::Path<String>
