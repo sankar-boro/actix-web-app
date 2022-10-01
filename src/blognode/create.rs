@@ -11,7 +11,6 @@ use crate::utils::ParseUuid;
 pub struct AppendNodeRequest {
     title: String,
     body: String,
-    identity: i16,
     blogId: String,
     topUniqueId: String,
 }
@@ -27,6 +26,7 @@ pub async fn create(
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {   
+    let identity: i16 = 104;
     let new_id = time_uuid();
     let blog_id = payload.blogId.to_uuid()?;
     let top_unique_id = payload.topUniqueId.to_uuid()?;
@@ -37,7 +37,7 @@ pub async fn create(
         &top_unique_id,
         &payload.title,
         &payload.body,
-        &payload.identity,
+        identity,
         &new_id,
         &new_id
     );

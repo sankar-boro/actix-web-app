@@ -10,6 +10,8 @@ use crate::App;
 use validator::Validate;
 use lily_utils::time_uuid;
 use scylla::macros::FromRow;
+use actix_session::Session;
+use crate::{auth::AuthSession};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct MergeNodeRequest {
@@ -28,9 +30,9 @@ pub struct Response {
 
 pub static UPDATE_PARENT_ID: &str = "UPDATE sankar.book SET parentId=? WHERE bookId=? AND uniqueId=?";
 pub static CHILD: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, title, body, identity, createdAt, updatedAt
+    bookId, uniqueId, parentId, authorId, title, body, identity, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 impl MergeNodeRequest {
@@ -42,7 +44,10 @@ impl MergeNodeRequest {
         Ok(app.batch(&batch, batch_values).await?)
     }
 
-    async fn run(&self, app: &App) -> Result<HttpResponse, crate::AppError> {
+    async fn run(&self, app: &App, session: &Session) -> Result<HttpResponse, crate::AppError> {
+        let auth = session.user_info()?;
+        let author_id = Uuid::parse_str(&auth.userId)?;
+
         // Create and parse elements
         let new_id = time_uuid();
         let book_id = Uuid::parse_str(&self.bookId)?;
@@ -55,6 +60,7 @@ impl MergeNodeRequest {
             &book_id,
             &new_id,
             &top_unique_id,
+            &author_id,
             &self.title,
             &self.body,
             &self.identity,
@@ -81,9 +87,11 @@ impl MergeNodeRequest {
 
 pub async fn merge(
     app: web::Data<App>, 
-    payload: web::Json<MergeNodeRequest>
+    payload: web::Json<MergeNodeRequest>,
+    session: Session
+
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {   
-    payload.run(&app).await
+    payload.run(&app, &session).await
 }

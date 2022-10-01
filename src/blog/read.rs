@@ -102,7 +102,7 @@ pub struct BlogNode {
     title: String,
     body: String,
     identity: i16,
-    metadata: String,
+    metadata: Option<String>,
     url: Option<String>,
     createdAt: Uuid,
     updatedAt: Uuid,
@@ -216,7 +216,7 @@ pub async fn getBlogsWithPageSizeCategories(
     }
 
     let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
-    let query = Query::new(query).with_page_size(4);
+    let query = Query::new(query).with_page_size(1);
     let documents = app.query(query, &[])
     .await?;
     let page = documents.paging_state.clone();
@@ -255,7 +255,7 @@ pub async fn getBlogsWithPageSizeCategoriesNext(
     }
 
     let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
-    let query = Query::new(query).with_page_size(4);
+    let query = Query::new(query).with_page_size(1);
     let documents = app.query_paged(query, &[], request.page.clone())
     .await?;
     let page = documents.paging_state.clone();

@@ -49,7 +49,7 @@ static GET_ALL_BOOKS_FROM_ID: &'static str = "SELECT bookId, authorId, title, bo
 pub async fn getPagedBooksForAuthorId(app: web::Data<App>, author_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     let authorId = Uuid::parse_str(&author_id)?;
     let query = format!("{}{}", GET_ALL_BOOKS_FROM_ID, &authorId);
-    let query = Query::new(query).with_page_size(4);
+    let query = Query::new(query).with_page_size(1);
 
     let documents = 
 		app.query(query, &[])
@@ -78,7 +78,7 @@ static GET_ALL_BLOGS_FROM_ID: &'static str = "SELECT blogId, authorId, title, bo
 pub async fn getPagedBlogsForAuthorId(app: web::Data<App>, author_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     let authorId = Uuid::parse_str(&author_id)?;
     let query = format!("{}{}", GET_ALL_BLOGS_FROM_ID, &authorId);
-    let query = Query::new(query).with_page_size(4);
+    let query = Query::new(query).with_page_size(1);
     let documents = app.query(query, &[])
 		.await?;
     let page = documents.paging_state.clone();
@@ -113,7 +113,7 @@ pub async fn getNextPageBooksForAuthorId(
 {
     let authorId = Uuid::parse_str(&author_id)?;
     let query = format!("{}{}", GET_ALL_BOOKS_FROM_ID, &authorId);
-    let query = Query::new(query).with_page_size(4);
+    let query = Query::new(query).with_page_size(1);
 
     let documents = 
 		app.query_paged(query, &[], request.page.clone())
@@ -145,7 +145,7 @@ pub async fn getNextPageBlogsForAuthorId(
 {
     let authorId = Uuid::parse_str(&author_id)?;
     let query = format!("{}{}", GET_ALL_BLOGS_FROM_ID, &authorId);
-    let query = Query::new(query).with_page_size(4);
+    let query = Query::new(query).with_page_size(1);
     let documents = app.query_paged(query, &[], request.page.clone())
 		.await?;
     let page = documents.paging_state.clone();
