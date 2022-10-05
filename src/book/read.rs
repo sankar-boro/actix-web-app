@@ -179,7 +179,7 @@ pub struct CategoryBookMetadata {
     authorId: Uuid,
     title: String,
     body: String,
-    url: String,
+    url: Option<String>,
     metadata: String,
     createdAt: Uuid,
     updatedAt: Uuid,
