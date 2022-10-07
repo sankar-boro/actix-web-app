@@ -31,7 +31,7 @@ pub struct ParentResponse {
     authorId: String,
     title: String,
     body: String,
-    url: String,
+    url: Option<String>,
     identity: i16,
     metadata: String,
     createdAt: String,
@@ -53,12 +53,12 @@ pub async fn create(
 
     let identity: i16 = 101;
     let mut body = String::from("");
-    let mut image_url = String::from("");
+    let mut image_url = None;
     if let Some(b) = &request.body {
         body = b.to_owned();
     }
     if let Some(b) = &request.image_url {
-        image_url = b.to_owned();
+        image_url = Some(b.to_owned());
     }
 
     let auth = session.user_info()?;
