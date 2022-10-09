@@ -7,6 +7,7 @@ use crate::utils::{
     ParseUuid,
 	GetQueryResult
 };
+use crate::query::{GET_SIZE, PAGE_SIZE};
 
 #[derive(FromRow, Serialize)]
 pub struct BlogMetadata {
@@ -32,7 +33,7 @@ pub async fn getBlogsWithPageSize(
     app: web::Data<App>
 ) 
 -> Result<HttpResponse, crate::AppError> {
-    let query = Query::new(BLOGS_QUERY).with_page_size(4);
+    let query = Query::new(BLOGS_QUERY).with_page_size(GET_SIZE);
     let documents = 
     app.query(query, &[])
     .await?;
@@ -68,7 +69,7 @@ pub async fn getNextBlogsWithPageSize(
     request: web::Json<NextPageRequest>
 ) 
 -> Result<HttpResponse, crate::AppError> {
-    let query = Query::new(BLOGS_QUERY).with_page_size(4);
+    let query = Query::new(BLOGS_QUERY).with_page_size(GET_SIZE);
     let documents = 
     app.query_paged(query, &[], request.page.clone())
     .await?;
@@ -121,7 +122,7 @@ pub async fn getBlogNodesWithPageSizeFromId(
 ) -> Result<HttpResponse, crate::AppError> 
 {
     let query = format!("{}{}", GET_BLOG_NODES_WITH_PAGE_SIZE, &blog_id.to_uuid()?);
-    let query = Query::new(query).with_page_size(3);
+    let query = Query::new(query).with_page_size(PAGE_SIZE);
     let documents = 
 		app.query(query, &[]).await?;
     let page = documents.paging_state.clone();
@@ -152,7 +153,7 @@ pub async fn getNextBlogNodesWithPageSizeFromId(
     request: web::Json<NextPageRequest>,
 ) -> Result<HttpResponse, crate::AppError> {
     let query = format!("{}{}", GET_BLOG_NODES_WITH_PAGE_SIZE, &blog_id.to_uuid()?);
-    let query = Query::new(query).with_page_size(3);
+    let query = Query::new(query).with_page_size(PAGE_SIZE);
     let documents = 
 		app.query_paged(query, &[], request.page.clone())
 		.await?;
@@ -216,7 +217,7 @@ pub async fn getBlogsWithPageSizeCategories(
     }
 
     let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
-    let query = Query::new(query).with_page_size(1);
+    let query = Query::new(query).with_page_size(GET_SIZE);
     let documents = app.query(query, &[])
     .await?;
     let page = documents.paging_state.clone();
@@ -255,7 +256,7 @@ pub async fn getBlogsWithPageSizeCategoriesNext(
     }
 
     let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
-    let query = Query::new(query).with_page_size(1);
+    let query = Query::new(query).with_page_size(GET_SIZE);
     let documents = app.query_paged(query, &[], request.page.clone())
     .await?;
     let page = documents.paging_state.clone();

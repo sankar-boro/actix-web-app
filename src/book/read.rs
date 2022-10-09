@@ -7,6 +7,7 @@ use scylla::{macros::FromRow, query::Query};
 use crate::utils::{
 	GetQueryResult
 };
+use crate::query::{PAGE_SIZE, GET_SIZE};
 
 #[derive(FromRow, Serialize)]
 pub struct BookMetadata {
@@ -33,7 +34,7 @@ pub async fn getBooksWithPageSize(
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
-    let query = Query::new(BOOKS_QUERY).with_page_size(1);
+    let query = Query::new(BOOKS_QUERY).with_page_size(GET_SIZE);
     let documents = app.query(query, &[])
     .await?;
     let page = documents.paging_state.clone();
@@ -66,7 +67,7 @@ pub async fn getNextBooksWithPageSize(
     request: web::Json<NextPageRequest>,
 ) 
 -> Result<HttpResponse, crate::AppError> {
-    let query = Query::new(BOOKS_QUERY).with_page_size(1);
+    let query = Query::new(BOOKS_QUERY).with_page_size(GET_SIZE);
     let documents = app.query_paged(query, &[], request.page.clone())
     .await?;
     let page = documents.paging_state.clone();
@@ -116,7 +117,7 @@ pub async fn getBookNodesWithPageSizeFromId(
 {
     let bookId = Uuid::parse_str(&book_id)?;
     let query = format!("{}{}", GET_BOOK_NODES_WITH_PAGE_SIZE, &bookId);
-    let query = Query::new(query).with_page_size(30);
+    let query = Query::new(query).with_page_size(PAGE_SIZE);
     let documents= app.query(query, &[])
 		.await?;
 	let page = documents.paging_state.clone();
@@ -147,7 +148,7 @@ pub async fn getNextBookNodesWithPageSizeFromId(
 ) -> Result<HttpResponse, crate::AppError> {
     let bookId = Uuid::parse_str(&book_id)?;
     let query = format!("{}{}", GET_BOOK_NODES_WITH_PAGE_SIZE, &bookId);
-    let query = Query::new(query).with_page_size(30);
+    let query = Query::new(query).with_page_size(PAGE_SIZE);
     let page: Vec<u8> = request.page.clone();
     let documents= app.query_paged(query, &[], page)
 		.await?;
@@ -210,7 +211,7 @@ pub async fn getBooksWithPageSizeCategories(
     }
 
     let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
-    let query = Query::new(query).with_page_size(1);
+    let query = Query::new(query).with_page_size(GET_SIZE);
     let documents = app.query(query, &[])
     .await?;
     let page = documents.paging_state.clone();
@@ -249,7 +250,7 @@ pub async fn getBooksWithPageSizeCategoriesNext(
     }
 
     let query = format!("{} IN ({})", BOOKS_QUERY_CATEGORY, categories);
-    let query = Query::new(query).with_page_size(1);
+    let query = Query::new(query).with_page_size(GET_SIZE);
     let documents = app.query_paged(query, &[], request.page.clone())
     .await?;
     let page = documents.paging_state.clone();

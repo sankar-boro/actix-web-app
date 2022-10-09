@@ -82,3 +82,6 @@ pub static CREATE_ALLCATEGORY: &str = "INSERT INTO sankar.allcategories (
 ) VALUES(
     ?, ?
 ) IF NOT EXISTS";
+
+pub static GET_SIZE: i32 = 8;
+pub static PAGE_SIZE: i32 = 30;
