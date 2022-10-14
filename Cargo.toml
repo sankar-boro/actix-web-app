@@ -46,6 +46,8 @@ pin-project = "1.0.7"
 sanitize-filename = "0.3.0"
 rust-argon2 = "0.8.3"
 time = "0.2.27"
+regex = "1.6.0"
+lazy_static = "1.4.0"
 
 #logger
 env_logger = "0.8"
