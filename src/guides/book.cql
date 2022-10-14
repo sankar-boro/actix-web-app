@@ -1,8 +1,12 @@
 use sankar;
+
+
 DROP TABLE IF EXISTS book;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS userbooks;
 DROP TABLE IF EXISTS categorybooks;
+
+
 CREATE TABLE books (
     bookId timeuuid,
     authorId timeuuid,
@@ -51,5 +55,7 @@ CREATE TABLE categorybooks (
     updatedAt timeuuid,
     PRIMARY KEY (category, bookId)
 );
+
+
 
 SELECT COUNT(*) FROM books;

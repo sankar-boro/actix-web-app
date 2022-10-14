@@ -23,3 +23,7 @@ CREATE TABLE userCredentials (
     updatedAt timeuuid,
     PRIMARY KEY (email)
 );
+
+TRUNCATE TABLE sankar.users;
+TRUNCATE TABLE sankar.userCredentials;
+
