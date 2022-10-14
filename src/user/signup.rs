@@ -2,17 +2,25 @@ use crate::App;
 use crate::AppError;
 
 use serde::{Deserialize};
-use validator::Validate;
+use validator::{Validate};
 use lily_utils::{time_uuid, encrypt_text};
 use scylla::batch::Batch;
 use actix_web::{HttpResponse, web};
+use regex::Regex;
+use serde_json::json;
+use actix_session::Session;
 
+lazy_static! {
+    static ref MATCH_NAME: Regex = Regex::new(r"^[A-Za-z][A-Za-z0-9_]{2,29}$").unwrap();
+}
 static INSERT_TABLE__USERS: &str = "INSERT INTO sankar.users (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
 static INSERT_TABLE__USERCREDENTIALS: &str = "INSERT INTO sankar.userCredentials (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
 
 #[derive(Deserialize, Validate)]
 pub struct SignupForm {
+    #[validate(regex = "MATCH_NAME")]
     fname: String,
+    #[validate(regex = "MATCH_NAME")]
     lname: String,
     #[validate(email)]
     email: String,
@@ -20,7 +28,11 @@ pub struct SignupForm {
     password: String,
 }
 
-pub async fn signup(session: web::Data<App>, request: web::Json<SignupForm>) -> Result<HttpResponse, actix_web::Error> {
+pub async fn signup(
+    app: web::Data<App>, 
+    request: web::Json<SignupForm>,
+	session: Session
+) -> Result<HttpResponse, crate::AppError> {
     if let Err(err) = request.validate() {
 		return Err(AppError::from(err).into());
 	}
@@ -37,7 +49,7 @@ pub async fn signup(session: web::Data<App>, request: web::Json<SignupForm>) -> 
 
     let fname = &request.fname;
     let lname = &request.lname;
-    let email = &request.email;
+    let email = &request.email.trim();
     let password = password.as_bytes().to_vec();
 
     let batch_values = (
@@ -45,8 +57,15 @@ pub async fn signup(session: web::Data<App>, request: web::Json<SignupForm>) -> 
         (id, fname, &lname, &email, password,id,id)
     );
 
-    match session.session.batch(&batch, batch_values).await {
-        Ok(_) => Ok(HttpResponse::Ok().body("New user created!")),
-        Err(err) => Err(AppError::from(err).into())
-    }
+    app.batch(&batch, batch_values).await?;
+
+    let auth_user_session = json!({
+        "userId": id.to_string(),
+        "email": email.clone(),
+        "fname": fname.clone(),
+        "lname": lname.clone(),
+    });
+    session.insert("AUTH_USER", auth_user_session.clone().to_string())?;
+    session.insert("AUTH_ID", id.to_string())?;
+    Ok(HttpResponse::Ok().json(auth_user_session))
 }

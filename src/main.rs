@@ -1,5 +1,7 @@
 #![allow(non_snake_case)]
 
+#[macro_use]
+extern crate lazy_static;
 mod route;
 mod user;
 mod helpers;
