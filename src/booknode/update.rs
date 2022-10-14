@@ -11,6 +11,7 @@ pub struct UpdateRequest {
     body: String,
     bookId: String,
     uniqueId: String,
+    metadata: String,
 }
 
 pub async fn update(
@@ -22,8 +23,8 @@ pub async fn update(
     let bookId = Uuid::parse_str(&payload.bookId)?;
     let uniqueId = Uuid::parse_str(&payload.uniqueId)?;
 
-    let query = format!("UPDATE sankar.book SET title=?, body=? WHERE bookId=? AND uniqueId=?");
-    app.query(query, (&payload.title, &payload.body, &bookId, &uniqueId)).await?;
+    let query = format!("UPDATE sankar.book SET title=?, body=?, metadata=? WHERE bookId=? AND uniqueId=?");
+    app.query(query, (&payload.title, &payload.body, &payload.metadata, &bookId, &uniqueId)).await?;
     
     Ok(HttpResponse::Ok().body("Updated".to_string()))
 }

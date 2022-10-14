@@ -13,6 +13,7 @@ pub struct AppendNodeRequest {
     body: String,
     blogId: String,
     topUniqueId: String,
+    metadata: String,
 }
 
 #[derive(Serialize)]
@@ -37,6 +38,7 @@ pub async fn create(
         &top_unique_id,
         &payload.title,
         &payload.body,
+        &payload.metadata,
         identity,
         &new_id,
         &new_id

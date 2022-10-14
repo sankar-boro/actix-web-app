@@ -15,6 +15,7 @@ pub struct AppendNodeRequest {
     identity: i16,
     bookId: String,
     topUniqueId: String,
+    metadata: String,
 }
 
 #[derive(Serialize)]
@@ -42,6 +43,7 @@ pub async fn create(
         &author_id,
         &payload.title,
         &payload.body,
+        &payload.metadata,
         &payload.identity,
         &new_id,
         &new_id
