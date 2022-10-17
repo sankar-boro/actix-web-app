@@ -24,3 +24,6 @@ INSERT INTO sankar.allcategories (category, division) VALUES('bodo', 'demo');
 INSERT INTO sankar.allcategories (category, division) VALUES('computer', 'demo');
 INSERT INTO sankar.allcategories (category, division) VALUES('literature', 'demo');
 INSERT INTO sankar.allcategories (category, division) VALUES('social science', 'demo');
+
+
+TRUNCATE TABLE sankar.usercategories;

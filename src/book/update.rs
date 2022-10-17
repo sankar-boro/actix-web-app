@@ -16,6 +16,7 @@ pub struct UpdateRequest {
     bookId: String,
     uniqueId: String,
     category: String,
+    metadata: String,
 }
 
 pub async fn update(
@@ -31,20 +32,20 @@ pub async fn update(
     let auth_id = Uuid::parse_str(&auth.userId)?;
 
     let mut batch: Batch = Default::default();
-    let bookQuery = Query::from(format!("UPDATE sankar.book SET title=?, body=? WHERE bookId=? AND uniqueId=?"));
-    let booksQuery = Query::from(format!("UPDATE sankar.books SET title=?, body=? WHERE bookId=?"));
-    let userBooksQuery = Query::from(format!("UPDATE sankar.userbooks SET title=?, body=? WHERE authorId=? AND bookId=?"));
-    let categoryBooksQuery = Query::from(format!("UPDATE sankar.categorybooks SET title=?, body=? WHERE category=? AND bookId=?"));
+    let bookQuery = Query::from(format!("UPDATE sankar.book SET title=?, body=?, metadata=? WHERE bookId=? AND uniqueId=?"));
+    let booksQuery = Query::from(format!("UPDATE sankar.books SET title=?, body=?, metadata=? WHERE bookId=?"));
+    let userBooksQuery = Query::from(format!("UPDATE sankar.userbooks SET title=?, body=?, metadata=? WHERE authorId=? AND bookId=?"));
+    let categoryBooksQuery = Query::from(format!("UPDATE sankar.categorybooks SET title=?, body=?, metadata=? WHERE category=? AND bookId=?"));
 
     batch.append_statement(bookQuery);
     batch.append_statement(booksQuery);
     batch.append_statement(userBooksQuery);
     batch.append_statement(categoryBooksQuery);
     app.batch(&batch, (
-            (&payload.title, &payload.body, &bookId, &uniqueId),
-            (&payload.title, &payload.body, &bookId),
-            (&payload.title, &payload.body, &auth_id, &bookId),
-            (&payload.title, &payload.body, &payload.category, &bookId),
+            (&payload.title, &payload.body, &payload.metadata, &bookId, &uniqueId),
+            (&payload.title, &payload.body, &payload.metadata, &bookId),
+            (&payload.title, &payload.body, &payload.metadata, &auth_id, &bookId),
+            (&payload.title, &payload.body, &payload.metadata, &payload.category, &bookId),
         )
     ).await?;
     Ok(HttpResponse::Ok().body("Updated".to_string()))

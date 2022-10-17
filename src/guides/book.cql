@@ -57,5 +57,11 @@ CREATE TABLE categorybooks (
 );
 
 
-
 SELECT COUNT(*) FROM books;
+
+
+TRUNCATE TABLE sankar.books;
+TRUNCATE TABLE sankar.book;
+TRUNCATE TABLE sankar.userbooks;
+TRUNCATE TABLE sankar.categorybooks;
+

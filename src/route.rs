@@ -4,6 +4,7 @@ use crate::blog;
 use crate::booknode;
 use crate::blognode;
 use crate::common;
+use crate::settings;
 // use crate::search;
 
 use actix_web::{web, HttpResponse};
@@ -67,6 +68,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/create", web::post().to(book::create))
     .route("/delete/{deleteId}/{category}", web::post().to(book::delete))
     .route("/update", web::post().to(book::update))
+    .route("/settings/create", web::post().to(settings::create))
+    .route("/settings/update", web::post().to(settings::update))
   );
   
   config.service(

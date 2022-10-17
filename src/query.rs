@@ -83,5 +83,13 @@ pub static CREATE_ALLCATEGORY: &str = "INSERT INTO sankar.allcategories (
     ?, ?
 ) IF NOT EXISTS";
 
+pub static CREATE_USER_BOOK_SETTINGS: &str = "INSERT INTO sankar.userbooksettings (
+    authorId, bookId, settings
+) VALUES(
+    ?, ?, ?
+)";
+
+pub static UPDATE_USER_BOOK_SETTINGS: &str = "UPDATE sankar.userbooksettings SET settings=? where authorId=? AND bookId=?";
+
 pub static GET_SIZE: i32 = 8;
 pub static PAGE_SIZE: i32 = 30;
