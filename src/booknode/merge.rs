@@ -19,6 +19,7 @@ pub struct MergeNodeRequest {
     body: String,
     identity: i16,
     bookId: String,
+    metadata: String,
     topUniqueId: String,
     botUniqueId: String,
 }
@@ -30,9 +31,9 @@ pub struct Response {
 
 pub static UPDATE_PARENT_ID: &str = "UPDATE sankar.book SET parentId=? WHERE bookId=? AND uniqueId=?";
 pub static CHILD: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, title, body, identity, createdAt, updatedAt
+    bookId, uniqueId, parentId, authorId, title, body, identity, metadata, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 impl MergeNodeRequest {
@@ -64,6 +65,7 @@ impl MergeNodeRequest {
             &self.title,
             &self.body,
             &self.identity,
+            &self.metadata,
             &new_id,
             &new_id
         );

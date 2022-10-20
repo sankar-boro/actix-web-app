@@ -17,6 +17,7 @@ pub struct MergeNodeRequest {
     body: String,
     identity: i16,
     blogId: String,
+    metadata: String,
     topUniqueId: String,
     botUniqueId: String,
 }
@@ -28,9 +29,9 @@ pub struct Response {
 
 pub static UPDATE_PARENT_ID: &str = "UPDATE sankar.blog SET parentId=? WHERE blogId=? AND uniqueId=?";
 pub static CHILD: &str = "INSERT INTO sankar.blog (
-    blogId, uniqueId, parentId, title, body, identity, createdAt, updatedAt
+    blogId, uniqueId, parentId, title, body, identity, metadata, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 impl MergeNodeRequest {
@@ -58,6 +59,7 @@ impl MergeNodeRequest {
             &self.title,
             &self.body,
             &self.identity,
+            &self.metadata,
             &new_id,
             &new_id
         );
