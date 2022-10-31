@@ -1,13 +1,13 @@
 pub static CREATE_BOOK_NODE_QUERY: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, title, body, metadata, identity, createdAt, updatedAt
+    bookId, uniqueId, parentId, authorId, title, body, metadata, url, identity, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub static CREATE_BLOG_NODE_QUERY: &str = "INSERT INTO sankar.blog (
-    blogId, uniqueId, parentId, title, body, metadata, identity, createdAt, updatedAt
+    blogId, uniqueId, parentId, authorId, title, body, metadata, url, identity, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub static CREATE_BOOKS: &str = "INSERT INTO sankar.books (

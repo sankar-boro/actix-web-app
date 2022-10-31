@@ -1,6 +1,6 @@
 use actix_session::Session;
 use actix_web::{HttpResponse, web};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use uuid::Uuid;
 use crate::{
     App, 
@@ -8,13 +8,10 @@ use crate::{
 };
 use validator::Validate;
 use scylla::{
-    batch::Batch,
     macros::FromRow
 };
 use crate::auth::AuthSession;
 use crate::utils::ParseUuid;
-
-// use jsonwebtoken::{encode, Algorithm, Header, EncodingKey};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct ParentRequest {

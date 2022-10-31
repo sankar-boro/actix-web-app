@@ -6,15 +6,15 @@ use scylla::{
 };
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
-use crate::App;
+use crate::{App, utils::ParseUuid};
 use validator::Validate;
-use lily_utils::time_uuid;
 use scylla::macros::FromRow;
 use actix_session::Session;
 use crate::{auth::AuthSession};
 
 #[derive(Deserialize, Validate, FromRow)]
 pub struct MergeNodeRequest {
+    uniqueId: String,
     title: String,
     body: String,
     identity: i16,
@@ -22,6 +22,7 @@ pub struct MergeNodeRequest {
     metadata: String,
     topUniqueId: String,
     botUniqueId: String,
+    image_url: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -31,9 +32,9 @@ pub struct Response {
 
 pub static UPDATE_PARENT_ID: &str = "UPDATE sankar.book SET parentId=? WHERE bookId=? AND uniqueId=?";
 pub static CHILD: &str = "INSERT INTO sankar.book (
-    bookId, uniqueId, parentId, authorId, title, body, identity, metadata, createdAt, updatedAt
+    bookId, uniqueId, parentId, authorId, title, body, identity, metadata, url, createdAt, updatedAt
 ) VALUES(
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 impl MergeNodeRequest {
@@ -50,11 +51,16 @@ impl MergeNodeRequest {
         let author_id = Uuid::parse_str(&auth.userId)?;
 
         // Create and parse elements
-        let new_id = time_uuid();
+        let new_id = &self.uniqueId;
+        let new_id = new_id.to_uuid()?;
         let book_id = Uuid::parse_str(&self.bookId)?;
         let top_unique_id = Uuid::parse_str(&self.topUniqueId)?;
         let bot_unique_id = Uuid::parse_str(&self.botUniqueId)?;
-        let unique_id = new_id.to_string();
+
+        let mut image_url = None;
+        if let Some(b) = &self.image_url {
+            image_url = Some(b.to_owned());
+        }
 
         // Create data
         let create_data = ( 
@@ -66,6 +72,7 @@ impl MergeNodeRequest {
             &self.body,
             &self.identity,
             &self.metadata,
+            &image_url,
             &new_id,
             &new_id
         );
@@ -82,7 +89,7 @@ impl MergeNodeRequest {
         self.batch(app, batch_values).await?;
 
         Ok(HttpResponse::Ok().json(Response {
-            uniqueId: unique_id
+            uniqueId: self.uniqueId.to_owned()
         }))
     }
 }

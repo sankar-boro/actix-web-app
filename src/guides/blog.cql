@@ -59,7 +59,10 @@ CREATE TABLE categoryblogs (
 );
 
 
-
+TRUNCATE TABLE sankar.blogs;
+TRUNCATE TABLE sankar.blog;
+TRUNCATE TABLE sankar.userblogs;
+TRUNCATE TABLE sankar.categoryblogs;
 
 
 SELECT COUNT(*) FROM blogs;
