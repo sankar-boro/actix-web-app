@@ -80,6 +80,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/delete", web::post().to(booknode::delete))
     .route("/delete/update", web::post().to(booknode::deleteAndUpdate))
     .route("/update", web::post().to(booknode::update))
+    .route("/pull_request", web::post().to(booknode::pull_request))
   );
   //
   config.route("/blogs", web::get().to(blog::getBlogsWithPageSize));
