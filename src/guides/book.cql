@@ -1,11 +1,9 @@
 use sankar;
 
-
 DROP TABLE IF EXISTS book;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS userbooks;
 DROP TABLE IF EXISTS categorybooks;
-
 
 CREATE TABLE books (
     bookId timeuuid,
@@ -55,7 +53,17 @@ CREATE TABLE categorybooks (
     updatedAt timeuuid,
     PRIMARY KEY (category, bookId)
 );
-
+CREATE TABLE updatebooknode (
+    bookId timeuuid,
+    uniqueId timeuuid,
+    parentId timeuuid,
+    authorId timeuuid,
+    body text,
+    identity smallint,
+    createdAt timeuuid,
+    updatedAt timeuuid,
+    PRIMARY KEY ((bookId, parentId), uniqueId)
+) WITH CLUSTERING ORDER BY (uniqueId DESC);
 
 SELECT COUNT(*) FROM books;
 
