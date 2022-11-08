@@ -3,10 +3,7 @@ use serde_json;
 use serde::{Serialize};
 
 use actix_web::{
-    http::{
-        // header::ContentType, 
-        StatusCode
-    },
+    http::{StatusCode},
     HttpResponse,
 };
 use derive_more::Display;
@@ -68,6 +65,31 @@ impl From<scylla::transport::errors::QueryError> for Error {
 
 impl From<validator::ValidationErrors> for Error {
     fn from(e: validator::ValidationErrors) -> Self {
+        let x = e.errors();
+        if x.contains_key("email") {
+            return Error {
+                status: StatusCode::from_u16(400).unwrap(),
+                message: "invalid_email".to_string(),
+            };
+        }
+        if x.contains_key("password") {
+            return Error {
+                status: StatusCode::from_u16(400).unwrap(),
+                message: "invalid_password".to_string(),
+            };
+        }
+        if x.contains_key("fname") {
+            return Error {
+                status: StatusCode::from_u16(400).unwrap(),
+                message: "invalid_fname".to_string(),
+            };
+        }
+        if x.contains_key("lname") {
+            return Error {
+                status: StatusCode::from_u16(400).unwrap(),
+                message: "invalid_lname".to_string(),
+            };
+        }
         Error {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message: e.to_string(),
