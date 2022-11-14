@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS book;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS userbooks;
 DROP TABLE IF EXISTS categorybooks;
+DROP TABLE IF EXISTS updatebooknode;
 
 CREATE TABLE books (
     bookId timeuuid,
@@ -14,8 +15,8 @@ CREATE TABLE books (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (bookId)
-);
+    PRIMARY KEY (bookId, createdAt)
+) WITH CLUSTERING ORDER BY (createdAt DESC);
 CREATE TABLE book (
     bookId timeuuid,
     uniqueId timeuuid,
@@ -29,7 +30,7 @@ CREATE TABLE book (
     createdAt timeuuid,
     updatedAt timeuuid,
     PRIMARY KEY (bookId, uniqueId)
-);
+) WITH CLUSTERING ORDER BY (uniqueId DESC);
 CREATE TABLE userbooks (
     bookId timeuuid,
     authorId timeuuid,
@@ -40,7 +41,7 @@ CREATE TABLE userbooks (
     createdAt timeuuid,
     updatedAt timeuuid,
     PRIMARY KEY (authorId, bookId)
-);
+) WITH CLUSTERING ORDER BY (bookId DESC);
 CREATE TABLE categorybooks (
     category text,
     bookId timeuuid,
@@ -52,7 +53,7 @@ CREATE TABLE categorybooks (
     createdAt timeuuid,
     updatedAt timeuuid,
     PRIMARY KEY (category, bookId)
-);
+) WITH CLUSTERING ORDER BY (bookId DESC);
 CREATE TABLE updatebooknode (
     bookId timeuuid,
     uniqueId timeuuid,
