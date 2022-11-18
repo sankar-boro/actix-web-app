@@ -1,10 +1,7 @@
 use crate::user;
 use crate::book;
 use crate::blog;
-use crate::booknode;
-use crate::blognode;
 use crate::common;
-use crate::settings;
 // use crate::search;
 
 use actix_web::{web, HttpResponse};
@@ -29,18 +26,12 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/logout", web::post().to(user::logout_user))
   );
 
-  // image
-  config.service(web::resource("/upload/image").route(web::post().to(book::upload_image)));
-
   // user
   config.service(
     web::scope("/user")
     .route("/session", web::get().to(user::user_session))
     .wrap(Authentication{})
     .route("/get/{userId}", web::get().to(user::get))
-    .route("/update", web::post().to(user::update))
-    .route("/add_category", web::post().to(user::add_category))
-    .route("/delete_category", web::post().to(user::delete_category))
     .route("/user_categories", web::get().to(user::get_user_categories))
   );
   config.route("/users", web::post().to(user::users));
@@ -64,23 +55,6 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/category/{category}", web::get().to(book::getBooksWithPageSizeCategories))
     .route("/next_category/{category}", web::post().to(book::getBooksWithPageSizeCategoriesNext))
     .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
-    .wrap(Authentication{})
-    .route("/create", web::post().to(book::create))
-    .route("/delete/{deleteId}/{category}", web::post().to(book::delete))
-    .route("/update", web::post().to(book::update))
-    .route("/settings/create", web::post().to(settings::create))
-    .route("/settings/update", web::post().to(settings::update))
-  );
-  
-  config.service(
-    web::scope("/booknode")
-    .wrap(Authentication{})
-    .route("/create", web::post().to(booknode::create))
-    .route("/merge", web::post().to(booknode::merge))
-    .route("/delete", web::post().to(booknode::delete))
-    .route("/delete/update", web::post().to(booknode::deleteAndUpdate))
-    .route("/update", web::post().to(booknode::update))
-    .route("/pull_request", web::post().to(booknode::pull_request))
   );
   //
   config.route("/blogs", web::get().to(blog::getBlogsWithPageSize));
@@ -91,19 +65,6 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/category/{category}", web::get().to(blog::getBlogsWithPageSizeCategories))
     .route("/next_category/{category}", web::post().to(blog::getBlogsWithPageSizeCategoriesNext))
     .route("/nextpage/{blogId}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
-    .wrap(Authentication{})
-    .route("/create", web::post().to(blog::create))
-    .route("/delete/{deleteId}/{category}", web::post().to(blog::delete))
-    .route("/update", web::post().to(blog::update))
-  );
-  config.service(
-    web::scope("/blognode")
-    .wrap(Authentication{})
-    .route("/create", web::post().to(blognode::create))
-    .route("/merge", web::post().to(blognode::merge))
-    .route("/delete", web::post().to(blognode::delete))
-    .route("/delete/update", web::post().to(blognode::deleteAndUpdate))
-    .route("/update", web::post().to(blognode::update))
   );
 
 }

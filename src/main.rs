@@ -12,10 +12,7 @@ mod query;
 mod auth;
 mod book;
 mod blog;
-mod booknode;
-mod blognode;
 mod common;
-mod settings;
 // mod search;
 
 use std::sync::Arc;
