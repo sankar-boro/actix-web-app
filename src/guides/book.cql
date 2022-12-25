@@ -65,6 +65,14 @@ CREATE TABLE updatebooknode (
     updatedAt timeuuid,
     PRIMARY KEY ((bookId, parentId), uniqueId)
 ) WITH CLUSTERING ORDER BY (uniqueId DESC);
+CREATE TABLE book_title (
+    bookId timeuuid,
+    title text,
+    parentId timeuuid,
+    uniqueId timeuuid,
+    identity smallint,
+    PRIMARY KEY (bookId, uniqueId)
+) WITH CLUSTERING ORDER BY (uniqueId DESC);
 
 SELECT COUNT(*) FROM books;
 

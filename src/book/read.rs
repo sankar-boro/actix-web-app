@@ -91,6 +91,7 @@ pub async fn getNextBooksWithPageSize(
 #[derive(FromRow, Serialize)]
 pub struct BookNode {
     bookId: Uuid,
+    pageId: Uuid,
     uniqueId: Uuid,
     parentId: Option<Uuid>,
     authorId: Uuid,
@@ -109,14 +110,14 @@ pub struct BookNodesResponse {
     page: Option<Vec<u8>>
 }
 
-static GET_BOOK_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=";
+static GET_BOOK_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=";
 pub async fn getBookNodesWithPageSizeFromId(
     app: web::Data<App>, 
     book_id: web::Path<String>
 ) -> Result<HttpResponse, crate::AppError> 
 {
     let bookId = Uuid::parse_str(&book_id)?;
-    let query = format!("{}{}", GET_BOOK_NODES_WITH_PAGE_SIZE, &bookId);
+    let query = format!("{}{} AND pageId={}", GET_BOOK_NODES_WITH_PAGE_SIZE, &bookId, &bookId);
     let query = Query::new(query).with_page_size(PAGE_SIZE);
     let documents= app.query(query, &[])
 		.await?;
