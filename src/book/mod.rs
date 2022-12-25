@@ -1,5 +1,6 @@
 mod read;
 mod user;
+mod titles;
 
 pub use read::{
     getBooksWithPageSize,
@@ -15,3 +16,5 @@ pub use user::{
     getNextPageBooksForAuthorId, 
     getNextPageBlogsForAuthorId,
 };
+
+pub use titles::get_titles;

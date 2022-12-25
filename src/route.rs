@@ -55,6 +55,7 @@ pub fn routes(config: &mut web::ServiceConfig) {
     .route("/category/{category}", web::get().to(book::getBooksWithPageSizeCategories))
     .route("/next_category/{category}", web::post().to(book::getBooksWithPageSizeCategoriesNext))
     .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
+    .route("/titles", web::get().to(book::get_titles))
   );
   //
   config.route("/blogs", web::get().to(blog::getBlogsWithPageSize));
