@@ -52,10 +52,11 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.service(
     web::scope("/book")
     .route("/get/{bookId}", web::get().to(book::getBookNodesWithPageSizeFromId))
+    .route("/getPageNodes/{bookId}/{pageId}", web::get().to(book::getBookNodesForPage))
     .route("/category/{category}", web::get().to(book::getBooksWithPageSizeCategories))
     .route("/next_category/{category}", web::post().to(book::getBooksWithPageSizeCategoriesNext))
     .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
-    .route("/titles", web::get().to(book::get_titles))
+    .route("/titles/{book_id}", web::get().to(book::get_book_titles))
   );
   //
   config.route("/blogs", web::get().to(blog::getBlogsWithPageSize));

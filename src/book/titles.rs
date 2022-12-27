@@ -17,15 +17,18 @@ pub struct BookMetadata {
     identity: i16
 }
 
-static BOOK_TITLES: &'static str = "SELECT bookId, parentId, uniqueId, title, identity from sankar.book_title";
+static BOOK_TITLES: &'static str = "SELECT bookId, parentId, uniqueId, title, identity from sankar.book_title WHERE bookId=?";
 
-pub async fn get_titles(
-    app: web::Data<App>
+pub async fn get_book_titles(
+    app: web::Data<App>,
+    book_id: web::Path<String>
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {   
+    let get_book_id = Uuid::parse_str(&book_id)?;
+
     let query = Query::new(BOOK_TITLES);
-    let query_res = app.query(query, &[]).await?;
+    let query_res = app.query(query, (&get_book_id,)).await?;
     let documents: Option<Vec<BookMetadata>> = query_res.get_query_result()?;
     Ok(HttpResponse::Ok().json(documents))
 }

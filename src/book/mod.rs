@@ -3,6 +3,7 @@ mod user;
 mod titles;
 
 pub use read::{
+    getBookNodesForPage,
     getBooksWithPageSize,
     getNextBooksWithPageSize,
     getBookNodesWithPageSizeFromId,
@@ -17,4 +18,4 @@ pub use user::{
     getNextPageBlogsForAuthorId,
 };
 
-pub use titles::get_titles;
+pub use titles::get_book_titles;

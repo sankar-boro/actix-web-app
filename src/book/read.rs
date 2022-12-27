@@ -110,16 +110,14 @@ pub struct BookNodesResponse {
     page: Option<Vec<u8>>
 }
 
-static GET_BOOK_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=";
+static GET_BOOK_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=? AND pageId=?";
 pub async fn getBookNodesWithPageSizeFromId(
     app: web::Data<App>, 
     book_id: web::Path<String>
 ) -> Result<HttpResponse, crate::AppError> 
 {
     let bookId = Uuid::parse_str(&book_id)?;
-    let query = format!("{}{} AND pageId={}", GET_BOOK_NODES_WITH_PAGE_SIZE, &bookId, &bookId);
-    let query = Query::new(query).with_page_size(PAGE_SIZE);
-    let documents= app.query(query, &[])
+    let documents= app.query(GET_BOOK_NODES_WITH_PAGE_SIZE, (&bookId, &bookId, ))
 		.await?;
 	let page = documents.paging_state.clone();
     let documents: Option<Vec<BookNode>> = documents.get_query_result()?;
@@ -140,6 +138,26 @@ pub async fn getBookNodesWithPageSizeFromId(
             Ok(HttpResponse::Ok().json(y))
         },
     }
+}
+
+#[derive(Serialize)]
+pub struct PageNodesResponse {
+    nodes: Option<Vec<BookNode>>
+}
+
+static GET_PAGE_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=? AND pageId=?";
+pub async fn getBookNodesForPage(
+    app: web::Data<App>, 
+    ids: web::Path<(String, String)>
+) -> Result<HttpResponse, crate::AppError> 
+{
+    let bookId = Uuid::parse_str(&ids.0)?;
+    let pageId = Uuid::parse_str(&ids.1)?;
+    let nodes = app.query(GET_PAGE_NODES_WITH_PAGE_SIZE, (&bookId, &pageId, ))
+		.await?;
+    let nodes: Option<Vec<BookNode>> = nodes.get_query_result()?;
+
+    return Ok(HttpResponse::Ok().json(PageNodesResponse{ nodes }));
 }
 
 pub async fn getNextBookNodesWithPageSizeFromId(

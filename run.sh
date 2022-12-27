@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cargo build --release
+# cargo build --release
 ./target/release/lily
