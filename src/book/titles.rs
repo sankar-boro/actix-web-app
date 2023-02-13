@@ -19,6 +19,11 @@ pub struct BookMetadata {
 
 static BOOK_TITLES: &'static str = "SELECT bookId, parentId, uniqueId, title, identity from sankar.book_title WHERE bookId=?";
 
+#[derive(Serialize)]
+pub struct TitleResponse {
+    nodes: Option<Vec<BookMetadata>>
+}
+
 pub async fn get_book_titles(
     app: web::Data<App>,
     book_id: web::Path<String>
@@ -29,6 +34,6 @@ pub async fn get_book_titles(
 
     let query = Query::new(BOOK_TITLES);
     let query_res = app.query(query, (&get_book_id,)).await?;
-    let documents: Option<Vec<BookMetadata>> = query_res.get_query_result()?;
-    Ok(HttpResponse::Ok().json(documents))
+    let nodes: Option<Vec<BookMetadata>> = query_res.get_query_result()?;
+    Ok(HttpResponse::Ok().json(TitleResponse { nodes}))
 }

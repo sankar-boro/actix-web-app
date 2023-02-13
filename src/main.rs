@@ -15,6 +15,7 @@ mod blog;
 mod common;
 // mod search;
 
+use std::env;
 use std::sync::Arc;
 use anyhow::Result;
 // use async_std::sync::Mutex;
@@ -74,7 +75,7 @@ impl App {
 // }
 
 async fn start_server(app: App) -> Result<()> {
-
+    let host_id = env::var("HOST").unwrap();
     HttpServer::new(move || {
         let cors = Cors::default()
               .allow_any_origin()
@@ -95,7 +96,7 @@ async fn start_server(app: App) -> Result<()> {
             // .app_data(index.clone())
             .configure(route::routes)
     })
-    .bind("127.0.0.1:7500")?
+    .bind(format!("{}:7500", host_id))?
     .run()
     .await?;
     Ok(())
