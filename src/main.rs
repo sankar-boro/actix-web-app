@@ -40,16 +40,20 @@ use scylla::frame::value::ValueList;
 use scylla::frame::value::BatchValues;
 use scylla::transport::errors::QueryError;
 // use search::search::SearchHandler;
+use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime};
+use tokio_postgres::NoTls;
 
 #[derive(Clone)]
 pub struct App {
-    session: Arc<Session>,
+    pub session: Arc<Session>,
+    pub pool: Pool,
 }
 
 impl App {
-    fn new(session: Session) -> Self {
+    fn new(session: Session, pool: Pool) -> Self {
         Self {
             session: Arc::new(session),
+            pool,
         }
     }
 
@@ -75,7 +79,9 @@ impl App {
 // }
 
 async fn start_server(app: App) -> Result<()> {
-    let host_id = env::var("HOST").unwrap();
+    let host = env::var("HOST").unwrap();
+    let port = env::var("PORT").unwrap();
+
     HttpServer::new(move || {
         let cors = Cors::default()
               .allow_any_origin()
@@ -96,7 +102,7 @@ async fn start_server(app: App) -> Result<()> {
             // .app_data(index.clone())
             .configure(route::routes)
     })
-    .bind(format!("{}:7500", host_id))?
+    .bind(format!("{}:{}", host, port))?
     .run()
     .await?;
     Ok(())
@@ -110,6 +116,12 @@ async fn main() {
     env_logger::init();
     let uri = "127.0.0.1:9042";
     let session = SessionBuilder::new().known_node(uri).build().await.unwrap();
-    let app = App::new(session);
+    let mut cfg = Config::new();
+    cfg.dbname = Some("sankar".to_string());
+    cfg.user = Some("sankar".to_string());
+    cfg.password = Some("sankar".to_string());
+    cfg.manager = Some(ManagerConfig { recycling_method: RecyclingMethod::Fast });
+    let pool: Pool = cfg.create_pool(Some(Runtime::Tokio1), NoTls).unwrap();
+    let app = App::new(session, pool);
     start_server(app).await.unwrap();
 }

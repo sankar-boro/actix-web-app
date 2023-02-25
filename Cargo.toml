@@ -28,6 +28,11 @@ jsonwebtoken = "7"
 
 #db
 scylla = "0.3.1"
+deadpool-postgres = { version = "0.10.2", features = ["serde"] }
+tokio-pg-mapper = "0.2.0"
+tokio-pg-mapper-derive = "0.2.0"
+tokio-postgres = "0.7.6"
+config = "0.13.1"
 
 futures = "0.3.6"
 uuid = { version = "0.8", features = ["serde", "v1", "v4"] }
