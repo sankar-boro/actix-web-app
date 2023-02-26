@@ -17,6 +17,8 @@ pub fn routes(config: &mut web::ServiceConfig) {
   // basic
   config.route("/", web::get().to(home));
   config.route("/login", web::post().to(user::login));
+  config.route("/get_user", web::get().to(user::get_user));
+  config.route("/get_user_scylla", web::get().to(user::get_user_scylla));
   config.route("/signup", web::post().to(user::signup));
 
   // auth

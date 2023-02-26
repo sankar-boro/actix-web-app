@@ -9,7 +9,7 @@ mod category;
 pub use signup::signup;
 pub use get::{get, user_session};
 pub use delete::delete_one;
-pub use login::login;
+pub use login::{get_user, login, get_user_scylla};
 pub use logout::logout_user;
 pub use users::users;
 pub use category::{
