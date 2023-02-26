@@ -8,6 +8,9 @@ use actix_web::{
 };
 use derive_more::Display;
 
+use deadpool_postgres::PoolError;
+use tokio_pg_mapper::Error as PGMError;
+use tokio_postgres::error::Error as PGError;
 
 #[derive(Display, Debug)]
 #[display(fmt = "status: {}", status)]
@@ -26,8 +29,8 @@ impl Error {
     }
 }
 
-impl From<r2d2::Error> for Error {
-    fn from(e: r2d2::Error) -> Self {
+impl From<PoolError> for Error {
+    fn from(e: PoolError) -> Self {
         Error {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message: e.to_string(),
@@ -35,6 +38,24 @@ impl From<r2d2::Error> for Error {
     }
 }
 
+impl From<PGMError> for Error {
+    fn from(e: PGMError) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+
+impl From<PGError> for Error {
+    fn from(e: PGError) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+////
 impl From<anyhow::Error> for Error {
     fn from(e: anyhow::Error) -> Self {
         Error {

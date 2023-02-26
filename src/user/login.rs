@@ -57,9 +57,16 @@ pub async fn login(
 {
 	request.validate()?; // validate types: email
 	// let email = &request.email;
-	let mut client = app.pool.get().await.unwrap();;
-    let stmt = client.prepare_cached(GET_USER).await.unwrap();
-    let rows = client.query(&stmt, &[&request.email]).await.unwrap();
+	let client = app.pool.get().await?;
+    let stmt = client.prepare_cached(GET_USER).await?;
+    let rows = client.query(&stmt, &[&request.email]).await?;
+	if rows.len() == 0 {
+		let unf = json!({
+			"status": 500,
+			"message": "user not found.".to_string(),
+		});
+		return Ok(HttpResponse::Ok().json(unf));
+	}
 	let user_id: i32 = rows[0].get(0);
 	let fname: String = rows[0].get(1);
 	let lname: String = rows[0].get(2);
@@ -105,9 +112,9 @@ pub async fn get_user(
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
-	let mut client = app.pool.get().await.unwrap();;
-    let stmt = client.prepare_cached(GET_USERX).await.unwrap();
-    let rows = client.query(&stmt, &[&request.email]).await.unwrap();
+	let client = app.pool.get().await?;
+    let stmt = client.prepare_cached(GET_USERX).await?;
+    let rows = client.query(&stmt, &[&request.email]).await?;
 	let user_id: i32 = rows[0].get(0);
 	let fname: String = rows[0].get(1);
 	let lname: String = rows[0].get(2);

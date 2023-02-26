@@ -1,14 +1,11 @@
 use crate::App;
 use crate::AppError;
 
+use regex::Regex;
 use serde::{Deserialize};
 use validator::{Validate};
-use lily_utils::{time_uuid, encrypt_text};
-use scylla::batch::Batch;
 use actix_web::{HttpResponse, web};
-use regex::Regex;
-use serde_json::json;
-use actix_session::Session;
+use lily_utils::{encrypt_text};
 
 lazy_static! {
     static ref MATCH_NAME: Regex = Regex::new(r"^[A-Za-z][A-Za-z0-9_]{2,29}$").unwrap();
@@ -31,8 +28,7 @@ pub struct SignupForm {
 
 pub async fn signup(
     app: web::Data<App>, 
-    request: web::Json<SignupForm>,
-	session: Session
+    request: web::Json<SignupForm>
 ) -> Result<HttpResponse, crate::AppError> {
     if let Err(err) = request.validate() {
 		return Err(AppError::from(err).into());
@@ -43,29 +39,11 @@ pub async fn signup(
         Err(err) => return Err(AppError::from(err).into())
     };
     
-    // let id = time_uuid();
-    // let mut batch: Batch = Default::default();
-    // batch.append_statement(INSERT_TABLE__USERS);
-    // batch.append_statement(INSERT_TABLE__USERCREDENTIALS);
-
     let fname = &request.fname;
     let lname = &request.lname;
     let email = &request.email.trim();
-    let mut client = app.pool.get().await.unwrap();;
-    let stmt = client.prepare_cached(INSERT_USER).await.unwrap();
-    let rows = client.query(&stmt, &[fname, lname, email, &password]).await.unwrap();
-    // let batch_values = (
-    //     (id, fname, &lname, &email, password.clone(),id,id),                
-    //     (id, fname, &lname, &email, password,id,id)
-    // );
-    // app.batch(&batch, batch_values).await?;
-
-    let auth_user_session = json!({
-        "email": email.clone(),
-        "fname": fname.clone(),
-        "lname": lname.clone(),
-    });
-    // session.insert("AUTH_USER", auth_user_session.clone().to_string())?;
-    // session.insert("AUTH_ID", id.to_string())?;
-    Ok(HttpResponse::Ok().json(auth_user_session))
+    let client = app.pool.get().await?;
+    let stmt = client.prepare_cached(INSERT_USER).await?;
+    client.query(&stmt, &[fname, lname, email, &password]).await?;
+    Ok(HttpResponse::Ok().body("Ok"))
 }
