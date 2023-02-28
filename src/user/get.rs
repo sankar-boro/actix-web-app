@@ -5,8 +5,8 @@ use uuid::Uuid;
 use serde::Serialize;
 use crate::AppError;
 
+use serde_json::json;
 use scylla::macros::FromRow;
-use crate::utils::{GetQueryResult};
 
 #[derive(FromRow, Serialize)]
 struct GetUser {
@@ -16,31 +16,33 @@ struct GetUser {
     email: String,
 }
 
-fn get_user_query(user_id: &str) 
--> Result<String, actix_web::Error> {
-    match Uuid::parse_str(user_id) {
-        Ok(user_id) => {
-            Ok(format!("SELECT userId, fname, lname, email from sankar.users where userId={} LIMIT 1", user_id))
-        }
-        Err(err) => Err(AppError::from(err).into())
-    }
-}
+static GET_USER: &str = "SELECT fname, lname, email from users where userId=$1";
 
-pub async fn get(app: web::Data<App>, userId: web::Path<String>) 
+pub async fn get(app: web::Data<App>, path: web::Path<i32>) 
 -> Result<HttpResponse, crate::AppError> {
-    let rows: Option<Vec<GetUser>> = 
-		app.query(get_user_query(&userId)?, &[])
-		.await
-		.get_query_result()?;
-    match rows {
-        Some(rows) => {
-            Ok(HttpResponse::Ok().json(rows))
-        }
-        None => {
-            let mt: Vec<GetUser> = Vec::new();
-            Ok(HttpResponse::Ok().json(mt))
-        }
-    }
+    let user_id = path.into_inner();
+    let client = app.pool.get().await?;
+    let stmt = client.prepare_cached(GET_USER).await?;
+    let rows = client.query(&stmt, &[&user_id]).await?;
+	if rows.len() == 0 {
+		let unf = json!({
+			"status": 500,
+			"message": "user not found.".to_string(),
+		});
+		return Ok(HttpResponse::NotFound().json(unf));
+	}
+	let fname: String = rows[0].get(0);
+	let lname: String = rows[0].get(1);
+    let email: String = rows[0].get(2);
+    
+    let auth_user = json!({
+		"userId": user_id,
+		"email": email,
+		"fname": fname,
+		"lname": lname,
+	});
+
+    Ok(HttpResponse::Ok().json(auth_user))
 }
 
 pub async fn user_session(session: Session) 

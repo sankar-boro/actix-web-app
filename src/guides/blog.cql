@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS categoryblogs;
 
 CREATE TABLE blogs (
     blogId timeuuid,
-    authorId timeuuid,
+    authorId int,
     title varchar,
     body text,
     url text,
@@ -20,7 +20,7 @@ CREATE TABLE blog (
     blogId timeuuid,
     uniqueId timeuuid,
     parentId timeuuid,
-    authorId timeuuid,
+    authorId int,
     title varchar,
     body text,
     url text,
@@ -32,7 +32,7 @@ CREATE TABLE blog (
 );
 CREATE TABLE userblogs (
     blogId timeuuid,
-    authorId timeuuid,
+    authorId int,
     title varchar,
     body text,
     url text,
@@ -44,7 +44,7 @@ CREATE TABLE userblogs (
 CREATE TABLE categoryblogs (
     category text,
     blogId timeuuid,
-    authorId timeuuid,
+    authorId int,
     title varchar,
     body text,
     url text,

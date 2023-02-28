@@ -72,7 +72,7 @@ pub async fn login(
 		"lname": lname.clone(),
 	});
 	let x = auth_user_session.clone().to_string();
-	println!("session: {}", x);
+	
 	session.insert("AUTH_USER", x)?;
 	session.insert("AUTH_ID", user_id)?;
 	Ok(HttpResponse::Ok().json(auth_user_session))

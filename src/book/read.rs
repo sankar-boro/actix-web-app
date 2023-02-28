@@ -12,7 +12,7 @@ use crate::query::{PAGE_SIZE, GET_SIZE};
 #[derive(FromRow, Serialize)]
 pub struct BookMetadata {
     bookId: Uuid,
-    authorId: Uuid,
+    authorId: i32,
     title: String,
     body: String,
     url: Option<String>,
@@ -94,7 +94,7 @@ pub struct BookNode {
     pageId: Uuid,
     uniqueId: Uuid,
     parentId: Option<Uuid>,
-    authorId: Uuid,
+    authorId: i32,
     title: String,
     body: String,
     url: Option<String>,
@@ -196,7 +196,7 @@ pub async fn getNextBookNodesWithPageSizeFromId(
 pub struct CategoryBookMetadata {
     category: String,
     bookId: Uuid,
-    authorId: Uuid,
+    authorId: i32,
     title: String,
     body: String,
     url: Option<String>,

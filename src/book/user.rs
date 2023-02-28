@@ -13,7 +13,7 @@ use crate::query::{GET_SIZE};
 #[derive(FromRow, Serialize)]
 pub struct BookMetadata {
     bookId: Uuid,
-    authorId: Option<Uuid>,
+    authorId: Option<i32>,
     title: String,
     body: String,
     url: Option<String>,
@@ -31,7 +31,7 @@ pub struct BooksResponse {
 #[derive(FromRow, Serialize)]
 pub struct BlogMetadata {
     blogId: Uuid,
-    authorId: Option<Uuid>,
+    authorId: Option<i32>,
     title: String,
     body: String,
     url: Option<String>,
@@ -47,9 +47,10 @@ pub struct BlogsResponse {
 
 // cannot use * when getting all documents;
 static GET_ALL_BOOKS_FROM_ID: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userbooks WHERE authorId=";
-pub async fn getPagedBooksForAuthorId(app: web::Data<App>, author_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
-    let authorId = Uuid::parse_str(&author_id)?;
-    let query = format!("{}{}", GET_ALL_BOOKS_FROM_ID, &authorId);
+pub async fn getPagedBooksForAuthorId(app: web::Data<App>, path: web::Path<i32>) -> Result<HttpResponse, crate::AppError> {
+    // let authorId = Uuid::parse_str(&author_id)?;
+    let authorId = path.into_inner();
+    let query = format!("{}{}", GET_ALL_BOOKS_FROM_ID, authorId);
     let query = Query::new(query).with_page_size(GET_SIZE);
 
     let documents = 
@@ -76,9 +77,10 @@ pub async fn getPagedBooksForAuthorId(app: web::Data<App>, author_id: web::Path<
 
 // cannot use * when getting all documents;
 static GET_ALL_BLOGS_FROM_ID: &'static str = "SELECT blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userblogs WHERE authorId=";
-pub async fn getPagedBlogsForAuthorId(app: web::Data<App>, author_id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
-    let authorId = Uuid::parse_str(&author_id)?;
-    let query = format!("{}{}", GET_ALL_BLOGS_FROM_ID, &authorId);
+pub async fn getPagedBlogsForAuthorId(app: web::Data<App>, path: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
+    // let authorId = Uuid::parse_str(&author_id)?;
+    let authorId = path.into_inner();
+    let query = format!("{}{}", GET_ALL_BLOGS_FROM_ID, authorId);
     let query = Query::new(query).with_page_size(GET_SIZE);
     let documents = app.query(query, &[])
 		.await?;
