@@ -1,7 +1,7 @@
 use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Serialize};
-use uuid::Uuid;
+// use uuid::Uuid;
 use crate::{App, utils::GetQueryResult};
 use scylla::{
     macros::FromRow,
@@ -62,10 +62,9 @@ pub async fn get_user_categories(
 -> Result<HttpResponse, crate::AppError> 
 {
     let auth = session.user_info()?;
-    let auth_id = Uuid::parse_str(&auth.userId)?;
 
     // let query = Query::new(GET_USER_CATEGORIES).with_page_size(4);
-    let documents = app.query(GET_USER_CATEGORIES, (&auth_id, ))
+    let documents = app.query(GET_USER_CATEGORIES, (auth.userId, ))
     .await?;
     let page = documents.paging_state.clone();
     let documents: Option<Vec<Category>> = documents.get_query_result()?;

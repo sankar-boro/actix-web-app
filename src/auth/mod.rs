@@ -4,7 +4,7 @@ use crate::AppError;
 
 #[derive(Deserialize, Serialize)]
 pub struct AUTHUSER {
-    pub userId: String,
+    pub userId: i32,
     pub fname: String,
     pub lname: String,
     pub email: String,

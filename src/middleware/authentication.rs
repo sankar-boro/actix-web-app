@@ -46,7 +46,7 @@ where
         let srv = self.service.clone();
         Box::pin(async move {
             let session = req.get_session();
-            match session.get::<String>("AUTH_ID") { 
+            match session.get::<i32>("AUTH_ID") { 
                 Ok(_) => {
                     let res_fut = srv.call(req);
                     return res_fut.await;

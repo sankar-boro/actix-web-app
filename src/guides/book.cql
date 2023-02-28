@@ -92,7 +92,7 @@ CREATE TABLE users (
     userId serial PRIMARY KEY,
     fname varchar(50) NOT NULL,
     lname varchar(50),
-    email varchar(50) NOT NULL,
+    email varchar(50) UNIQUE NOT NULL,
     pwd varchar(255) NOT NUll,
     createdAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

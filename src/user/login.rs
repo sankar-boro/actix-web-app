@@ -20,15 +20,6 @@ pub struct LoginForm {
 	password: String,
 }
 
-// TODO: check if this needs to be pub
-#[derive(Serialize, Debug)]
-pub struct UserInfo {
-	pub userId: String,
-	pub email: String,
-	pub fname: String,
-	pub lname: String,
-}
-
 #[derive(FromRow, Serialize, Debug)]
 pub struct GetUser {
 	userId: i32,
@@ -55,8 +46,7 @@ pub async fn login(
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
-	request.validate()?; // validate types: email
-	// let email = &request.email;
+	request.validate()?;
 	let client = app.pool.get().await?;
     let stmt = client.prepare_cached(GET_USER).await?;
     let rows = client.query(&stmt, &[&request.email]).await?;
@@ -65,7 +55,7 @@ pub async fn login(
 			"status": 500,
 			"message": "user not found.".to_string(),
 		});
-		return Ok(HttpResponse::Ok().json(unf));
+		return Ok(HttpResponse::NotFound().json(unf));
 	}
 	let user_id: i32 = rows[0].get(0);
 	let fname: String = rows[0].get(1);
@@ -73,30 +63,18 @@ pub async fn login(
 	let pwd: String = rows[0].get(3);
 	let pwd: Vec<u8> = pwd.as_bytes().to_vec();
 
-
-	// let rows: Option<Vec<GetUser>> = 
-	// 	app.query(get_user_query(&request.email), &[])
-	// 	.await
-	// 	.get_query_result()?;
-	// let auth_user: &GetUser = match &rows {
-	// 	Some(users) => {
-	// 		match users.first() {
-	// 			Some(user) => user,
-	// 			None => return Err(AppError::from("USER_NOT_FOUND").into())
-	// 		}
-	// 	},
-	// 	None => return Err(AppError::from("USER_NOT_FOUND").into())
-	// };
 	validate_user_credentials(&request.password, &pwd)?;
 	
 	let auth_user_session = json!({
-		"userId": user_id.clone(),
+		"userId": user_id,
 		"email": &request.email.clone(),
 		"fname": fname.clone(),
 		"lname": lname.clone(),
 	});
-	session.insert("AUTH_USER", auth_user_session.clone().to_string())?;
-	session.insert("AUTH_ID", &user_id)?;
+	let x = auth_user_session.clone().to_string();
+	println!("session: {}", x);
+	session.insert("AUTH_USER", x)?;
+	session.insert("AUTH_ID", user_id)?;
 	Ok(HttpResponse::Ok().json(auth_user_session))
 }
 
