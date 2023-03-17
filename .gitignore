@@ -2,3 +2,5 @@
 help.txt
 lily
 /private
+.env
+lily.log
