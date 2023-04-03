@@ -23,13 +23,14 @@ use error::Error as AppError;
 use scylla::{ Session, SessionBuilder};
 use actix_web::{web, cookie, App as ActixApp, HttpServer};
 
+use time::Duration;
 use scylla::query::Query;
 use tokio_postgres::NoTls;
 use scylla::frame::value::ValueList;
 use scylla::frame::value::BatchValues;
 use scylla::{QueryResult, BatchResult};
 use scylla::transport::errors::QueryError;
-use actix_session::{storage::RedisActorSessionStore, SessionMiddleware};
+use actix_session::{storage::RedisActorSessionStore, SessionMiddleware, config::PersistentSession};
 use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime};
 
 #[derive(Clone)]
@@ -63,12 +64,7 @@ impl App {
 async fn start_server(app: App) -> Result<()> {
     let host = env::var("HOST").unwrap();
     let port = env::var("PORT").unwrap();
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
-
-    // Generate a random 32 byte key. Note that it is important to use a unique
-    // private key for every project. Anyone with access to the key can generate
-    // authentication cookies for any user!
-    let private_key = cookie::Key::generate();
+    let private_key = cookie::Key::from("authUser".as_bytes());
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -87,6 +83,10 @@ async fn start_server(app: App) -> Result<()> {
                 SessionMiddleware::builder(
                     RedisActorSessionStore::new("127.0.0.1:6379"),
                     private_key.clone(),
+                )
+                .session_lifecycle(
+                    PersistentSession::default()
+                        .session_ttl(Duration::days(5))
                 )
                 .build()
             )
