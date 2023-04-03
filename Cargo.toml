@@ -1,5 +1,5 @@
 [package]
-name = "lily"
+name = "lily_get"
 version = "0.1.0"
 authors = ["Sankar boro <sankar.boro@yahoo.com>"]
 edition = "2018"
@@ -14,12 +14,12 @@ members = [
 [dependencies]
 
 #actix
-actix-web = "4"
-actix-cors = "0.6.0"
+actix-web = "4.3.1"
+actix-cors = "0.6.4"
 actix-service = "2.0.2"
-actix-multipart = "0.4.0"
-actix-session = "0.5.0-beta.7"
-actix-redis = "0.10.0-beta.5"
+actix-multipart = "0.6.0"
+actix-session = { version = "0.7.2", features = ["redis-actor-session"] }
+actix-redis = "0.12.0"
 
 #serializer
 serde = { version = "1.0.132", features = ["derive"] }

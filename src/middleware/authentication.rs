@@ -1,12 +1,11 @@
-use std::pin::Pin;
-use std::cell::RefCell;
 use std::rc::Rc;
+use std::pin::Pin;
+use futures::Future;
+use std::cell::RefCell;
+use actix_session::SessionExt;
+use futures::future::{ok, Ready};
 use actix_service::{Service, Transform};
 use actix_web::{dev::ServiceRequest, dev::ServiceResponse, Error, error::ErrorUnauthorized};
-use futures::future::{ok, Ready};
-use futures::Future;
-use actix_session::UserSession;
-
 
 #[derive(Debug, Clone)]
 pub struct Authentication;

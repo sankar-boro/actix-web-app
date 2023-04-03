@@ -2,46 +2,35 @@
 
 #[macro_use]
 extern crate lazy_static;
-mod route;
 mod user;
-mod helpers;
-mod middleware;
-mod utils;
-mod error;
-mod query;
 mod auth;
 mod book;
 mod blog;
+mod route;
+mod error;
+mod query;
+mod utils;
 mod common;
-// mod search;
+mod helpers;
+mod middleware;
 
 use std::env;
 use std::sync::Arc;
 use anyhow::Result;
-// use async_std::sync::Mutex;
-use error::Error as AppError;
-use actix_redis::RedisSession;
-use scylla::batch::Batch;
-use scylla::{
-    Session, 
-    SessionBuilder
-};
-use actix_web::{App as ActixApp, HttpServer};
-use actix_web::web::{
-    self, 
-    // Data
-};
 use actix_cors::Cors;
-// use log::{error};
+use scylla::batch::Batch;
+use error::Error as AppError;
+use scylla::{ Session, SessionBuilder};
+use actix_web::{web, cookie, App as ActixApp, HttpServer};
 
-use scylla::{QueryResult, BatchResult};
 use scylla::query::Query;
+use tokio_postgres::NoTls;
 use scylla::frame::value::ValueList;
 use scylla::frame::value::BatchValues;
+use scylla::{QueryResult, BatchResult};
 use scylla::transport::errors::QueryError;
-// use search::search::SearchHandler;
+use actix_session::{storage::RedisActorSessionStore, SessionMiddleware};
 use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime};
-use tokio_postgres::NoTls;
 
 #[derive(Clone)]
 pub struct App {
@@ -71,16 +60,15 @@ impl App {
     }
 }
 
-// fn search_data() {
-//     // let search = Data::new(Mutex::new(Search::new()));
-//     let (search, index) = SearchHandler::new();
-//     let search = Data::new(search);
-//     let index = Data::new(Mutex::new(index));
-// }
-
 async fn start_server(app: App) -> Result<()> {
     let host = env::var("HOST").unwrap();
     let port = env::var("PORT").unwrap();
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
+    // Generate a random 32 byte key. Note that it is important to use a unique
+    // private key for every project. Anyone with access to the key can generate
+    // authentication cookies for any user!
+    let private_key = cookie::Key::generate();
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -92,14 +80,17 @@ async fn start_server(app: App) -> Result<()> {
         ActixApp::new()
             .wrap(cors)
             .wrap(
-                RedisSession::new("127.0.0.1:6379", &[0; 32])
-                .cookie_name("lily-session")
-                .cookie_http_only(true)
-                .ttl(86400)
+                // RedisSession::new("127.0.0.1:6379", &[0; 32])
+                // .cookie_name("lily-session")
+                // .cookie_http_only(true)
+                // .ttl(86400)
+                SessionMiddleware::builder(
+                    RedisActorSessionStore::new("127.0.0.1:6379"),
+                    private_key.clone(),
+                )
+                .build()
             )
             .app_data(web::Data::new(app.clone()))
-            // .app_data(Data::clone(&search))
-            // .app_data(index.clone())
             .configure(route::routes)
     })
     .bind(format!("{}:{}", host, port))?

@@ -39,8 +39,8 @@ pub async fn signup(
         Err(err) => return Err(AppError::from(err).into())
     };
     
-    let fname = &request.fname;
-    let lname = &request.lname;
+    let fname = &request.fname.trim();
+    let lname = &request.lname.trim();
     let email = &request.email.trim();
     let client = app.pool.get().await?;
     let stmt = client.prepare_cached(INSERT_USER).await?;
