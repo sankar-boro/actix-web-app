@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse,web};
-use crate::App;
+use crate::Connections;
 use uuid::Uuid;
 use serde::{
     Serialize, 
@@ -19,7 +19,7 @@ use super::NextPageRequest;
 // cannot use * when getting all documents;
 static BOOKS_QUERY_CATEGORY: &'static str = "SELECT category, bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.categorybooks WHERE category";
 pub async fn getBooksWithPageSizeCategories(
-    app: web::Data<App>,
+    app: web::Data<Connections>,
     category: web::Path<String>,
 ) 
 -> Result<HttpResponse, crate::AppError> 
@@ -78,7 +78,7 @@ pub struct CategoryBooksMetadataResponse {
 
 
 pub async fn getBooksWithPageSizeCategoriesNext(
-    app: web::Data<App>,
+    app: web::Data<Connections>,
     category: web::Path<String>,
     request: web::Json<NextPageRequest>,
 ) 

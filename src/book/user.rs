@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse,web};
-use crate::App;
+use crate::Connections;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 
@@ -47,7 +47,7 @@ pub struct BlogsResponse {
 
 // cannot use * when getting all documents;
 static GET_ALL_BOOKS_FROM_ID: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userbooks WHERE authorId=";
-pub async fn getPagedBooksForAuthorId(app: web::Data<App>, path: web::Path<i32>) -> Result<HttpResponse, crate::AppError> {
+pub async fn getPagedBooksForAuthorId(app: web::Data<Connections>, path: web::Path<i32>) -> Result<HttpResponse, crate::AppError> {
     // let authorId = Uuid::parse_str(&author_id)?;
     let authorId = path.into_inner();
     let query = format!("{}{}", GET_ALL_BOOKS_FROM_ID, authorId);
@@ -77,7 +77,7 @@ pub async fn getPagedBooksForAuthorId(app: web::Data<App>, path: web::Path<i32>)
 
 // cannot use * when getting all documents;
 static GET_ALL_BLOGS_FROM_ID: &'static str = "SELECT blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userblogs WHERE authorId=";
-pub async fn getPagedBlogsForAuthorId(app: web::Data<App>, path: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
+pub async fn getPagedBlogsForAuthorId(app: web::Data<Connections>, path: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     // let authorId = Uuid::parse_str(&author_id)?;
     let authorId = path.into_inner();
     let query = format!("{}{}", GET_ALL_BLOGS_FROM_ID, authorId);
@@ -109,7 +109,7 @@ pub struct NextPageRequest {
 }
 
 pub async fn getNextPageBooksForAuthorId(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     author_id: web::Path<String>,
     request: web::Json<NextPageRequest>,
 ) -> Result<HttpResponse, crate::AppError> 
@@ -141,7 +141,7 @@ pub async fn getNextPageBooksForAuthorId(
 }
 
 pub async fn getNextPageBlogsForAuthorId(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     author_id: web::Path<String>,
     request: web::Json<NextPageRequest>,
 ) -> Result<HttpResponse, crate::AppError> 

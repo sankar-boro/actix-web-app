@@ -2,7 +2,7 @@ use actix_session::Session;
 use actix_web::{HttpResponse, web};
 use serde::{Serialize};
 // use uuid::Uuid;
-use crate::{App, utils::GetQueryResult};
+use crate::{Connections, utils::GetQueryResult};
 use scylla::{
     macros::FromRow,
     query::Query
@@ -22,7 +22,7 @@ pub struct CategoryResponse {
 
 static GET_CATEGORIES: &'static str = "SELECT category from sankar.allcategories";
 pub async fn get_all_category(
-    app: web::Data<App>
+    app: web::Data<Connections>
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
@@ -56,7 +56,7 @@ pub async fn get_all_category(
 
 static GET_USER_CATEGORIES: &'static str = "SELECT category FROM sankar.usercategories WHERE authorId=?";
 pub async fn get_user_categories(
-    app: web::Data<App>,
+    app: web::Data<Connections>,
     session: Session
 ) 
 -> Result<HttpResponse, crate::AppError> 

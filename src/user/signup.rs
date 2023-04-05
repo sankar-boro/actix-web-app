@@ -1,4 +1,4 @@
-use crate::App;
+use crate::Connections;
 use crate::AppError;
 
 use regex::Regex;
@@ -27,7 +27,7 @@ pub struct SignupForm {
 }
 
 pub async fn signup(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     request: web::Json<SignupForm>
 ) -> Result<HttpResponse, crate::AppError> {
     if let Err(err) = request.validate() {

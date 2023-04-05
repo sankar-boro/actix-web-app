@@ -1,4 +1,4 @@
-use crate::App;
+use crate::Connections;
 use crate::AppError;
 use scylla::macros::FromRow;
 
@@ -41,7 +41,7 @@ fn get_user_query(email: &str)
 static GET_USER: &str = "SELECT userId, fname, lname, pwd FROM users WHERE email=$1";
 pub async fn login(
 	request: web::Json<LoginForm>, 
-	app: web::Data<App>, 
+	app: web::Data<Connections>, 
 	session: Session
 ) 
 -> Result<HttpResponse, crate::AppError> 
@@ -86,7 +86,7 @@ pub struct GetUserX {
 static GET_USERX: &str = "SELECT userId, fname, lname, pwd FROM users WHERE email=$1";
 pub async fn get_user(
 	request: web::Json<GetUserX>, 
-	app: web::Data<App>
+	app: web::Data<Connections>
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
@@ -118,7 +118,7 @@ pub struct GetUserScylla {
 
 pub async fn get_user_scylla(
 	request: web::Json<GetUserX>, 
-	app: web::Data<App>
+	app: web::Data<Connections>
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {

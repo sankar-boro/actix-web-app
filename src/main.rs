@@ -13,58 +13,28 @@ mod utils;
 mod common;
 mod helpers;
 mod middleware;
+mod db;
+mod builder;
 
 use std::env;
-use std::sync::Arc;
 use anyhow::Result;
 use actix_cors::Cors;
-use scylla::batch::Batch;
 use error::Error as AppError;
-use scylla::{ Session, SessionBuilder};
 use actix_web::{web, cookie, App as ActixApp, HttpServer};
 
 use time::Duration;
-use scylla::query::Query;
-use tokio_postgres::NoTls;
-use scylla::frame::value::ValueList;
-use scylla::frame::value::BatchValues;
-use scylla::{QueryResult, BatchResult};
-use scylla::transport::errors::QueryError;
 use actix_session::{storage::RedisActorSessionStore, SessionMiddleware, config::PersistentSession};
-use deadpool_postgres::{Config, ManagerConfig, Pool, RecyclingMethod, Runtime};
 
-#[derive(Clone)]
-pub struct App {
-    pub session: Arc<Session>,
-    pub pool: Pool,
-}
+pub use builder::Connections;
 
-impl App {
-    fn new(session: Session, pool: Pool) -> Self {
-        Self {
-            session: Arc::new(session),
-            pool,
-        }
-    }
+async fn start_server(app: Connections) -> Result<()> {
+    let lp_host = env::var("LP_HOST").unwrap();
+    let lp_port = env::var("LP_PORT").unwrap();
+    let lp_port: u16 = lp_port.parse().unwrap();
+    let pkey = env::var("PRIVATE_KEY").unwrap();
+    let redis_uri = env::var("REDIS_URI").unwrap();
 
-    pub async fn query(&self, query: impl Into<Query>, values: impl ValueList) -> Result<QueryResult, QueryError>{
-        self.session.query(query, values).await
-    }
-
-    pub async fn query_paged(&self, query: impl Into<Query>, values: impl ValueList, page: Vec<u8>) -> Result<QueryResult, QueryError>{
-        let pagedata = Some(scylla::Bytes::from(page));
-        self.session.query_paged(query, values, pagedata).await
-    }
-
-    pub async fn batch(&self, query: &Batch, values: impl BatchValues) -> Result<BatchResult, QueryError>{
-        self.session.batch(query, values).await
-    }
-}
-
-async fn start_server(app: App) -> Result<()> {
-    let host = env::var("HOST").unwrap();
-    let port = env::var("PORT").unwrap();
-    let private_key = cookie::Key::from("authUser".as_bytes());
+    let private_key = cookie::Key::from(pkey.as_bytes());
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -76,12 +46,8 @@ async fn start_server(app: App) -> Result<()> {
         ActixApp::new()
             .wrap(cors)
             .wrap(
-                // RedisSession::new("127.0.0.1:6379", &[0; 32])
-                // .cookie_name("lily-session")
-                // .cookie_http_only(true)
-                // .ttl(86400)
                 SessionMiddleware::builder(
-                    RedisActorSessionStore::new("127.0.0.1:6379"),
+                    RedisActorSessionStore::new(&redis_uri),
                     private_key.clone(),
                 )
                 .session_lifecycle(
@@ -93,7 +59,7 @@ async fn start_server(app: App) -> Result<()> {
             .app_data(web::Data::new(app.clone()))
             .configure(route::routes)
     })
-    .bind(format!("{}:{}", host, port))?
+    .bind((lp_host, lp_port))?
     .run()
     .await?;
     Ok(())
@@ -105,14 +71,10 @@ async fn main() {
     std::env::set_var("RUST_LOG", "info");
     std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
-    let uri = "127.0.0.1:9042";
-    let session = SessionBuilder::new().known_node(uri).build().await.unwrap();
-    let mut cfg = Config::new();
-    cfg.dbname = Some("sankar".to_string());
-    cfg.user = Some("sankar".to_string());
-    cfg.password = Some("sankar".to_string());
-    cfg.manager = Some(ManagerConfig { recycling_method: RecyclingMethod::Fast });
-    let pool: Pool = cfg.create_pool(Some(Runtime::Tokio1), NoTls).unwrap();
-    let app = App::new(session, pool);
+    
+    let session = db::get_scylla_connection().await;
+    let pool = db::get_pg_connection().await;
+    
+    let app = Connections::new(session, pool);
     start_server(app).await.unwrap();
 }

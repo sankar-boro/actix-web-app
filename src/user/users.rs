@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse,web};
-use crate::App;
+use crate::Connections;
 use uuid::Uuid;
 use serde::Serialize;
 
@@ -15,7 +15,7 @@ struct GetUser {
 }
 
 static GET_ALL_TABLE_USERS: &str = "SELECT userId, fname, lname, email from sankar.users";
-pub async fn users(app: web::Data<App>) 
+pub async fn users(app: web::Data<Connections>) 
 -> Result<HttpResponse, crate::AppError> {
     let rows: Option<Vec<GetUser>> = 
 		app.query(GET_ALL_TABLE_USERS, &[])

@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse,web};
-use crate::App;
+use crate::Connections;
 use uuid::Uuid;
 use serde::{
     Serialize, 
@@ -34,7 +34,7 @@ pub struct BooksMetadataResponse {
 // cannot use * when getting all documents;
 static BOOKS_QUERY: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.books";
 pub async fn getBooksWithPageSize(
-    app: web::Data<App>
+    app: web::Data<Connections>
 ) 
 -> Result<HttpResponse, crate::AppError> 
 {
@@ -61,7 +61,7 @@ pub async fn getBooksWithPageSize(
 
 // cannot use * when getting all documents;
 pub async fn getNextBooksWithPageSize(
-    app: web::Data<App>,
+    app: web::Data<Connections>,
     request: web::Json<NextPageRequest>,
 ) 
 -> Result<HttpResponse, crate::AppError> {
@@ -110,7 +110,7 @@ pub struct BookNodesResponse {
 
 static GET_BOOK_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=? AND pageId=?";
 pub async fn getBookNodesWithPageSizeFromId(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     book_id: web::Path<String>
 ) -> Result<HttpResponse, crate::AppError> 
 {
@@ -145,7 +145,7 @@ pub struct PageNodesResponse {
 
 static GET_PAGE_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=? AND pageId=?";
 pub async fn getBookNodesForPage(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     ids: web::Path<(String, String)>
 ) -> Result<HttpResponse, crate::AppError> 
 {
@@ -159,7 +159,7 @@ pub async fn getBookNodesForPage(
 }
 
 pub async fn getNextBookNodesWithPageSizeFromId(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     book_id: web::Path<String>,
     request: web::Json<NextPageRequest>,
 ) -> Result<HttpResponse, crate::AppError> {

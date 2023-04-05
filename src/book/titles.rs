@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse,web};
-use crate::App;
+use crate::Connections;
 use uuid::Uuid;
 use serde::{Serialize};
 
@@ -25,7 +25,7 @@ pub struct TitleResponse {
 }
 
 pub async fn get_book_titles(
-    app: web::Data<App>,
+    app: web::Data<Connections>,
     book_id: web::Path<String>
 ) 
 -> Result<HttpResponse, crate::AppError> 

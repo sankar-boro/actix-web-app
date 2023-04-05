@@ -1,9 +1,9 @@
 use actix_web::{web, HttpResponse};
 use uuid::Uuid;
-use crate::App;
+use crate::Connections;
 
 #[allow(dead_code)]
-pub async fn delete_one(session: web::Data<App>, id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
+pub async fn delete_one(session: web::Data<Connections>, id: web::Path<String>) -> Result<HttpResponse, crate::AppError> {
     let user_id =  Uuid::parse_str(&id)?;
     
     session

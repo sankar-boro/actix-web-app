@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse,web};
-use crate::App;
+use crate::Connections;
 use uuid::Uuid;
 use serde::{Serialize, Deserialize};
 use scylla::{macros::FromRow, query::Query};
@@ -30,7 +30,7 @@ pub struct BlogsMetadataResponse {
 // cannot use * when getting all documents;
 static BLOGS_QUERY: &'static str = "SELECT blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.blogs";
 pub async fn getBlogsWithPageSize(
-    app: web::Data<App>
+    app: web::Data<Connections>
 ) 
 -> Result<HttpResponse, crate::AppError> {
     let query = Query::new(BLOGS_QUERY).with_page_size(GET_SIZE);
@@ -65,7 +65,7 @@ pub struct NextPageRequest {
 
 // cannot use * when getting all documents;
 pub async fn getNextBlogsWithPageSize(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     request: web::Json<NextPageRequest>
 ) 
 -> Result<HttpResponse, crate::AppError> {
@@ -117,7 +117,7 @@ pub struct BlogNodesResponse {
 
 static GET_BLOG_NODES_WITH_PAGE_SIZE: &'static str = "SELECT blogId, uniqueId, parentId, authorId, title, body, identity, metadata, url, createdAt, updatedAt from sankar.blog WHERE blogId=";
 pub async fn getBlogNodesWithPageSizeFromId(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     blog_id: web::Path<String>
 ) -> Result<HttpResponse, crate::AppError> 
 {
@@ -148,7 +148,7 @@ pub async fn getBlogNodesWithPageSizeFromId(
 
 
 pub async fn getNextBlogNodesWithPageSizeFromId(
-    app: web::Data<App>, 
+    app: web::Data<Connections>, 
     blog_id: web::Path<String>,
     request: web::Json<NextPageRequest>,
 ) -> Result<HttpResponse, crate::AppError> {
@@ -201,7 +201,7 @@ pub struct CategoryBlogsMetadataResponse {
 // cannot use * when getting all documents;
 static BOOKS_QUERY_CATEGORY: &'static str = "SELECT category, blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.categoryblogs WHERE category";
 pub async fn getBlogsWithPageSizeCategories(
-    app: web::Data<App>,
+    app: web::Data<Connections>,
     category: web::Path<String>,
 ) 
 -> Result<HttpResponse, crate::AppError> 
@@ -239,7 +239,7 @@ pub async fn getBlogsWithPageSizeCategories(
 }
 
 pub async fn getBlogsWithPageSizeCategoriesNext(
-    app: web::Data<App>,
+    app: web::Data<Connections>,
     category: web::Path<String>,
     request: web::Json<NextPageRequest>,
 ) 

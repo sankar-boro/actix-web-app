@@ -1,6 +1,6 @@
 use actix_session::Session;
 use actix_web::{HttpResponse,web};
-use crate::App;
+use crate::Connections;
 use uuid::Uuid;
 use serde::Serialize;
 use crate::AppError;
@@ -18,7 +18,7 @@ struct GetUser {
 
 static GET_USER: &str = "SELECT fname, lname, email from users where userId=$1";
 
-pub async fn get(app: web::Data<App>, path: web::Path<i32>) 
+pub async fn get(app: web::Data<Connections>, path: web::Path<i32>) 
 -> Result<HttpResponse, crate::AppError> {
     let user_id = path.into_inner();
     let client = app.pool.get().await?;
