@@ -30,9 +30,7 @@ pub async fn signup(
     app: web::Data<Connections>, 
     request: web::Json<SignupForm>
 ) -> Result<HttpResponse, crate::AppError> {
-    if let Err(err) = request.validate() {
-		return Err(AppError::from(err).into());
-	}
+    request.validate()?;
 
     let password = match encrypt_text(&request.password) {
         Ok(pass) => pass,
