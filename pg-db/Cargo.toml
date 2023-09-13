@@ -1,0 +1,55 @@
+[package]
+name = "pg-db"
+version = "0.1.0"
+authors = ["Sankar boro <sankar.boro@yahoo.com>"]
+edition = "2021"
+
+[dependencies]
+
+#actix
+actix-web 			= "4.3.1"
+actix-cors 			= "0.6.4"
+actix-service 		= "2.0.2"
+actix-multipart 	= "0.6.0"
+actix-session 		= { version = "0.7.2", features = ["redis-actor-session"] }
+actix-redis 		= "0.12.0"
+awc                 = { version="3.1.1", features=["openssl"] }
+
+#serializer
+serde 				= { version = "1.0.132", features = ["derive"] }
+serde_json 			= "1.0.73"
+jsonwebtoken 		= "7"
+
+#db
+deadpool-postgres 	= { version = "0.10.2", features = ["serde"] }
+tokio-pg-mapper 	= "0.2.0"
+tokio-pg-mapper-derive = "0.2.0"
+tokio-postgres 		= "0.7.6"
+config 				= "0.13.1"
+
+futures 			= "0.3.6"
+uuid 				= { version = "0.8", features = ["serde", "v1", "v4"] }
+bigdecimal 			= "0.2.0"
+num-bigint 			= "0.3"
+anyhow 				= "1.0.33"
+async-std 			= "1.9.0"
+validator 			= { version = "0.12", features = ["derive"] }
+derive_more 		= "0.99.11"
+chrono 				= "0.4.19"
+sanitize-filename 	= "0.3.0"
+rust-argon2 		= "0.8.3"
+time 				= "0.3.20"
+regex 				= "1.6.0"
+lazy_static 		= "1.4.0"
+# isahc 				= "1.7.2"
+# isahc = { version = "1.7.2", features = ["http2", "text-decoding"], default_features = false }
+isahc = { version = "1.0", features = ["http2", "text-decoding"], default_features = false }
+
+#logger
+env_logger 			= "0.8"
+log 				= "0.4"
+
+# search
+tempfile 			= "3.3.0"
+futures-io 			= "0.3.28"
+lily-utils = { path = "../lily-utils" }

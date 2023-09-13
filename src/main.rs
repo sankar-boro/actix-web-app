@@ -1,50 +1,31 @@
-#![allow(non_snake_case)]
-
-#[macro_use]
-extern crate lazy_static;
-mod user;
-mod auth;
-mod book;
-mod blog;
-mod route;
-mod error;
-mod query;
-mod utils;
-mod common;
-mod helpers;
-mod middleware;
-mod db;
-mod builder;
-
 use std::env;
 use anyhow::Result;
 use actix_cors::Cors;
-use error::Error as AppError;
+use actix_web::middleware::Condition;
+use pg_db::{pg_connection, route};
 use actix_web::{web, cookie, App as ActixApp, HttpServer};
-
-use time::Duration;
 use actix_session::{storage::RedisActorSessionStore, SessionMiddleware, config::PersistentSession};
+use time::Duration;
 
-pub use builder::Connections;
-
-async fn start_server(app: Connections) -> Result<()> {
+async fn start_server<T: Clone + Send + 'static>(app: T) -> Result<()> {
+    
     let lp_host = env::var("LP_HOST").unwrap();
     let lp_port = env::var("LP_PORT").unwrap();
     let lp_port: u16 = lp_port.parse().unwrap();
     let pkey = env::var("PRIVATE_KEY").unwrap();
     let redis_uri = env::var("REDIS_URI").unwrap();
+    let dev = env::var("DEV").unwrap();
+    let dev: bool = match dev.as_str() {
+        "TRUE" => true,
+        _ => false
+    };
 
     let private_key = cookie::Key::from(pkey.as_bytes());
 
     HttpServer::new(move || {
-        let cors = Cors::default()
-              .allow_any_origin()
-              .allow_any_method()
-              .allow_any_header()
-              .supports_credentials();
 
         ActixApp::new()
-            .wrap(cors)
+            .wrap(Condition::new(dev, Cors::permissive()))
             .wrap(
                 SessionMiddleware::builder(
                     RedisActorSessionStore::new(&redis_uri),
@@ -71,10 +52,6 @@ async fn main() {
     std::env::set_var("RUST_LOG", "info");
     std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
-    
-    let session = db::get_scylla_connection().await;
-    let pool = db::get_pg_connection().await;
-    
-    let app = Connections::new(session, pool);
-    start_server(app).await.unwrap();
+    let conn = pg_connection().await;
+    start_server(conn).await.unwrap();
 }
