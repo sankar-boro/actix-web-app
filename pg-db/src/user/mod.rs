@@ -18,9 +18,9 @@ pub async fn get_user(
 ) 
 -> Result<HttpResponse, Error> 
 {
-	let client = app.get().await.unwrap();
-    let stmt = client.prepare_cached(GET_USERX).await.unwrap();
-    let rows = client.query(&stmt, &[&request.email]).await.unwrap();
+	let client = app.get().await?;
+    let stmt = client.prepare_cached(GET_USERX).await?;
+    let rows = client.query(&stmt, &[&request.email]).await?;
 	let user_id: i32 = rows[0].get(0);
 	let fname: String = rows[0].get(1);
 	let lname: String = rows[0].get(2);

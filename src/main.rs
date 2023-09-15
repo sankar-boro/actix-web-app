@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate log;
+
 use std::env;
 use anyhow::Result;
 use actix_cors::Cors;
@@ -20,8 +23,9 @@ async fn start_server<T: Clone + Send + 'static>(app: T) -> Result<()> {
         _ => false
     };
 
-    let private_key = cookie::Key::from(pkey.as_bytes());
+    info!("starting server at host: {}, port: {}", lp_host, lp_port);
 
+    let private_key = cookie::Key::from(pkey.as_bytes());
     HttpServer::new(move || {
 
         ActixApp::new()

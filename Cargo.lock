@@ -2006,6 +2006,7 @@ dependencies = [
  "env_logger",
  "lazy_static",
  "lily-utils",
+ "log",
  "pg-db",
  "scylla-db",
  "time",

@@ -12,12 +12,12 @@ pub async fn get_all_book_nodes(
 ) 
 -> Result<HttpResponse, Error> 
 {
-	let bookid: i32 = path.parse().unwrap();
-    let conn = app.get().await.unwrap();
+	let bookid: i32 = path.parse()?;
+    let conn = app.get().await?;
     let books = conn.query(
         BOOK_DATA, 
         &[&bookid]
-    ).await.unwrap();
+    ).await?;
 
     let mut allbooks = Vec::new();
     for i in 0..books.len() {

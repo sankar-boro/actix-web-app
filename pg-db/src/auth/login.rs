@@ -33,9 +33,9 @@ pub async fn login(
 -> Result<HttpResponse, Error> 
 {
 	request.validate()?;
-	let client = app.get().await.unwrap();
-    let stmt = client.prepare_cached(GET_USER).await.unwrap();
-    let rows = client.query(&stmt, &[&request.email]).await.unwrap();
+	let client = app.get().await?;
+    let stmt = client.prepare_cached(GET_USER).await?;
+    let rows = client.query(&stmt, &[&request.email]).await?;
 	if rows.len() == 0 {
 		let unf = json!({
 			"status": 500,

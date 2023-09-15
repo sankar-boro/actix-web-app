@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use argon2;
 use serde_json;
 use serde::Serialize;
@@ -145,6 +147,33 @@ impl From<SessionInsertError> for Error {
 
 impl From<SessionGetError> for Error {
     fn from(e: SessionGetError) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+
+impl From<tokio_postgres::Error> for Error {
+    fn from(e: tokio_postgres::Error) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+
+impl From<ParseIntError> for Error {
+    fn from(e: ParseIntError) -> Self {
+        Error {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: e.to_string(),
+        }
+    }
+}
+
+impl From<deadpool_postgres::PoolError> for Error {
+    fn from(e: deadpool_postgres::PoolError) -> Self {
         Error {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             message: e.to_string(),
