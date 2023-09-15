@@ -22,35 +22,40 @@ macro_rules! create_query {
 }
 
 /* Book */
+
+// GET
 pub static ALL_BOOKS: &str = "SELECT uid, authorid, title, body, metadata, createdat FROM book";
 pub static BOOK_DATA: &str = "SELECT uid, authorid, bookid, parentid, title, body, identity, metadata, createdat FROM booknode WHERE bookid=$1";
+pub static GET_BOOK_TITLES_FOR_ID: &str = "SELECT uid, parentid, title, identity, createdat FROM title WHERE bookid=$1";
 
+// INSERT
 pub static CREATE_BOOK: &str = "INSERT INTO book (
     authorid, title, body, imageurl, metadata
 ) VALUES(
     $1, $2, $3, $4, $5
 ) RETURNING uid";
-
 pub static CREATE_BOOK_TITLE: &str = "INSERT INTO title (
     bookid, parentid, title, identity
 ) VALUES(
     $1, $2, $3, $4
 )";
-
 pub static CREATE_BOOK_NODE: &str = "INSERT INTO booknode (
     authorid, bookid, parentid, title, body, imageurl, identity, metadata
 ) VALUES(
     $1, $2, $3, $4, $5, $6, $7, $8
 )";
 
+// UPDATE
 pub static UPDATE_BOOKS: &str = "UPDATE books SET title=$1, body=$2, metadata=$3 WHERE uid=$4";
 
+// DELETE
 pub static DELETE_BOOKS: &str = "DELETE FROM books where uid=$1";
+
 /* Book */
 
 
 /* Blog */
-
+pub static ALL_BLOGS: &str = "SELECT uid, authorid, title, body, metadata, createdat FROM blog";
 pub static BLOG_DATA: &str = "SELECT uid, authorid, blogid, parentid, title, body, identity, metadata FROM blognode WHERE blogid=$1";
 
 pub static CREATE_BLOG: &str = "INSERT INTO blog (

@@ -2,6 +2,7 @@ mod model;
 mod controller;
 
 pub use controller::{
-    get_all_book_nodes, 
-    get_all_books
+    node_all, 
+    get_all_books,
+    title_all
 };

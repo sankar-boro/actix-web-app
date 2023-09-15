@@ -29,7 +29,7 @@ pub struct UpdateRequest {
     pub metadata: String
 }
 
-#[derive(Deserialize, Validate, Serialize, Clone)]
+#[derive(Serialize)]
 pub struct GetBook {
     pub uid: i32,
     pub authorid: i32,
@@ -39,15 +39,23 @@ pub struct GetBook {
     pub body: String,
     pub identity: i16,
     pub metadata: String,
-    pub createdat: String,
+    pub createdat: std::time::SystemTime,
 }
 
-#[derive(Deserialize, Validate, Serialize, Clone)]
+#[derive(Serialize)]
 pub struct GetBooks {
     pub uid: i32,
     pub authorid: i32,
     pub title: String,
     pub body: String,
     pub metadata: String,
-    pub createdat: String,
+    pub createdat: std::time::SystemTime,
+}
+
+#[derive(Serialize)]
+pub struct GetBookTitles {
+    pub uid: i32,
+    pub parentid: Option<i32>,
+    pub title: String,
+    pub identity: i16,
 }

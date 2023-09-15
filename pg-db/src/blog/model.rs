@@ -39,7 +39,7 @@ pub struct GetBlog {
     pub body: String,
     pub identity: i16,
     pub metadata: String,
-    pub createdat: String,
+    pub createdat: std::time::SystemTime,
 }
 
 #[derive(Deserialize, Validate, Serialize, Clone)]
@@ -49,5 +49,5 @@ pub struct GetBlogs {
     pub title: String,
     pub body: String,
     pub metadata: String,
-    pub createdat: String,
+    pub createdat: std::time::SystemTime,
 }
