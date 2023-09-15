@@ -1,5 +1,6 @@
 use crate::error::Error;
 
+use actix_session::Session;
 use deadpool_postgres::Pool;
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
@@ -32,4 +33,19 @@ pub async fn get_user(
 		"lname": lname.clone(),
 	});
 	Ok(HttpResponse::Ok().json(auth_user_session))
+}
+
+pub async fn user_session(session: Session) 
+-> Result<HttpResponse, actix_web::Error> {
+    let auth_user_session = session.get::<String>("AUTH_USER")?;
+    match auth_user_session {
+        Some(session) => {
+            Ok(HttpResponse::Ok().json(json!({
+				"status": 200,
+				"auth": true,
+				"data": session
+			})))
+        }
+        None => Err(Error::from("REQUEST_LOGIN").into())   
+    }
 }

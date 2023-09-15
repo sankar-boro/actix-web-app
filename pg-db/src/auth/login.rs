@@ -1,4 +1,5 @@
 use crate::error::Error;
+use crate::query::LOGIN;
 
 use deadpool_postgres::Pool;
 use validator::Validate;
@@ -24,7 +25,6 @@ pub struct GetUser {
 	lname: String,
 }
 
-static GET_USER: &str = "SELECT userId, fname, lname, pwd FROM users WHERE email=$1";
 pub async fn login(
 	request: web::Json<LoginForm>, 
 	app: web::Data<Pool>, 
@@ -34,7 +34,7 @@ pub async fn login(
 {
 	request.validate()?;
 	let client = app.get().await?;
-    let stmt = client.prepare_cached(GET_USER).await?;
+    let stmt = client.prepare_cached(LOGIN).await?;
     let rows = client.query(&stmt, &[&request.email]).await?;
 	if rows.len() == 0 {
 		let unf = json!({

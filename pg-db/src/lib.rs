@@ -3,6 +3,7 @@
 pub mod user;
 mod auth;
 mod book;
+mod blog;
 mod query;
 mod error;
 mod connection;

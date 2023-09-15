@@ -22,8 +22,8 @@ macro_rules! create_query {
 }
 
 /* Book */
-
-pub static BOOK_DATA: &str = "SELECT uid, authorid, bookid, parentid, title, body, identity, metadata FROM booknode WHERE bookid=$1";
+pub static ALL_BOOKS: &str = "SELECT uid, authorid, title, body, metadata, createdat FROM book";
+pub static BOOK_DATA: &str = "SELECT uid, authorid, bookid, parentid, title, body, identity, metadata, createdat FROM booknode WHERE bookid=$1";
 
 pub static CREATE_BOOK: &str = "INSERT INTO book (
     authorid, title, body, imageurl, metadata
@@ -135,3 +135,4 @@ pub static UNFOLLOW_USER: &str = "DELETE FROM sankar.followers WHERE userId=? AN
 pub static DELETE_USERBOOKS: &str = "DELETE FROM sankar.userbooks where authorId=? AND bookId IN (?)";
 
 pub static SIGNUP: &str = "INSERT INTO users (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING uid";
+pub static LOGIN: &str = "SELECT uid, fname, lname, password FROM users WHERE email=$1";

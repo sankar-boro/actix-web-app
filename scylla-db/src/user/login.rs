@@ -3,13 +3,11 @@ use crate::error::Error;
 use scylla::macros::FromRow;
 
 use uuid::Uuid;
-use validator::{Validate};
+use validator::Validate;
 use actix_session::Session;
 use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
-use crate::utils::{
-	GetQueryResult,
-};
+use crate::utils::GetQueryResult;
 use serde_json::json;
 use lily_utils::validate_user_credentials;
 

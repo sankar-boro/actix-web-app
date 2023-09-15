@@ -21,6 +21,7 @@ CREATE TABLE users (
 ### Create Books table
 
 ```sql
+
 CREATE TABLE book (
 	uid serial PRIMARY KEY,
   	authorid INT NOT NULL,

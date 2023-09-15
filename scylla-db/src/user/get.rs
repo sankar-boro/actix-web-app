@@ -50,7 +50,11 @@ pub async fn user_session(session: Session)
     let auth_user_session = session.get::<String>("AUTH_USER")?;
     match auth_user_session {
         Some(session) => {
-            Ok(HttpResponse::Ok().body(session))
+            Ok(HttpResponse::Ok().json(json!({
+				"status": 200,
+				"auth": true,
+				"data": session
+			})))
         }
         None => Err(Error::from("REQUEST_LOGIN").into())   
     }

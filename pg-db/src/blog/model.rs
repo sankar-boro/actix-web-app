@@ -17,7 +17,7 @@ pub struct ParentRequest {
 }
 
 #[derive(Deserialize)]
-pub struct DeleteBookRequest {
+pub struct DeleteBlogRequest {
     pub uid: String,
 }
 
@@ -30,10 +30,10 @@ pub struct UpdateRequest {
 }
 
 #[derive(Deserialize, Validate, Serialize, Clone)]
-pub struct GetBook {
+pub struct GetBlog {
     pub uid: i32,
     pub authorid: i32,
-    pub bookid: i32,
+    pub blogid: i32,
     pub parentid: Option<i32>,
     pub title: String,
     pub body: String,
@@ -43,7 +43,7 @@ pub struct GetBook {
 }
 
 #[derive(Deserialize, Validate, Serialize, Clone)]
-pub struct GetBooks {
+pub struct GetBlogs {
     pub uid: i32,
     pub authorid: i32,
     pub title: String,
