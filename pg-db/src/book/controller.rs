@@ -1,4 +1,4 @@
-use crate::query::{BOOK_DATA, ALL_BOOKS, GET_BOOK_TITLES_FOR_ID};
+use crate::query::{BOOK_DATA, GET_BOOK_TITLES_FOR_ID};
 use deadpool_postgres::Pool;
 use actix_session::Session;
 use actix_web::{HttpResponse, web};
@@ -6,6 +6,7 @@ use serde_json::json;
 use crate::error::Error;
 use super::model::{GetBook, GetBooks, GetBookTitles};
 
+pub static BOOKS: &str = "SELECT uid, authorid, title, body, metadata, createdat FROM book";
 pub async fn get_all_books(
     app: web::Data<Pool>,
     _: Session
@@ -14,7 +15,7 @@ pub async fn get_all_books(
 {
     let conn = app.get().await?;
     let books = conn.query(
-        ALL_BOOKS, 
+        BOOKS, 
         &[]
     ).await?;
 

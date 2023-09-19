@@ -1,4 +1,4 @@
-use crate::{user, book, blog};
+use crate::{user, book, blog, booknode};
 use crate::auth::login;
 use actix_web::web;
 
@@ -22,6 +22,12 @@ pub fn routes(config: &mut web::ServiceConfig) {
     web::scope("/book")
     .route("/node/{bookid}/all", web::get().to(book::node_all))
     .route("/title/{bookid}/all", web::get().to(book::title_all))
+  );
+
+  // booknode
+  config.service(
+    web::scope("/booknode")
+    .route("/pages/{docid}/{pageid}", web::get().to(booknode::nodes))
   );
 
   // blogs

@@ -7,6 +7,7 @@ mod blog;
 mod query;
 mod error;
 mod connection;
+mod booknode;
 
 pub mod route;
 pub use connection::pg_connection;

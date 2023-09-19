@@ -1,4 +1,4 @@
-use crate::query::{BOOK_DATA, ALL_BOOKS};
+use crate::query::{BOOK_DATA};
 use deadpool_postgres::Pool;
 use actix_session::Session;
 use actix_web::{HttpResponse, web};
@@ -6,6 +6,7 @@ use serde_json::json;
 use crate::error::Error;
 use super::model::{GetBlog, GetBlogs};
 
+pub static BLOGS: &str = "SELECT uid, authorid, title, body, metadata, createdat FROM blog";
 pub async fn get_all_blogs(
     app: web::Data<Pool>,
     _: Session
@@ -14,7 +15,7 @@ pub async fn get_all_blogs(
 {
     let conn = app.get().await?;
     let blogs = conn.query(
-        ALL_BOOKS, 
+        BLOGS, 
         &[]
     ).await?;
 

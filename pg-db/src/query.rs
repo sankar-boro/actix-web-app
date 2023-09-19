@@ -24,7 +24,6 @@ macro_rules! create_query {
 /* Book */
 
 // GET
-pub static ALL_BOOKS: &str = "SELECT uid, authorid, title, body, metadata, createdat FROM book";
 pub static BOOK_DATA: &str = "SELECT uid, authorid, bookid, parentid, title, body, identity, metadata, createdat FROM booknode WHERE bookid=$1";
 pub static GET_BOOK_TITLES_FOR_ID: &str = "SELECT uid, parentid, title, identity, createdat FROM title WHERE bookid=$1";
 
