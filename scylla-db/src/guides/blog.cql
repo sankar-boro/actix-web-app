@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS userblogs;
 DROP TABLE IF EXISTS categoryblogs;
 
 CREATE TABLE blogs (
-    blogId timeuuid,
+    docid timeuuid,
     authorId int,
     title varchar,
     body text,
@@ -14,10 +14,10 @@ CREATE TABLE blogs (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (blogId)
+    PRIMARY KEY (docid)
 );
 CREATE TABLE blog (
-    blogId timeuuid,
+    docid timeuuid,
     uniqueId timeuuid,
     parentId timeuuid,
     authorId int,
@@ -28,10 +28,10 @@ CREATE TABLE blog (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (blogId, uniqueId)
+    PRIMARY KEY (docid, uniqueId)
 );
 CREATE TABLE userblogs (
-    blogId timeuuid,
+    docid timeuuid,
     authorId int,
     title varchar,
     body text,
@@ -39,11 +39,11 @@ CREATE TABLE userblogs (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (authorId, blogId)
+    PRIMARY KEY (authorId, docid)
 );
 CREATE TABLE categoryblogs (
     category text,
-    blogId timeuuid,
+    docid timeuuid,
     authorId int,
     title varchar,
     body text,
@@ -51,7 +51,7 @@ CREATE TABLE categoryblogs (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (category, blogId)
+    PRIMARY KEY (category, docid)
 );
 
 TRUNCATE TABLE sankar.blogs;

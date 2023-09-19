@@ -31,7 +31,7 @@ DROP TABLE IF EXISTS userblogs;
 DROP TABLE IF EXISTS categoryblogs;
 
 CREATE TABLE blogs (
-    blogId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -39,10 +39,10 @@ CREATE TABLE blogs (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (blogId)
+    PRIMARY KEY (docid)
 );
 CREATE TABLE blog (
-    blogId timeuuid,
+    docid timeuuid,
     uniqueId timeuuid,
     parentId timeuuid,
     authorId timeuuid,
@@ -53,10 +53,10 @@ CREATE TABLE blog (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (blogId, uniqueId)
+    PRIMARY KEY (docid, uniqueId)
 );
 CREATE TABLE userblogs (
-    blogId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -64,11 +64,11 @@ CREATE TABLE userblogs (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (authorId, blogId)
+    PRIMARY KEY (authorId, docid)
 );
 CREATE TABLE categoryblogs (
     category text,
-    blogId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -76,7 +76,7 @@ CREATE TABLE categoryblogs (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (category, blogId)
+    PRIMARY KEY (category, docid)
 );
 
 DROP TABLE IF EXISTS book;
@@ -85,7 +85,7 @@ DROP TABLE IF EXISTS userbooks;
 DROP TABLE IF EXISTS categorybooks;
 
 CREATE TABLE books (
-    bookId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -93,10 +93,10 @@ CREATE TABLE books (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (bookId)
+    PRIMARY KEY (docid)
 );
 CREATE TABLE book (
-    bookId timeuuid,
+    docid timeuuid,
     uniqueId timeuuid,
     parentId timeuuid,
     authorId timeuuid,
@@ -107,10 +107,10 @@ CREATE TABLE book (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (bookId, uniqueId)
+    PRIMARY KEY (docid, uniqueId)
 );
 CREATE TABLE userbooks (
-    bookId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -118,11 +118,11 @@ CREATE TABLE userbooks (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (authorId, bookId)
+    PRIMARY KEY (authorId, docid)
 );
 CREATE TABLE categorybooks (
     category text,
-    bookId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -130,10 +130,10 @@ CREATE TABLE categorybooks (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (category, bookId)
+    PRIMARY KEY (category, docid)
 );
 CREATE TABLE updatebooknode (
-    bookId timeuuid,
+    docid timeuuid,
     uniqueId timeuuid,
     parentId timeuuid,
     authorId timeuuid,
@@ -141,7 +141,7 @@ CREATE TABLE updatebooknode (
     identity smallint,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY ((bookId, parentId), uniqueId)
+    PRIMARY KEY ((docid, parentId), uniqueId)
 ) WITH CLUSTERING ORDER BY (uniqueId DESC);
 
 DROP TABLE IF EXISTS usercategories;

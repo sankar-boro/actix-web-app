@@ -24,8 +24,8 @@ macro_rules! create_query {
 /* Book */
 
 // GET
-pub static BOOK_DATA: &str = "SELECT uid, authorid, bookid, parentid, title, body, identity, metadata, createdat FROM booknode WHERE bookid=$1";
-pub static GET_BOOK_TITLES_FOR_ID: &str = "SELECT uid, parentid, title, identity, createdat FROM title WHERE bookid=$1";
+pub static BOOK_DATA: &str = "SELECT uid, authorid, docid, parentid, title, body, identity, metadata, createdat FROM booknode WHERE docid=$1";
+pub static GET_BOOK_TITLES_FOR_ID: &str = "SELECT uid, parentid, title, identity, createdat FROM title WHERE docid=$1";
 
 // INSERT
 pub static CREATE_BOOK: &str = "INSERT INTO book (
@@ -34,12 +34,12 @@ pub static CREATE_BOOK: &str = "INSERT INTO book (
     $1, $2, $3, $4, $5
 ) RETURNING uid";
 pub static CREATE_BOOK_TITLE: &str = "INSERT INTO title (
-    bookid, parentid, title, identity
+    docid, parentid, title, identity
 ) VALUES(
     $1, $2, $3, $4
 )";
 pub static CREATE_BOOK_NODE: &str = "INSERT INTO booknode (
-    authorid, bookid, parentid, title, body, imageurl, identity, metadata
+    authorid, docid, parentid, title, body, imageurl, identity, metadata
 ) VALUES(
     $1, $2, $3, $4, $5, $6, $7, $8
 )";
@@ -55,7 +55,7 @@ pub static DELETE_BOOKS: &str = "DELETE FROM books where uid=$1";
 
 /* Blog */
 pub static ALL_BLOGS: &str = "SELECT uid, authorid, title, body, metadata, createdat FROM blog";
-pub static BLOG_DATA: &str = "SELECT uid, authorid, blogid, parentid, title, body, identity, metadata FROM blognode WHERE blogid=$1";
+pub static BLOG_DATA: &str = "SELECT uid, authorid, docid, parentid, title, body, identity, metadata FROM blognode WHERE docid=$1";
 
 pub static CREATE_BLOG: &str = "INSERT INTO blog (
     authorid, title, body, imageurl, metadata
@@ -64,7 +64,7 @@ pub static CREATE_BLOG: &str = "INSERT INTO blog (
 ) RETURNING uid";
 
 pub static CREATE_BLOG_NODE: &str = "INSERT INTO blognode (
-    authorid, blogid, parentid, title, body, imageurl, identity, metadata
+    authorid, docid, parentid, title, body, imageurl, identity, metadata
 ) VALUES(
     $1, $2, $3, $4, $5, $6, $7, $8
 )";
@@ -82,12 +82,12 @@ pub static DELETE_BLOGS: &str = "DELETE FROM blogs where uid=$1";
 
 
 pub static CREATE_USER_BOOKS: &str = "INSERT INTO sankar.userbooks (
-    bookId, authorId, title, body, url, metadata, createdAt, updatedAt
+    docid, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?
 )";
 pub static CREATE_CATEGORY_BOOKS: &str = "INSERT INTO sankar.categorybooks (
-    category, bookId, authorId, title, body, url, metadata, createdAt, updatedAt
+    category, docid, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
@@ -98,19 +98,19 @@ pub static ADD_USER_CATEGORY: &str = "INSERT INTO sankar.usercategories (
 ) IF NOT EXISTS";
 pub static DELETE_CATEGORY: &str = "DELETE FROM sankar.usercategories WHERE authorId=? AND category=?";
 pub static CREATE_BLOGS: &str = "INSERT INTO sankar.blogs (
-    blogId, authorId, title, body, url, metadata, createdAt, updatedAt
+    docid, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub static CREATE_USER_BLOGS: &str = "INSERT INTO sankar.userblogs (
-    blogId, authorId, title, body, url, metadata, createdAt, updatedAt
+    docid, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?
 )";
 
 pub static CREATE_CATEGORY_BLOGS: &str = "INSERT INTO sankar.categoryblogs (
-    category, blogId, authorId, title, body, url, metadata, createdAt, updatedAt
+    category, docid, authorId, title, body, url, metadata, createdAt, updatedAt
 ) VALUES(
     ?, ?, ?, ?, ?, ?, ?, ?, ?
 )";
@@ -122,12 +122,12 @@ pub static CREATE_ALLCATEGORY: &str = "INSERT INTO sankar.allcategories (
 ) IF NOT EXISTS";
 
 pub static CREATE_USER_BOOK_SETTINGS: &str = "INSERT INTO sankar.userbooksettings (
-    authorId, bookId, settings
+    authorId, docid, settings
 ) VALUES(
     ?, ?, ?
 )";
 
-pub static UPDATE_USER_BOOK_SETTINGS: &str = "UPDATE sankar.userbooksettings SET settings=? where authorId=? AND bookId=?";
+pub static UPDATE_USER_BOOK_SETTINGS: &str = "UPDATE sankar.userbooksettings SET settings=? where authorId=? AND docid=?";
 
 pub static FOLLOW_USER: &str = "INSERT INTO sankar.followers (
     userId, followerId, createdAt, updatedAt
@@ -136,7 +136,7 @@ pub static FOLLOW_USER: &str = "INSERT INTO sankar.followers (
 ) IF NOT EXISTS";
 pub static UNFOLLOW_USER: &str = "DELETE FROM sankar.followers WHERE userId=? AND followerId=?";
 
-pub static DELETE_USERBOOKS: &str = "DELETE FROM sankar.userbooks where authorId=? AND bookId IN (?)";
+pub static DELETE_USERBOOKS: &str = "DELETE FROM sankar.userbooks where authorId=? AND docid IN (?)";
 
 pub static SIGNUP: &str = "INSERT INTO users (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING uid";
 pub static LOGIN: &str = "SELECT uid, fname, lname, password FROM users WHERE email=$1";

@@ -14,7 +14,7 @@ use crate::Error;
 
 #[derive(FromRow, Serialize)]
 pub struct BookMetadata {
-    bookId: Uuid,
+    docid: Uuid,
     authorId: i32,
     title: String,
     body: String,
@@ -31,7 +31,7 @@ pub struct BooksMetadataResponse {
 }
 
 // cannot use * when getting all documents;
-static BOOKS_QUERY: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.books";
+static BOOKS_QUERY: &'static str = "SELECT docid, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.books";
 pub async fn getBooksWithPageSize(
     app: web::Data<Connections>
 ) 
@@ -87,7 +87,7 @@ pub async fn getNextBooksWithPageSize(
 
 #[derive(FromRow, Serialize)]
 pub struct BookNode {
-    bookId: Uuid,
+    docid: Uuid,
     pageId: Uuid,
     uniqueId: Uuid,
     parentId: Option<Uuid>,
@@ -107,14 +107,14 @@ pub struct BookNodesResponse {
     page: Option<Vec<u8>>
 }
 
-static GET_BOOK_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=? AND pageId=?";
+static GET_BOOK_NODES_WITH_PAGE_SIZE: &'static str = "SELECT docid, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE docid=? AND pageId=?";
 pub async fn getBookNodesWithPageSizeFromId(
     app: web::Data<Connections>, 
     book_id: web::Path<String>
 ) -> Result<HttpResponse, Error> 
 {
-    let bookId = Uuid::parse_str(&book_id)?;
-    let documents= app.query(GET_BOOK_NODES_WITH_PAGE_SIZE, (&bookId, &bookId, ))
+    let docid = Uuid::parse_str(&book_id)?;
+    let documents= app.query(GET_BOOK_NODES_WITH_PAGE_SIZE, (&docid, &docid, ))
 		.await?;
 	let page = documents.paging_state.clone();
     let documents: Option<Vec<BookNode>> = documents.get_query_result()?;
@@ -142,15 +142,15 @@ pub struct PageNodesResponse {
     nodes: Option<Vec<BookNode>>
 }
 
-static GET_PAGE_NODES_WITH_PAGE_SIZE: &'static str = "SELECT bookId, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE bookId=? AND pageId=?";
+static GET_PAGE_NODES_WITH_PAGE_SIZE: &'static str = "SELECT docid, pageId, uniqueId, parentId, authorId, title, body, url, identity, metadata, createdAt, updatedAt from sankar.book WHERE docid=? AND pageId=?";
 pub async fn getBookNodesForPage(
     app: web::Data<Connections>, 
     ids: web::Path<(String, String)>
 ) -> Result<HttpResponse, Error> 
 {
-    let bookId = Uuid::parse_str(&ids.0)?;
+    let docid = Uuid::parse_str(&ids.0)?;
     let pageId = Uuid::parse_str(&ids.1)?;
-    let nodes = app.query(GET_PAGE_NODES_WITH_PAGE_SIZE, (&bookId, &pageId, ))
+    let nodes = app.query(GET_PAGE_NODES_WITH_PAGE_SIZE, (&docid, &pageId, ))
 		.await?;
     let nodes: Option<Vec<BookNode>> = nodes.get_query_result()?;
 
@@ -162,8 +162,8 @@ pub async fn getNextBookNodesWithPageSizeFromId(
     book_id: web::Path<String>,
     request: web::Json<NextPageRequest>,
 ) -> Result<HttpResponse, Error> {
-    let bookId = Uuid::parse_str(&book_id)?;
-    let query = format!("{}{}", GET_BOOK_NODES_WITH_PAGE_SIZE, &bookId);
+    let docid = Uuid::parse_str(&book_id)?;
+    let query = format!("{}{}", GET_BOOK_NODES_WITH_PAGE_SIZE, &docid);
     let query = Query::new(query).with_page_size(PAGE_SIZE);
     let page: Vec<u8> = request.page.clone();
     let documents= app.query_paged(query, &[], page)

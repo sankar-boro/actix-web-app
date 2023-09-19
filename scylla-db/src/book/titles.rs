@@ -11,14 +11,14 @@ use crate::Error;
 
 #[derive(FromRow, Serialize)]
 pub struct BookMetadata {
-    bookId: Uuid,
+    docid: Uuid,
     parentId: Uuid,
     uniqueId: Uuid,
     title: String,
     identity: i16
 }
 
-static BOOK_TITLES: &'static str = "SELECT bookId, parentId, uniqueId, title, identity from sankar.book_title WHERE bookId=?";
+static BOOK_TITLES: &'static str = "SELECT docid, parentId, uniqueId, title, identity from sankar.book_title WHERE docid=?";
 
 #[derive(Serialize)]
 pub struct TitleResponse {

@@ -12,7 +12,7 @@ use crate::Error;
 
 #[derive(FromRow, Serialize)]
 pub struct BookMetadata {
-    bookId: Uuid,
+    docid: Uuid,
     authorId: Option<i32>,
     title: String,
     body: String,
@@ -30,7 +30,7 @@ pub struct BooksResponse {
 
 #[derive(FromRow, Serialize)]
 pub struct BlogMetadata {
-    blogId: Uuid,
+    docid: Uuid,
     authorId: Option<i32>,
     title: String,
     body: String,
@@ -46,7 +46,7 @@ pub struct BlogsResponse {
 }
 
 // cannot use * when getting all documents;
-static GET_ALL_BOOKS_FROM_ID: &'static str = "SELECT bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userbooks WHERE authorId=";
+static GET_ALL_BOOKS_FROM_ID: &'static str = "SELECT docid, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userbooks WHERE authorId=";
 pub async fn getPagedBooksForAuthorId(app: web::Data<Connections>, path: web::Path<i32>) -> Result<HttpResponse, Error> {
     // let authorId = Uuid::parse_str(&author_id)?;
     let authorId = path.into_inner();
@@ -76,7 +76,7 @@ pub async fn getPagedBooksForAuthorId(app: web::Data<Connections>, path: web::Pa
 }
 
 // cannot use * when getting all documents;
-static GET_ALL_BLOGS_FROM_ID: &'static str = "SELECT blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userblogs WHERE authorId=";
+static GET_ALL_BLOGS_FROM_ID: &'static str = "SELECT docid, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.userblogs WHERE authorId=";
 pub async fn getPagedBlogsForAuthorId(app: web::Data<Connections>, path: web::Path<String>) -> Result<HttpResponse, Error> {
     // let authorId = Uuid::parse_str(&author_id)?;
     let authorId = path.into_inner();

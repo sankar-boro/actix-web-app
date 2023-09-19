@@ -17,7 +17,7 @@ use crate::query::{
 use super::NextPageRequest;
 
 // cannot use * when getting all documents;
-static BOOKS_QUERY_CATEGORY: &'static str = "SELECT category, bookId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.categorybooks WHERE category";
+static BOOKS_QUERY_CATEGORY: &'static str = "SELECT category, docid, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.categorybooks WHERE category";
 pub async fn getBooksWithPageSizeCategories(
     app: web::Data<Connections>,
     category: web::Path<String>,
@@ -60,7 +60,7 @@ pub async fn getBooksWithPageSizeCategories(
 #[derive(FromRow, Serialize)]
 pub struct CategoryBookMetadata {
     category: String,
-    bookId: Uuid,
+    docid: Uuid,
     authorId: i32,
     title: String,
     body: String,

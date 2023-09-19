@@ -17,7 +17,7 @@ pub struct GetNodes {
     pub createdat: std::time::SystemTime,
 }
 
-pub static NODES: &str = "SELECT uid, authorid, parentid, title, body, identity, metadata, createdat FROM booknode where bookid=$1 AND pageid=$2";
+pub static NODES: &str = "SELECT uid, authorid, parentid, title, body, identity, metadata, createdat FROM booknode where docid=$1 AND pageid=$2";
 pub async fn nodes(
     app: web::Data<Pool>,
     path: web::Path<(String, String)>

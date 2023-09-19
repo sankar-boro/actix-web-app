@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS categorybooks;
 DROP TABLE IF EXISTS updatebooknode;
 
 CREATE TABLE books (
-    bookId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -15,10 +15,10 @@ CREATE TABLE books (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (bookId, createdAt)
+    PRIMARY KEY (docid, createdAt)
 ) WITH CLUSTERING ORDER BY (createdAt DESC);
 CREATE TABLE book (
-    bookId timeuuid,
+    docid timeuuid,
     uniqueId timeuuid,
     parentId timeuuid,
     authorId timeuuid,
@@ -29,10 +29,10 @@ CREATE TABLE book (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (bookId, uniqueId)
+    PRIMARY KEY (docid, uniqueId)
 ) WITH CLUSTERING ORDER BY (uniqueId DESC);
 CREATE TABLE userbooks (
-    bookId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -40,11 +40,11 @@ CREATE TABLE userbooks (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (authorId, bookId)
-) WITH CLUSTERING ORDER BY (bookId DESC);
+    PRIMARY KEY (authorId, docid)
+) WITH CLUSTERING ORDER BY (docid DESC);
 CREATE TABLE categorybooks (
     category text,
-    bookId timeuuid,
+    docid timeuuid,
     authorId timeuuid,
     title varchar,
     body text,
@@ -52,10 +52,10 @@ CREATE TABLE categorybooks (
     metadata text,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY (category, bookId)
-) WITH CLUSTERING ORDER BY (bookId DESC);
+    PRIMARY KEY (category, docid)
+) WITH CLUSTERING ORDER BY (docid DESC);
 CREATE TABLE updatebooknode (
-    bookId timeuuid,
+    docid timeuuid,
     uniqueId timeuuid,
     parentId timeuuid,
     authorId timeuuid,
@@ -63,15 +63,15 @@ CREATE TABLE updatebooknode (
     identity smallint,
     createdAt timeuuid,
     updatedAt timeuuid,
-    PRIMARY KEY ((bookId, parentId), uniqueId)
+    PRIMARY KEY ((docid, parentId), uniqueId)
 ) WITH CLUSTERING ORDER BY (uniqueId DESC);
 CREATE TABLE book_title (
-    bookId timeuuid,
+    docid timeuuid,
     title text,
     parentId timeuuid,
     uniqueId timeuuid,
     identity smallint,
-    PRIMARY KEY (bookId, uniqueId)
+    PRIMARY KEY (docid, uniqueId)
 ) WITH CLUSTERING ORDER BY (uniqueId DESC);
 
 SELECT COUNT(*) FROM books;

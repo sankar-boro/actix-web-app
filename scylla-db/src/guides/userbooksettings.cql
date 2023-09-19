@@ -4,9 +4,9 @@ DROP TABLE IF EXISTS userbooksettings;
 
 CREATE TABLE userbooksettings (
     authorId timeuuid,
-    bookId timeuuid,
+    docid timeuuid,
     settings text,
-    PRIMARY KEY (authorId, bookId)
+    PRIMARY KEY (authorId, docid)
 );
 
 TRUNCATE TABLE sankar.userbooksettings;

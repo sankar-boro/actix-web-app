@@ -53,11 +53,11 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/create/sessionv2", web::post().to(common::create_sessionv2));
   config.service(
     web::scope("/book")
-    .route("/get/{bookId}", web::get().to(book::getBookNodesWithPageSizeFromId))
-    .route("/getPageNodes/{bookId}/{pageId}", web::get().to(book::getBookNodesForPage))
+    .route("/get/{docid}", web::get().to(book::getBookNodesWithPageSizeFromId))
+    .route("/getPageNodes/{docid}/{pageId}", web::get().to(book::getBookNodesForPage))
     .route("/category/{category}", web::get().to(book::getBooksWithPageSizeCategories))
     .route("/next_category/{category}", web::post().to(book::getBooksWithPageSizeCategoriesNext))
-    .route("/nextpage/{bookId}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
+    .route("/nextpage/{docid}", web::post().to(book::getNextBookNodesWithPageSizeFromId))
     .route("/titles/{book_id}", web::get().to(book::get_book_titles))
   );
   //
@@ -65,10 +65,10 @@ pub fn routes(config: &mut web::ServiceConfig) {
   config.route("/blogs/next", web::post().to(blog::getNextBlogsWithPageSize));
   config.service(
     web::scope("/blog")
-    .route("/get/{blogId}", web::get().to(blog::getBlogNodesWithPageSizeFromId))
+    .route("/get/{docid}", web::get().to(blog::getBlogNodesWithPageSizeFromId))
     .route("/category/{category}", web::get().to(blog::getBlogsWithPageSizeCategories))
     .route("/next_category/{category}", web::post().to(blog::getBlogsWithPageSizeCategoriesNext))
-    .route("/nextpage/{blogId}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
+    .route("/nextpage/{docid}", web::post().to(blog::getNextBlogNodesWithPageSizeFromId))
   );
 
 }

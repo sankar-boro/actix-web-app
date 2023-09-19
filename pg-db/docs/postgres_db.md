@@ -35,7 +35,7 @@ CREATE TABLE book (
 
 CREATE TABLE title (
 	uid serial PRIMARY KEY,
-	bookid INT NOT NULL,
+	docid INT NOT NULL,
 	parentid INT,
 	title TEXT NOT NULL,
   	identity SMALLINT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE title (
 CREATE TABLE booknode (
 	uid serial PRIMARY KEY,
   	authorid INT NOT NULL,
-	bookid INT NOT NULL,
+	docid INT NOT NULL,
 	parentid INT,
   	identity SMALLINT NOT NULL,
 	title TEXT NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE blog (
 CREATE TABLE blognode (
 	uid serial PRIMARY KEY,
   	authorid INT NOT NULL,
-	blogid INT NOT NULL,
+	docid INT NOT NULL,
 	parentid INT,
   	identity SMALLINT NOT NULL,
 	title TEXT NOT NULL,

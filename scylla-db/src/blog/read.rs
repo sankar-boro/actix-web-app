@@ -12,7 +12,7 @@ use crate::Error;
 
 #[derive(FromRow, Serialize)]
 pub struct BlogMetadata {
-    blogId: Uuid,
+    docid: Uuid,
     authorId: i32,
     title: String,
     body: String,
@@ -29,7 +29,7 @@ pub struct BlogsMetadataResponse {
 }
 
 // cannot use * when getting all documents;
-static BLOGS_QUERY: &'static str = "SELECT blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.blogs";
+static BLOGS_QUERY: &'static str = "SELECT docid, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.blogs";
 pub async fn getBlogsWithPageSize(
     app: web::Data<Connections>
 ) 
@@ -97,7 +97,7 @@ pub async fn getNextBlogsWithPageSize(
 
 #[derive(FromRow, Serialize)]
 pub struct BlogNode {
-    blogId: Uuid,
+    docid: Uuid,
     uniqueId: Uuid,
     parentId: Option<Uuid>,
     authorId: Option<i32>,
@@ -116,7 +116,7 @@ pub struct BlogNodesResponse {
     page: Option<Vec<u8>>,
 }
 
-static GET_BLOG_NODES_WITH_PAGE_SIZE: &'static str = "SELECT blogId, uniqueId, parentId, authorId, title, body, identity, metadata, url, createdAt, updatedAt from sankar.blog WHERE blogId=";
+static GET_BLOG_NODES_WITH_PAGE_SIZE: &'static str = "SELECT docid, uniqueId, parentId, authorId, title, body, identity, metadata, url, createdAt, updatedAt from sankar.blog WHERE docid=";
 pub async fn getBlogNodesWithPageSizeFromId(
     app: web::Data<Connections>, 
     blog_id: web::Path<String>
@@ -183,7 +183,7 @@ pub async fn getNextBlogNodesWithPageSizeFromId(
 #[derive(FromRow, Serialize)]
 pub struct CategoryBlogMetadata {
     category: String,
-    blogId: Uuid,
+    docid: Uuid,
     authorId: i32,
     title: String,
     body: String,
@@ -200,7 +200,7 @@ pub struct CategoryBlogsMetadataResponse {
 }
 
 // cannot use * when getting all documents;
-static BOOKS_QUERY_CATEGORY: &'static str = "SELECT category, blogId, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.categoryblogs WHERE category";
+static BOOKS_QUERY_CATEGORY: &'static str = "SELECT category, docid, authorId, title, body, url, metadata, createdAt, updatedAt from sankar.categoryblogs WHERE category";
 pub async fn getBlogsWithPageSizeCategories(
     app: web::Data<Connections>,
     category: web::Path<String>,

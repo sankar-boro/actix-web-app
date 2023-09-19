@@ -44,11 +44,11 @@ pub async fn get_all_blog_nodes(
 ) 
 -> Result<HttpResponse, Error> 
 {
-	let blogid: i32 = path.parse()?;
+	let docid: i32 = path.parse()?;
     let conn = app.get().await?;
     let blogs = conn.query(
         BOOK_DATA, 
-        &[&blogid]
+        &[&docid]
     ).await?;
 
     let mut allblogs = Vec::new();
@@ -56,7 +56,7 @@ pub async fn get_all_blog_nodes(
         allblogs.push(GetBlog {
             uid: blogs[i].get(0),
             authorid: blogs[i].get(1),
-            blogid: blogs[i].get(2),
+            docid: blogs[i].get(2),
             parentid: blogs[i].get(3),
             title: blogs[i].get(4),
             body: blogs[i].get(5),

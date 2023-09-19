@@ -44,11 +44,11 @@ pub async fn node_all(
 ) 
 -> Result<HttpResponse, Error> 
 {
-	let bookid: i32 = path.parse()?;
+	let docid: i32 = path.parse()?;
     let conn = app.get().await?;
     let books = conn.query(
         BOOK_DATA, 
-        &[&bookid]
+        &[&docid]
     ).await?;
 
     let mut allbooks = Vec::new();
@@ -56,7 +56,7 @@ pub async fn node_all(
         allbooks.push(GetBook {
             uid: books[i].get(0),
             authorid: books[i].get(1),
-            bookid: books[i].get(2),
+            docid: books[i].get(2),
             parentid: books[i].get(3),
             title: books[i].get(4),
             body: books[i].get(5),
@@ -80,11 +80,11 @@ pub async fn title_all(
 ) 
 -> Result<HttpResponse, Error> 
 {
-	let bookid: i32 = path.parse()?;
+	let docid: i32 = path.parse()?;
     let conn = app.get().await?;
     let books = conn.query(
         GET_BOOK_TITLES_FOR_ID, 
-        &[&bookid]
+        &[&docid]
     ).await?;
 
     let mut allbooks = Vec::new();
