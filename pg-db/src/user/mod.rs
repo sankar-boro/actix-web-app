@@ -49,3 +49,9 @@ pub async fn user_session(session: Session)
         None => Err(Error::from("REQUEST_LOGIN").into())   
     }
 }
+
+pub async fn logout_user(session: Session) -> HttpResponse {
+	session.clear();
+	session.purge();
+	HttpResponse::Ok().body("Logged out.")
+  }
