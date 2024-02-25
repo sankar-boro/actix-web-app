@@ -83,7 +83,7 @@ TRUNCATE TABLE sankar.userbooks;
 TRUNCATE TABLE sankar.categorybooks;
 
 ALTER TABLE users
-  ADD COLUMN pwd varchar(225) NOT NULL,
+  ADD COLUMN password varchar(225) NOT NULL,
   ADD COLUMN email varchar(50) NOT NULL,
   ADD COLUMN createdAt TIMESTAMP NOT NULL,
   ADD COLUMN updatedAt TIMESTAMP NOT NULL;
@@ -93,7 +93,7 @@ CREATE TABLE users (
     fname varchar(50) NOT NULL,
     lname varchar(50),
     email varchar(50) UNIQUE NOT NULL,
-    pwd varchar(255) NOT NUll,
+    password varchar(255) NOT NUll,
     createdAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

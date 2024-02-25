@@ -11,7 +11,7 @@ pub struct GetUserX {
 	email: String,
 }
 
-static GET_USERX: &str = "SELECT userId, fname, lname, pwd FROM users WHERE email=$1";
+static GET_USERX: &str = "SELECT userId, fname, lname, password FROM users WHERE email=$1";
 
 pub async fn get_user(
 	request: web::Json<GetUserX>, 

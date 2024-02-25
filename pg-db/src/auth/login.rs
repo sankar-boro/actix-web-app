@@ -46,10 +46,10 @@ pub async fn login(
 	let user_id: i32 = rows[0].get(0);
 	let fname: String = rows[0].get(1);
 	let lname: String = rows[0].get(2);
-	let pwd: String = rows[0].get(3);
-	let pwd: Vec<u8> = pwd.as_bytes().to_vec();
+	let password: String = rows[0].get(3);
+	let password: Vec<u8> = password.as_bytes().to_vec();
 
-	validate_user_credentials(&request.password, &pwd)?;
+	validate_user_credentials(&request.password, &password)?;
 	
 	let auth_user_session = json!({
 		"userId": user_id,

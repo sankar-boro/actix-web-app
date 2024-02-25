@@ -2,6 +2,7 @@ use crate::Connections;
 use crate::error::Error;
 use scylla::macros::FromRow;
 
+use time::Duration;
 use uuid::Uuid;
 use validator::Validate;
 use actix_session::Session;
@@ -10,6 +11,7 @@ use serde::{Serialize, Deserialize};
 use crate::utils::GetQueryResult;
 use serde_json::json;
 use lily_utils::validate_user_credentials;
+use actix_web::cookie;
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct LoginForm {
@@ -36,7 +38,7 @@ fn get_user_query(email: &str)
 	query
 }
 
-static GET_USER: &str = "SELECT userId, fname, lname, pwd FROM users WHERE email=$1";
+static GET_USER: &str = "SELECT userId, fname, lname, password FROM users WHERE email=$1";
 pub async fn login(
 	request: web::Json<LoginForm>, 
 	app: web::Data<Connections>, 
@@ -58,10 +60,10 @@ pub async fn login(
 	let user_id: i32 = rows[0].get(0);
 	let fname: String = rows[0].get(1);
 	let lname: String = rows[0].get(2);
-	let pwd: String = rows[0].get(3);
-	let pwd: Vec<u8> = pwd.as_bytes().to_vec();
+	let password: String = rows[0].get(3);
+	let password: Vec<u8> = password.as_bytes().to_vec();
 
-	validate_user_credentials(&request.password, &pwd)?;
+	validate_user_credentials(&request.password, &password)?;
 	
 	let auth_user_session = json!({
 		"userId": user_id,
@@ -71,9 +73,17 @@ pub async fn login(
 	});
 	let x = auth_user_session.clone().to_string();
 	
-	session.insert("AUTH_USER", x)?;
+	session.insert("AUTH_USER", x.clone())?;
 	session.insert("AUTH_ID", user_id)?;
-	Ok(HttpResponse::Ok().json(auth_user_session))
+	// Ok(HttpResponse::Ok().json(auth_user_session))
+	Ok(HttpResponse::Ok()
+        .cookie(cookie::Cookie::build("Authorization", x)
+            .http_only(true)
+            .max_age(Duration::hours(3))
+            .same_site(cookie::SameSite::None)
+            .secure(true)
+            .finish())
+        .json(auth_user_session))
 }
 
 #[derive(Deserialize)]
@@ -81,7 +91,7 @@ pub struct GetUserX {
 	email: String,
 }
 
-static GET_USERX: &str = "SELECT userId, fname, lname, pwd FROM users WHERE email=$1";
+static GET_USERX: &str = "SELECT userId, fname, lname, password FROM users WHERE email=$1";
 pub async fn get_user(
 	request: web::Json<GetUserX>, 
 	app: web::Data<Connections>

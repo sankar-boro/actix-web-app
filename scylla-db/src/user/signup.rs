@@ -12,7 +12,7 @@ lazy_static! {
 }
 // static INSERT_TABLE__USERS: &str = "INSERT INTO sankar.users (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
 // static INSERT_TABLE__USERCREDENTIALS: &str = "INSERT INTO sankar.userCredentials (userId,fname,lname, email, password, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)";
-static INSERT_USER: &str = "INSERT INTO users (fname, lname, email, pwd) VALUES ($1, $2, $3, $4)";
+static INSERT_USER: &str = "INSERT INTO users (fname, lname, email, password) VALUES ($1, $2, $3, $4)";
 
 #[derive(Deserialize, Validate)]
 pub struct SignupForm {
