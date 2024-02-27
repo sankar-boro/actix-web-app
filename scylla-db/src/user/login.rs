@@ -77,13 +77,7 @@ pub async fn login(
 	session.insert("AUTH_ID", user_id)?;
 	// Ok(HttpResponse::Ok().json(auth_user_session))
 	Ok(HttpResponse::Ok()
-        .cookie(cookie::Cookie::build("Authorization", x)
-            .http_only(true)
-            .max_age(Duration::hours(3))
-            .same_site(cookie::SameSite::None)
-            .secure(true)
-            .finish())
-        .json(auth_user_session))
+        .append_header(("Authorization", x)).json(auth_user_session))
 }
 
 #[derive(Deserialize)]

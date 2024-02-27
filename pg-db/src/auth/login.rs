@@ -1,13 +1,19 @@
-use crate::error::Error;
+use crate::{error::Error, AppConnections};
 use crate::query::LOGIN;
 
 use deadpool_postgres::Pool;
+use futures::TryFutureExt;
 use validator::Validate;
-use actix_session::Session;
+// use actix_session::Session;
+use redis::aio::Connection;
 use actix_web::{web, HttpResponse};
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use lily_utils::validate_user_credentials;
+use actix_web::cookie;
+use time::Duration;
+use redis::{AsyncCommands, Commands};
+use std::{borrow::BorrowMut, sync::{Arc, Mutex}};
 
 #[derive(Deserialize, Debug, Validate)]
 pub struct LoginForm {
@@ -27,13 +33,12 @@ pub struct GetUser {
 
 pub async fn login(
 	request: web::Json<LoginForm>, 
-	app: web::Data<Pool>, 
-	session: Session
+	app: web::Data<AppConnections>
 ) 
 -> Result<HttpResponse, Error> 
 {
 	request.validate()?;
-	let client = app.get().await?;
+	let client = app.db_pool.get().await?;
     let stmt = client.prepare_cached(LOGIN).await?;
     let rows = client.query(&stmt, &[&request.email]).await?;
 	if rows.len() == 0 {
@@ -57,11 +62,22 @@ pub async fn login(
 		"fname": fname.clone(),
 		"lname": lname.clone(),
 	});
-	let x = auth_user_session.clone().to_string();
+
+	let mut locked_session = app.session.lock().unwrap();
+
+	let auth_user_session = auth_user_session.clone().to_string();
 	
-	session.insert("AUTH_USER", x)?;
-	session.insert("AUTH_ID", user_id)?;
-	Ok(HttpResponse::Ok().json(auth_user_session))
+	locked_session.hset(&request.email, "AUTH_USER", auth_user_session.clone()).unwrap_or_else(|_| ());
+	locked_session.hset(&request.email, "AUTH_ID", user_id).unwrap_or_else(|_| ());
+
+	Ok(HttpResponse::Ok()
+        .cookie(cookie::Cookie::build("Authorization", "sankar")
+            .http_only(true)
+            .max_age(Duration::hours(3))
+            .same_site(cookie::SameSite::None)
+            .secure(true)
+            .finish())
+        .json(auth_user_session))
 }
 
 

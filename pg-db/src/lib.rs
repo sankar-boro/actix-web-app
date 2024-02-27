@@ -11,5 +11,5 @@ mod booknode;
 mod blognode;
 
 pub mod route;
-pub use connection::pg_connection;
+pub use connection::{pg_connection, AppConfig, AppConnections};
 pub use error::Error;
