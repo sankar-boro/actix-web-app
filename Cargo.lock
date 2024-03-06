@@ -1229,16 +1229,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "deadpool"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb84100978c1c7b37f09ed3ce3e5f843af02c2a2c431bae5b19230dad2c1b490"
+dependencies = [
+ "async-trait",
+ "deadpool-runtime",
+ "num_cpus",
+ "serde",
+ "tokio",
+]
+
+[[package]]
 name = "deadpool-postgres"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "836a24a9d49deefe610b8b60c767a7412e9a931d79a89415cd2d2d71630ca8d7"
 dependencies = [
- "deadpool",
+ "deadpool 0.9.5",
  "log",
  "serde",
  "tokio",
  "tokio-postgres",
+]
+
+[[package]]
+name = "deadpool-postgres"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bda39fa1cfff190d8924d447ad04fd22772c250438ca5ce1dfb3c80621c05aaa"
+dependencies = [
+ "deadpool 0.10.0",
+ "serde",
+ "tokio",
+ "tokio-postgres",
+ "tracing",
 ]
 
 [[package]]
@@ -2609,7 +2635,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "config",
- "deadpool-postgres",
+ "deadpool-postgres 0.12.1",
  "derive_more",
  "env_logger",
  "futures",
@@ -3248,7 +3274,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "config",
- "deadpool-postgres",
+ "deadpool-postgres 0.10.5",
  "derive_more",
  "env_logger",
  "futures",

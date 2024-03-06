@@ -139,4 +139,4 @@ pub static UNFOLLOW_USER: &str = "DELETE FROM sankar.followers WHERE userId=? AN
 pub static DELETE_USERBOOKS: &str = "DELETE FROM sankar.userbooks where authorId=? AND docid IN (?)";
 
 pub static SIGNUP: &str = "INSERT INTO users (fname, lname, email, password) VALUES ($1, $2, $3, $4) RETURNING uid";
-pub static LOGIN: &str = "SELECT userid, fname, lname, password FROM users WHERE email=$1";
+pub static LOGIN: &str = "SELECT user_id, fname, lname, password FROM users WHERE phone=$1";

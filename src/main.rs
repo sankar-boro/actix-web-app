@@ -13,10 +13,9 @@ use actix_web::http::header;
 use pg_db::{AppConfig, AppConnections};
 
 async fn start_server<T: Clone + Send + 'static>(app: T, app_config: &AppConfig) -> Result<()> {
-    HttpServer::new(move || {
-
+    let server = HttpServer::new(move || {
         let cors: Cors = Cors::default()
-        .allowed_origin("http://localhost:3000")
+        .allow_any_origin()
         .allowed_methods(vec!["GET", "POST"])
         .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
         .allowed_header(header::CONTENT_TYPE)
@@ -27,17 +26,18 @@ async fn start_server<T: Clone + Send + 'static>(app: T, app_config: &AppConfig)
             .app_data(web::Data::new(app.clone()))
             .configure(route::routes)
     })
-    .bind((app_config.APP_HOST.clone(), app_config.APP_PORT))?
-    .run()
-    .await?;
+    .bind((app_config.APP_HOST.clone(), app_config.APP_PORT))?;
+    let address = server.addrs();
+    info!("Listening to address: {:?}", address);
+    server.run().await?;
     Ok(())
 }
 
 #[actix_web::main]
 async fn main() {
-    std::env::set_var("RUST_LOG", "actix_server=info,actix_web=info");
-    std::env::set_var("RUST_LOG", "info");
-    std::env::set_var("RUST_BACKTRACE", "1");
+    // std::env::set_var("RUST_LOG", "actix_server=info,actix_web=info");
+    // std::env::set_var("RUST_LOG", "info");
+    // std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
 
     let APP_HOST = env::var("APP_HOST").unwrap();

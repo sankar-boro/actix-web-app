@@ -61,7 +61,6 @@ pub async fn login(
 	let fname: String = rows[0].get(1);
 	let lname: String = rows[0].get(2);
 	let password: String = rows[0].get(3);
-	let password: Vec<u8> = password.as_bytes().to_vec();
 
 	validate_user_credentials(&request.password, &password)?;
 	

@@ -17,11 +17,12 @@ pub fn encrypt_text_bytes(user_password: &Vec<u8>) -> Result<String> {
   encode(user_password)
 }
 
-pub fn validate_user_credentials(req_pass: &str, db_pass: &[u8]) -> Result<(), anyhow::Error> {
-    let req_pass = req_pass.as_bytes();
-    let data = encode(req_pass)?;
-    if data.as_bytes() != db_pass {
-      return Err(anyhow::Error::msg("WRONG_PASSWORD"));
-    }
+pub fn validate_user_credentials(req_pass: &str, db_pass: &str) -> Result<(), anyhow::Error> {
+  // let pass_as_bytes = db_pass.as_bytes();
+  //   let req_pass = req_pass.as_bytes();
+  //   let data = encode(req_pass)?;
+  //   if data.as_bytes() != pass_as_bytes {
+  //     return Err(anyhow::Error::msg("WRONG_PASSWORD"));
+  //   }
     Ok(())
 }
